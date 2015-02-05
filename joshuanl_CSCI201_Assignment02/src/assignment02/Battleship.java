@@ -17,6 +17,8 @@ package assignment02;
 			FileReader fr;
 			BufferedReader br = null;
 			int board[][][] = new int[10][10][1]; 
+			int ship2Count = 2, ship3Count = 1, ship4Count = 1, ship5Count = 1;
+			boolean validBoard = false;
 			
 	//=============================READING FILENAME
 			while(!accept_input){
@@ -129,8 +131,32 @@ package assignment02;
 				}//end of inner for
 				System.out.println();
 			}//end of outer for
-					
+			boolean visited[][] = new boolean[10][10];
+			switch(BFS(board, visited, 0, 0, 0, 0)){
+				case -1:
+					break;
+				case 2:
+					ship2Count--;
+					break;
+				case 3:
+					ship3Count--;
+					break;
+				case 4:
+					ship4Count--;
+					break;
+				case 5:
+					ship5Count--;
+					break;
+			}//end of checking ships
+			if(ship2Count == 0 && ship3Count == 0 && ship4Count == 0 && ship5Count == 0){
+				validBoard = true;
+				System.out.println("Valid board");
+			}//end of check
+			else{
+				System.out.println("not valid board");
+			}
 		}//end of main
+//===============================================METHODS		
 		public static boolean isInteger(String s) {
 		    try { 
 		        Integer.parseInt(s); 
@@ -140,4 +166,62 @@ package assignment02;
 		    // only got here if we didn't return false
 		    return true;
 		}//end of if integer
+
+		public static int BFS(int board[][][], boolean visited[][], int i, int j, int ship, int length){
+			if(i > 9 || j > 9){
+				return -1;
+			}//end of if out of bounds
+			if(!visited[i][j]){
+				visited[i][j] = true;
+			}//end of if not visited
+			
+			switch(board[i][j][0]){
+				case 0:
+					System.out.println("found water");
+					if((j+1) <= 9){
+						BFS(board, visited, i, j+1, 0, 0);
+					}
+					else{
+						j = 0;
+						i++;
+						BFS(board, visited, i, j, 0, 0);
+					}
+					return -1;
+				case 2:
+					BFS(board, visited, i+1, j, 2, ++length);
+					BFS(board, visited, i, j+1, 2, ++length);
+					break;
+				case 3:	
+					BFS(board, visited, i+1, j, 3, ++length);
+					BFS(board, visited, i, j+1, 3, ++length);
+					break;
+				case 4:
+					BFS(board, visited, i+1, j, 4, ++length);
+					BFS(board, visited, i, j+1, 4, ++length);
+					break;
+				case 5:
+					BFS(board, visited, i+1, j, 5, ++length);
+					BFS(board, visited, i, j+1, 5, ++length);
+					break;
+			}//end of switch
+			
+			if(ship == 2 && length == 2){
+				System.out.println("Found Ship 2");
+				return 2;
+			}
+			else if(ship == 3 && length == 3){
+				System.out.println("Found Ship 3");
+				return 3;
+			}
+			else if(ship == 4 && length == 4){
+				System.out.println("Found Ship 4");
+				return 4;
+			}
+			else if(ship == 5 && length == 5){
+				System.out.println("Found Ship 5");
+				return 5;
+			}
+			
+			return -1;
+		}//end of BFS
 }//end of class
