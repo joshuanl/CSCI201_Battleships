@@ -1,15 +1,82 @@
 package assignment02;
 
 
-	import java.io.BufferedReader;
-	import java.io.FileReader;
-	import java.io.FileNotFoundException;
-	import java.io.IOException;
-	import java.util.Scanner;
-	import java.util.StringTokenizer;
+	import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Scanner;
+import java.util.StringTokenizer;
 
-	public class Battleship {
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+	public class Battleship extends JFrame{
+		public static final long setSerializationUID = 1; 
+		private JLabel spaces[][] = new JLabel[11][11];
+		private JLabel highscores[] = new JLabel[10];
+		private char xAxis[] = new char[] {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', ' '};
+		
+		public Battleship(){
+			super("Single Player Battleship");
+			setSize(600,500);
+			setLocation(200,20);
+			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			
+			JPanel GLPanel = getGLPanel();
+			add(GLPanel, BorderLayout.CENTER);
+//=========================================CREATING HIGHSCORES PANEL			
+			JLabel tempLabel;
+			JPanel highscoreGirdPanel = new JPanel();
+			highscoreGirdPanel.setLayout(new GridLayout(11,2));
+			tempLabel = new JLabel("Highscores");
+			highscoreGirdPanel.add(tempLabel);
+			tempLabel = new JLabel("");
+			highscoreGirdPanel.add(tempLabel);
+			for(int i=1; i<=10; i++){
+				tempLabel = new JLabel(i+". ");
+				highscoreGirdPanel.add(tempLabel);
+				highscores[(i-1)] = tempLabel = new JLabel("");
+				highscoreGirdPanel.add(highscores[(i-1)]);
+			}
+			add(highscoreGirdPanel, BorderLayout.EAST);
+			
+			
+			setVisible(true);
+		}//end of constructor
+		
+		private JPanel getGLPanel(){
+			JPanel jp = new JPanel();
+			jp.setLayout(new GridLayout(11,11));
+			JLabel jl;
+			for(int i=0; i < 10; i++){
+				jl = new JLabel(""+xAxis[i]);
+				jp.add(jl);
+				for(int j=1; j < 11; j++){
+					jl = new JLabel("?");
+					jp.add(jl);
+				}//end of inner for loop
+			}//end of outer loop
+			jl = new JLabel(""+xAxis[10]);
+			jp.add(jl);
+			for(int i=0; i<10; i++){
+				jl = new JLabel(""+(i+1));
+				jp.add(jl);
+			}
+			return jp;
+		}//end of getGLPanel
+		
+		
+		
+//===================================MAIN		
 		public static void main(String args[]){
+			
+			Battleship BS = new Battleship();
+			//BS.setVisible(true);
 			boolean accept_input = false;
 			String filename, input;
 			String highscores[] = new String[10];
@@ -19,6 +86,7 @@ package assignment02;
 			int board[][][] = new int[10][10][1]; 
 			int ship2Count = 2, ship3Count = 1, ship4Count = 1, ship5Count = 1;
 			boolean validBoard = false;
+			
 			
 	//=============================READING FILENAME
 			while(!accept_input){
@@ -168,59 +236,75 @@ package assignment02;
 		}//end of if integer
 
 		public static int BFS(int board[][][], boolean visited[][], int i, int j, int ship, int length){
+			
 			if(i > 9 || j > 9){
 				return -1;
 			}//end of if out of bounds
-			if(!visited[i][j]){
-				visited[i][j] = true;
+			if(visited[i][j]){
+				//System.out.println("["+i+"]["+j+"]");
+				return -1;
 			}//end of if not visited
+			else{	
+				visited[i][j] = true;
+			}
 			
 			switch(board[i][j][0]){
 				case 0:
 					System.out.println("found water");
+					System.out.println("["+i+"]["+j+"]");
 					if((j+1) <= 9){
-						BFS(board, visited, i, j+1, 0, 0);
+						return BFS(board, visited, i, j+1, 0, 0);
 					}
 					else{
 						j = 0;
 						i++;
-						BFS(board, visited, i, j, 0, 0);
+						return BFS(board, visited, i, j, 0, 0);
 					}
-					return -1;
 				case 2:
-					BFS(board, visited, i+1, j, 2, ++length);
-					BFS(board, visited, i, j+1, 2, ++length);
+					length++;
+					System.out.println("Ship2, Length: "+length);
+					System.out.println("["+i+"]["+j+"]");
+					BFS(board, visited, i+1, j, 2, length);
+					BFS(board, visited, i, j+1, 2, length);
+					if(ship == 2 && length == 2){
+						System.out.println("=======Found Ship 2");
+						return 2;
+					}
 					break;
 				case 3:	
-					BFS(board, visited, i+1, j, 3, ++length);
-					BFS(board, visited, i, j+1, 3, ++length);
+					length++;
+					System.out.println("Ship3, Length: "+length);
+					System.out.println("["+i+"]["+j+"]");
+					BFS(board, visited, i+1, j, 3, length);
+					BFS(board, visited, i, j+1, 3, length);
+					if(ship == 3 && length == 3){
+						System.out.println("=======Found Ship 3");
+						return 3;
+					}	
 					break;
 				case 4:
-					BFS(board, visited, i+1, j, 4, ++length);
-					BFS(board, visited, i, j+1, 4, ++length);
+					length++;
+					System.out.println("Ship4, Length: "+length);
+					System.out.println("["+i+"]["+j+"]");
+					BFS(board, visited, i+1, j, 4, length);
+					BFS(board, visited, i, j+1, 4, length);
+					if(ship == 4 && length == 4){
+						System.out.println("======Found Ship 4");
+						return 4;
+					}	
 					break;
 				case 5:
-					BFS(board, visited, i+1, j, 5, ++length);
-					BFS(board, visited, i, j+1, 5, ++length);
+					length++;
+					System.out.println("Ship5, Length: "+length);
+					System.out.println("["+i+"]["+j+"]");
+					BFS(board, visited, i+1, j, 5, length);
+					BFS(board, visited, i, j+1, 5, length);
+					if(ship == 5 && length == 5){
+						System.out.println("=======Found Ship 5");
+						return 5;
+					}	
 					break;
-			}//end of switch
-			
-			if(ship == 2 && length == 2){
-				System.out.println("Found Ship 2");
-				return 2;
-			}
-			else if(ship == 3 && length == 3){
-				System.out.println("Found Ship 3");
-				return 3;
-			}
-			else if(ship == 4 && length == 4){
-				System.out.println("Found Ship 4");
-				return 4;
-			}
-			else if(ship == 5 && length == 5){
-				System.out.println("Found Ship 5");
-				return 5;
-			}
+			}//end of switch		
 			
 			return -1;
 		}//end of BFS
