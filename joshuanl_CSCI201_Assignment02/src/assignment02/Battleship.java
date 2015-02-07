@@ -4,6 +4,8 @@ package assignment02;
 	import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileNotFoundException;
@@ -23,9 +25,11 @@ import javax.swing.JTextField;
 		private JLabel spaces[][] = new JLabel[11][11];
 		protected static JLabel highscores[] = new JLabel[10];
 		private char xAxis[] = new char[] {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', ' '};
-		protected static JTextField jtf;
-		protected static JLabel inputResultLabel;
-		protected static JLabel scoreCount;
+		private JTextField jtf;
+		private JLabel inputResultLabel;
+		private JLabel scoreCountLabel;
+		private int scoreCount;
+		protected static int board[][][];
 		
 		
 		public Battleship(){
@@ -39,12 +43,57 @@ import javax.swing.JTextField;
 //========================================CREATING TEXTFIELD INTERFACE			
 			jtf = new JTextField("Input Coordinates here",30);
 			inputResultLabel = new JLabel("HIT OR MISS?");
-			scoreCount = new JLabel("SCORE: 100");
+			scoreCount = 100;
+			scoreCountLabel = new JLabel("SCORE: "+scoreCount);
 			JPanel flowPanel = new JPanel();
 			flowPanel.setLayout(new FlowLayout());
 			flowPanel.add(jtf);
 			flowPanel.add(inputResultLabel);
-			flowPanel.add(scoreCount);
+			flowPanel.add(scoreCountLabel);
+			//=============================================ADDING LISTENER TO CHECK HITS
+			jtf.addActionListener(new ActionListener(){
+				//anonymous inner class
+				public void actionPerformed(ActionEvent ae){
+					String input_coord = jtf.getText();
+					int x_coord = -1, y_coord = -1;
+					if(input_coord.length() <= 1){
+						jtf.setText("Invalid input");
+						return;
+					}
+					for(int i=0; i< xAxis.length; i++){
+						if(input_coord.charAt(0) == xAxis[i]){
+							x_coord = i;
+						}
+					}//end of for
+					if(x_coord == -1){
+						jtf.setText("Invalid input");
+						return;
+					}
+					input_coord = input_coord.substring(1);
+					if(isInteger(input_coord)){
+						y_coord = Integer.parseInt(input_coord) - 1;
+						if(y_coord < 1 || y_coord > 10){
+							jtf.setText("Invalid input");
+							return;
+						}//end of if
+						if(board[x_coord][y_coord][0] != 0){
+							scoreCount--;
+							scoreCountLabel.setText("SCORE: "+scoreCount);
+							inputResultLabel.setText("HIT!");
+						}
+						else{
+							scoreCount--;
+							scoreCountLabel.setText("SCORE: "+scoreCount);
+							inputResultLabel.setText("MISS!");
+						}
+					}//end of if
+					else{
+						jtf.setText("Invalid input");
+						return;
+					}
+				}//end of method
+			});
+			//===============================================END OF LISTENER 
 			add(flowPanel, BorderLayout.SOUTH);
 //=========================================CREATING HIGHSCORES PANEL			
 			JLabel tempLabel;
@@ -82,9 +131,17 @@ import javax.swing.JTextField;
 			}
 			return jp;
 		}//end of getGLPanel
-		
-		
-		
+
+		public static boolean isInteger(String s) {
+		    try { 
+		        Integer.parseInt(s); 
+		    } catch(NumberFormatException e) { 
+		        return false; 
+		    }
+		    // only got here if we didn't return false
+		    return true;
+		}//end of if integer
+			
 //===================================MAIN		
 		public static void main(String args[]){
 			
@@ -96,7 +153,7 @@ import javax.swing.JTextField;
 			Scanner keyboard = new Scanner(System.in);
 			FileReader fr;
 			BufferedReader br = null;
-			int board[][][] = new int[10][10][1]; 
+			board = new int[10][10][1]; 
 			int ship2Count = 2, ship3Count = 1, ship4Count = 1, ship5Count = 1;
 			boolean validBoard = false;
 			JLabel tempLabel;
@@ -247,16 +304,9 @@ import javax.swing.JTextField;
 			BS.setVisible(true);
 		}//end of main
 //===============================================METHODS		
-		public static boolean isInteger(String s) {
-		    try { 
-		        Integer.parseInt(s); 
-		    } catch(NumberFormatException e) { 
-		        return false; 
-		    }
-		    // only got here if we didn't return false
-		    return true;
-		}//end of if integer
-
+//===============================================IS INTEGER		
+		
+//===================================================BFS
 		public static int BFS(int board[][][], boolean visited[][], int i, int j, int ship, int length){
 			
 			if(i > 9 || j > 9){
