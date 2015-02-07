@@ -18,7 +18,7 @@ import javax.swing.JPanel;
 	public class Battleship extends JFrame{
 		public static final long setSerializationUID = 1; 
 		private JLabel spaces[][] = new JLabel[11][11];
-		private JLabel highscores[] = new JLabel[10];
+		protected static JLabel highscores[] = new JLabel[10];
 		private char xAxis[] = new char[] {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', ' '};
 		
 		public Battleship(){
@@ -32,23 +32,19 @@ import javax.swing.JPanel;
 //=========================================CREATING HIGHSCORES PANEL			
 			JLabel tempLabel;
 			JPanel highscoreGirdPanel = new JPanel();
-			highscoreGirdPanel.setLayout(new GridLayout(11,2));
-			tempLabel = new JLabel("Highscores");
-			highscoreGirdPanel.add(tempLabel);
-			tempLabel = new JLabel("");
+			highscoreGirdPanel.setLayout(new GridLayout(11,1));
+			tempLabel = new JLabel("Highscores                    ");
 			highscoreGirdPanel.add(tempLabel);
 			for(int i=1; i<=10; i++){
-				tempLabel = new JLabel(i+". ");
-				highscoreGirdPanel.add(tempLabel);
-				highscores[(i-1)] = tempLabel = new JLabel("");
+				highscores[(i-1)] = new JLabel(i+".     ");
 				highscoreGirdPanel.add(highscores[(i-1)]);
 			}
 			add(highscoreGirdPanel, BorderLayout.EAST);
+//==========================================			
 			
-			
-			setVisible(true);
+			//setVisible(true);
 		}//end of constructor
-		
+//===================================GRIDLAYOUT		
 		private JPanel getGLPanel(){
 			JPanel jp = new JPanel();
 			jp.setLayout(new GridLayout(11,11));
@@ -79,13 +75,14 @@ import javax.swing.JPanel;
 			//BS.setVisible(true);
 			boolean accept_input = false;
 			String filename, input;
-			String highscores[] = new String[10];
+			String highscoreNames[] = new String[10];
 			Scanner keyboard = new Scanner(System.in);
 			FileReader fr;
 			BufferedReader br = null;
 			int board[][][] = new int[10][10][1]; 
 			int ship2Count = 2, ship3Count = 1, ship4Count = 1, ship5Count = 1;
 			boolean validBoard = false;
+			JLabel tempLabel;
 			
 			
 	//=============================READING FILENAME
@@ -123,10 +120,13 @@ import javax.swing.JPanel;
 								if((temp_int-1) == i){
 									if(st.hasMoreTokens()){
 										temp_str = st.nextToken();
-										highscores[i] = temp_str;
+										highscoreNames[i] = temp_str;
+										highscores[i].setText((i+1)+".     "+temp_str);
+										
 									}//end of if theres a name
 									else{
-										highscores[i] = "";
+										highscoreNames[i] = "";
+										highscores[i].setText((i+1)+".     "+highscoreNames[i]);
 									}//end of else theres no name
 								}//end of if correct integer
 								else{
@@ -223,6 +223,7 @@ import javax.swing.JPanel;
 			else{
 				System.out.println("not valid board");
 			}
+			BS.setVisible(true);
 		}//end of main
 //===============================================METHODS		
 		public static boolean isInteger(String s) {
