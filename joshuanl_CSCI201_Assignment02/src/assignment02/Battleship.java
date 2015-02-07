@@ -2,6 +2,7 @@ package assignment02;
 
 
 	import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -10,16 +11,22 @@ import java.io.IOException;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 	public class Battleship extends JFrame{
 		public static final long setSerializationUID = 1; 
 		private JLabel spaces[][] = new JLabel[11][11];
 		protected static JLabel highscores[] = new JLabel[10];
 		private char xAxis[] = new char[] {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', ' '};
+		protected static JTextField jtf;
+		protected static JLabel inputResultLabel;
+		protected static JLabel scoreCount;
+		
 		
 		public Battleship(){
 			super("Single Player Battleship");
@@ -29,6 +36,16 @@ import javax.swing.JPanel;
 			
 			JPanel GLPanel = getGLPanel();
 			add(GLPanel, BorderLayout.CENTER);
+//========================================CREATING TEXTFIELD INTERFACE			
+			jtf = new JTextField("Input Coordinates here",30);
+			inputResultLabel = new JLabel("HIT OR MISS?");
+			scoreCount = new JLabel("SCORE: 100");
+			JPanel flowPanel = new JPanel();
+			flowPanel.setLayout(new FlowLayout());
+			flowPanel.add(jtf);
+			flowPanel.add(inputResultLabel);
+			flowPanel.add(scoreCount);
+			add(flowPanel, BorderLayout.SOUTH);
 //=========================================CREATING HIGHSCORES PANEL			
 			JLabel tempLabel;
 			JPanel highscoreGirdPanel = new JPanel();
@@ -40,9 +57,9 @@ import javax.swing.JPanel;
 				highscoreGirdPanel.add(highscores[(i-1)]);
 			}
 			add(highscoreGirdPanel, BorderLayout.EAST);
-//==========================================			
 			
-			//setVisible(true);
+			
+//===================================END OF CONSTRUCTOR			
 		}//end of constructor
 //===================================GRIDLAYOUT		
 		private JPanel getGLPanel(){
@@ -199,6 +216,7 @@ import javax.swing.JPanel;
 				}//end of inner for
 				System.out.println();
 			}//end of outer for
+//====================================CHECKING FOR VALID BOARD			
 			boolean visited[][] = new boolean[10][10];
 			switch(BFS(board, visited, 0, 0, 0, 0)){
 				case -1:
@@ -223,6 +241,9 @@ import javax.swing.JPanel;
 			else{
 				System.out.println("not valid board");
 			}
+//==============================================END OF BOARD CHECK	
+			
+			
 			BS.setVisible(true);
 		}//end of main
 //===============================================METHODS		
