@@ -61,7 +61,7 @@ import javax.swing.JTextField;
 						return;
 					}
 					for(int i=0; i< xAxis.length; i++){
-						if(input_coord.charAt(0) == xAxis[i]){
+						if(input_coord.toUpperCase().charAt(0) == xAxis[i]){
 							x_coord = i;
 						}
 					}//end of for
@@ -71,7 +71,7 @@ import javax.swing.JTextField;
 					}
 					input_coord = input_coord.substring(1);
 					if(isInteger(input_coord)){
-						y_coord = Integer.parseInt(input_coord) - 1;
+						y_coord = Integer.parseInt(input_coord);
 						if(y_coord < 1 || y_coord > 10){
 							jtf.setText("Invalid input");
 							return;
@@ -80,11 +80,16 @@ import javax.swing.JTextField;
 							scoreCount--;
 							scoreCountLabel.setText("SCORE: "+scoreCount);
 							inputResultLabel.setText("HIT!");
+							System.out.println("x: " + x_coord + "\ny: " +y_coord);
+							spaces[x_coord][y_coord].setText("HIT");
 						}
 						else{
 							scoreCount--;
 							scoreCountLabel.setText("SCORE: "+scoreCount);
 							inputResultLabel.setText("MISS!");
+							System.out.println("x: " + x_coord + "\ny: " +y_coord);
+							spaces[x_coord][y_coord].setText("MISS");
+
 						}
 					}//end of if
 					else{
@@ -120,7 +125,8 @@ import javax.swing.JTextField;
 				jp.add(jl);
 				for(int j=1; j < 11; j++){
 					jl = new JLabel("?");
-					jp.add(jl);
+					spaces[i][j] = jl;
+					jp.add(spaces[i][j]);
 				}//end of inner for loop
 			}//end of outer loop
 			jl = new JLabel(""+xAxis[10]);
@@ -153,7 +159,7 @@ import javax.swing.JTextField;
 			Scanner keyboard = new Scanner(System.in);
 			FileReader fr;
 			BufferedReader br = null;
-			board = new int[10][10][1]; 
+			board = new int[11][11][1]; 
 			int ship2Count = 2, ship3Count = 1, ship4Count = 1, ship5Count = 1;
 			boolean validBoard = false;
 			JLabel tempLabel;
