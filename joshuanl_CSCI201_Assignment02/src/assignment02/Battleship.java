@@ -10,8 +10,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 import java.util.Scanner;
 import java.util.StringTokenizer;
+import java.util.Vector;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -31,7 +33,7 @@ import javax.swing.JTextField;
 		private int scoreCount;
 		protected static int board[][][];
 		protected static boolean visited[][];
-		protected static Player playerList[];
+		protected static Vector<Player> playerList;
 		
 		
 		public Battleship(){
@@ -78,12 +80,35 @@ import javax.swing.JTextField;
 							jtf.setText("Invalid input");
 							return;
 						}//end of if
+						else if(board[x_coord][y_coord][1] != 0){
+							jtf.setText("Already guessed this spot!");
+							return;
+						}
 						if(board[x_coord][y_coord][0] != 0){
 							scoreCount--;
 							scoreCountLabel.setText("SCORE: "+scoreCount);
 							inputResultLabel.setText("HIT!");
 							System.out.println("x: " + x_coord + "\ny: " +y_coord);
 							spaces[x_coord][y_coord].setText("HIT");
+							board[x_coord][y_coord][1] = 1;
+							switch(isSunk(board, x_coord, y_coord, board[x_coord][y_coord][0], 1)){
+								case 2:
+									jtf.setText("You sunk a Destroyer!");
+									inputResultLabel.setText("HIT!");
+								break;
+								case 3:
+									jtf.setText("You sunk a Cruiser!");
+									inputResultLabel.setText("HIT!");
+								break;
+								case 4:
+									jtf.setText("You sunk a Battleship!");
+									inputResultLabel.setText("HIT!");
+								break;
+								case 5:
+									jtf.setText("You sunk a Aircraft Carrier!");
+									inputResultLabel.setText("HIT!");
+								break;
+							}//end of switch
 						}
 						else{
 							scoreCount--;
@@ -91,7 +116,7 @@ import javax.swing.JTextField;
 							inputResultLabel.setText("MISS!");
 							System.out.println("x: " + x_coord + "\ny: " +y_coord);
 							spaces[x_coord][y_coord].setText("MISS");
-
+							board[x_coord][y_coord][1] = -1;
 						}
 					}//end of if
 					else{
@@ -149,7 +174,58 @@ import javax.swing.JTextField;
 		    // only got here if we didn't return false
 		    return true;
 		}//end of if integer
-			
+//========================ISSUNK		
+		public static int isSunk(int board[][][], int i, int j, int ship, int length){
+			if((j+1) < 10){
+				if(board[i][j+1][0] == board[i][j][0]){
+					for(int k=(j+1); k < 10; k++){
+						if(board[i][k][0] == board[i][j][0]){
+							length++;
+						}
+					}//end of for to the right
+				}
+			}	
+			if((j-1) > 0){	
+				if(board[i][j-1][0] == board[i][j][0]){
+					for(int k=(j-1); k > 10; k--){
+						if(board[i][k][0] == board[i][j][0]){
+							length++;
+						}
+					}//end of for to the right
+				}	
+			}//end of horizontal check
+			if(length > 1 && length != ship){
+				return -1;
+			}
+			else if(length == ship){
+				return ship;
+			}
+			if((i+1) < 10){
+				if(board[i+1][j][0] == board[i][j][0]){
+					for(int k=(i+1); k < 10; k++){
+						if(board[k][j][0] == board[i][j][0]){
+							length++;
+						}
+					}//end of for to the right
+				}
+			}	
+			if((i-1) < 10){	
+				if(board[i-1][j][0] == board[i][j][0]){
+					for(int k=(j-1); k > 10; k--){
+						if(board[k][j][0] == board[i][j][0]){
+							length++;
+						}
+					}//end of for to the right
+				}	
+			}//end of horizontal check
+			if(length > 1 && length != ship){
+				return -1;
+			}
+			else if(length == ship){
+				return ship;
+			}
+			return 0;
+		}//end of BFS	
 //===================================MAIN		
 		public static void main(String args[]){
 			
@@ -161,8 +237,8 @@ import javax.swing.JTextField;
 			Scanner keyboard = new Scanner(System.in);
 			FileReader fr;
 			BufferedReader br = null;
-			board = new int[10][10][1]; 
-			playerList = new Player[11];
+			board = new int[10][10][2]; 
+			playerList = new Vector<Player>();
 			int ship2Count = 2, ship3Count = 1, ship4Count = 1, ship5Count = 1;
 			boolean validBoard = false;
 			JLabel tempLabel;
@@ -170,9 +246,8 @@ import javax.swing.JTextField;
 			Player temp_player;
 			for(int i=0; i<10; i++){
 				temp_player = new Player();
-				playerList[i] = temp_player;
+				playerList.add(temp_player);
 			}
-			
 	//=============================READING FILENAME
 			while(!accept_input){
 				System.out.print("Input filename: ");
@@ -219,8 +294,8 @@ import javax.swing.JTextField;
 													if(isInteger(temp_str)){
 														temp_player.setScore(Integer.parseInt(temp_str));
 														System.out.println("===================players score: "+temp_player.getScore());
-														playerList[i] = temp_player;
-														highscores[i].setText((i+1)+".     "+playerList[i].getName() + " - "+playerList[i].getScore());
+														playerList.set(i, temp_player);
+														highscores[i].setText((i+1)+".     "+playerList.get(i).getName() + " - "+playerList.get(i).getScore());
 													}
 													else{
 														System.out.println("Invalid input in file, found token but not integer");
@@ -244,7 +319,7 @@ import javax.swing.JTextField;
 										}
 									}//end of if theres a name
 									else{
-										highscores[i].setText((i+1)+".     "+playerList[i].getName());
+										highscores[i].setText((i+1)+".     "+playerList.get(i).getName());
 									}//end of else theres no name
 								}//end of if correct integer
 								else{
@@ -260,7 +335,14 @@ import javax.swing.JTextField;
 								System.exit(0);
 							}//end of else
 						}//end of for
+//===============================================PRINT HIGH SCORES
+						//playerList = orderHighScores(playerList);
+						System.out.println("checking playerlist if ordered");
+						for(int i=0; i < playerList.size(); i++){
+							System.out.println(playerList.get(i).getScore());
+						}
 					}//end of reading high scores
+//===============================================END OF READING HIGH SCORES					
 					else{
 						if(input.length() != 10){
 							System.out.println("Length of field should be 10, found: "+input.length());
@@ -270,27 +352,27 @@ import javax.swing.JTextField;
 						}//end of if length of field is wrong
 						else{
 							for(int i = 0; i < 10; i++){	
-								System.out.println("looking at: " + input.charAt(i));
+								//System.out.println("looking at: " + input.charAt(i));
 								switch(input.charAt(i)){
 									case 'X':
-										System.out.println("assigning 0 for X");
+										//System.out.println("assigning 0 for X");
 										board[field_row][i][0] = 0;
 										break;
 									case 'A':
 										board[field_row][i][0] = 5;
-										System.out.println("assigning 5 for A");
+										//System.out.println("assigning 5 for A");
 										break;
 									case 'B':
 										board[field_row][i][0] = 4;
-										System.out.println("assigning 4 for B");
+										//System.out.println("assigning 4 for B");
 										break;
 									case 'C':
 										board[field_row][i][0] = 3;
-										System.out.println("assigning 3 for C");
+										//System.out.println("assigning 3 for C");
 											break;
 									case 'D':
 										board[field_row][i][0] = 2;
-										System.out.println("assigning 2 for D");
+										//System.out.println("assigning 2 for D");
 										break;
 									default:
 										System.out.println("Found invalid input: " + input.charAt(i));
@@ -318,31 +400,6 @@ import javax.swing.JTextField;
 				System.out.println();
 			}//end of outer for
 //====================================CHECKING FOR VALID BOARD			
-			//boolean visited[][] = new boolean[10][10];
-//			switch(BFS(board, visited, 0, 0, 0, 0)){
-//				case -1:
-//					break;
-//				case 2:
-//					ship2Count--;
-//					break;
-//				case 3:
-//					ship3Count--;
-//					break;
-//				case 4:
-//					ship4Count--;
-//					break;
-//				case 5:
-//					ship5Count--;
-//					break;
-//			}//end of checking ships
-//			if(ship2Count == 0 && ship3Count == 0 && ship4Count == 0 && ship5Count == 0){
-//				validBoard = true;
-//				System.out.println("Valid board");
-//			}//end of check
-//			else{
-//				System.out.println("not valid board");
-//			}
-//==============================================END OF BOARD CHECK	
 			for(int i=0; i < 10; i++){
 				for(int j=0; j < 10; j++){
 					if(board[i][j][0] != 0 && !visited[i][j]){
@@ -384,104 +441,66 @@ import javax.swing.JTextField;
 		}//end of main
 //===============================================METHODS		
 		public static int BFS(int board[][][], int i, int j, int ship, int length){
-			System.out.println("ship: " + ship);
-			System.out.println("length: " + length);
+			//System.out.println("ship: " + ship);
+			//System.out.println("length: " + length);
 			if(ship == length){
-				System.out.println("=============found valid ship: "+ship);
+				//System.out.println("=============found valid ship: "+ship);
 				return ship;
 			}
 			if((j+1) < 10){
-				System.out.println("in j bounds");
+				//System.out.println("in j bounds");
 				if(board[i][j+1][0] == ship && !visited[i][j+1]){
-					System.out.println("found ship to right");
+					//System.out.println("found ship to right");
 					visited[i][j+1] = true;
 					return BFS(board, i, (j+1), ship, ++length);
 					//return -1;
 				}
 			}//end of if in bounds to right	
 			if((i+1) < 10){
-				System.out.println("in i bounds");
+				//System.out.println("in i bounds");
 				if(board[i+1][j][0] == ship && !visited[i+1][j]){
-					System.out.println("found ship to down");
+					//System.out.println("found ship to down");
 					visited[i+1][j] = true;
 					return BFS(board, (i+1), j, ship, ++length);
 					//return -1;
 				}
 			}//end of if in bounds to down
 			return 0;
-		}
-//===================================================BFS
-//		public static int BFS(int board[][][], boolean visited[][], int i, int j, int ship, int length){
-//			
-//			if(i > 9 || j > 9){
-//				return -1;
-//			}//end of if out of bounds
-//			if(visited[i][j]){
-//				//System.out.println("["+i+"]["+j+"]");
-//				return -1;
-//			}//end of if not visited
-//			else{	
-//				visited[i][j] = true;
-//			}
-//			
-//			switch(board[i][j][0]){
-//				case 0:
-//					System.out.println("found water");
-//					System.out.println("["+i+"]["+j+"]");
-//					if((j+1) <= 9){
-//						return BFS(board, visited, i, j+1, 0, 0);
-//					}
-//					else{
-//						j = 0;
-//						i++;
-//						return BFS(board, visited, i, j, 0, 0);
-//					}
-//				case 2:
-//					length++;
-//					System.out.println("Ship2, Length: "+length);
-//					System.out.println("["+i+"]["+j+"]");
-//					BFS(board, visited, i+1, j, 2, length);
-//					BFS(board, visited, i, j+1, 2, length);
-//					if(ship == 2 && length == 2){
-//						System.out.println("=======Found Ship 2");
-//						return 2;
-//					}
-//					break;
-//				case 3:	
-//					length++;
-//					System.out.println("Ship3, Length: "+length);
-//					System.out.println("["+i+"]["+j+"]");
-//					BFS(board, visited, i+1, j, 3, length);
-//					BFS(board, visited, i, j+1, 3, length);
-//					if(ship == 3 && length == 3){
-//						System.out.println("=======Found Ship 3");
-//						return 3;
-//					}	
-//					break;
-//				case 4:
-//					length++;
-//					System.out.println("Ship4, Length: "+length);
-//					System.out.println("["+i+"]["+j+"]");
-//					BFS(board, visited, i+1, j, 4, length);
-//					BFS(board, visited, i, j+1, 4, length);
-//					if(ship == 4 && length == 4){
-//						System.out.println("======Found Ship 4");
-//						return 4;
-//					}	
-//					break;
-//				case 5:
-//					length++;
-//					System.out.println("Ship5, Length: "+length);
-//					System.out.println("["+i+"]["+j+"]");
-//					BFS(board, visited, i+1, j, 5, length);
-//					BFS(board, visited, i, j+1, 5, length);
-//					if(ship == 5 && length == 5){
-//						System.out.println("=======Found Ship 5");
-//						return 5;
-//					}	
-//					break;
-//			}//end of switch		
-//			
-//			return -1;
-//		}//end of BFS
+		}//end of BFS
+		
+		public static Vector<Player> orderHighScores(Vector<Player> playerList){
+			Vector<Player> sortedList = new Vector<Player>();
+			boolean boolarry[] = new boolean[playerList.size()];
+			Player tempPlayer = playerList.get(0);
+			int maxIndex = 0;
+			System.out.println("checking playerlist from method");
+			for(int i=0; i < playerList.size(); i++){
+				boolarry[i] = false;
+			}
+			int n = playerList.size();
+			for(int i=0; i< n; i++){
+				for(int k=0; k < n;k++){
+					if(!boolarry[k]){
+						maxIndex = k;
+						tempPlayer = playerList.get(k);
+						k = n+1;
+					}
+				}
+				for(int j=0; j < n; j++){
+					//System.out.println("looking at score: "+playerList.get(j).getScore());
+					if(playerList.get(j).getScore() > tempPlayer.getScore() && !boolarry[j]){
+						maxIndex = j;
+						tempPlayer = new Player(playerList.get(j).getName());
+						tempPlayer.setScore(playerList.get(j).getScore());
+						boolarry[j] = true;
+						System.out.println("new tempPlayer max: "+tempPlayer.getScore());
+
+					}//end of if bigger
+				}//end of inner for
+				//System.out.println("new tempPlayer max: "+tempPlayer.getScore());
+				sortedList.add(tempPlayer);
+			}//end of outer for
+			return sortedList;
+		}//end of ordering high scores list 
+		
 }//end of class
