@@ -8,6 +8,11 @@ public class Player {
 		this.player_name = player_name;
 	}//end of constructor
 	
+	public Player(String player_name, int score){
+		this.player_name = player_name;
+		this.score = score;
+	}//end of constructor
+	
 	public Player(){
 		player_name = "";
 		score = -1;

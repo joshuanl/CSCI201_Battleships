@@ -27,10 +27,11 @@ import javax.swing.JTextField;
 		private JLabel spaces[][] = new JLabel[11][11];
 		protected static JLabel highscores[] = new JLabel[10];
 		private char xAxis[] = new char[] {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', ' '};
-		private JTextField jtf;
+		private static JTextField jtf;
 		private JLabel inputResultLabel;
 		private JLabel scoreCountLabel;
-		private int scoreCount;
+		private static int scoreCount;
+		private int shipAalive = 1, shipBalive = 1,shipCalive = 1, shipDalive = 2;
 		protected static int board[][][];
 		protected static boolean visited[][];
 		protected static Vector<Player> playerList;
@@ -95,18 +96,22 @@ import javax.swing.JTextField;
 								case 2:
 									jtf.setText("You sunk a Destroyer!");
 									inputResultLabel.setText("HIT!");
+									shipDalive--;
 								break;
 								case 3:
 									jtf.setText("You sunk a Cruiser!");
 									inputResultLabel.setText("HIT!");
+									shipCalive--;
 								break;
 								case 4:
 									jtf.setText("You sunk a Battleship!");
 									inputResultLabel.setText("HIT!");
+									shipBalive--;
 								break;
 								case 5:
-									jtf.setText("You sunk a Aircraft Carrier!");
+									jtf.setText("You sunk an Aircraft Carrier!");
 									inputResultLabel.setText("HIT!");
+									shipAalive--;
 								break;
 							}//end of switch
 						}
@@ -174,6 +179,31 @@ import javax.swing.JTextField;
 		    // only got here if we didn't return false
 		    return true;
 		}//end of if integer
+		public static void printScores(){
+			for(int i=0; i<10; i++){
+				if(playerList.get(i).getScore() == -1){
+					highscores[i].setText((i+1)+".     ");
+				}
+				else{
+					highscores[i].setText((i+1)+".     "+playerList.get(i).getName() + " - " + playerList.get(i).getScore());
+				}	
+			}//end of for
+		}//end of printing highscores
+		
+		public static void endGame(){
+			jtf.setText("Game is finished please enter name");
+			jtf.addActionListener(new ActionListener(){
+				//anonymous inner class
+				public void actionPerformed(ActionEvent ae){
+					String player_name = jtf.getText();
+					int highscore = scoreCount;
+					Player newPlayer = new Player(player_name, highscore);
+					playerList.addElement(newPlayer);
+				}
+			});//end of adding listener	
+			System.exit(0);
+		}//end of end game
+		
 //========================ISSUNK		
 		public static int isSunk(int board[][][], int i, int j, int ship, int length){
 			if((j+1) < 10){
@@ -341,6 +371,7 @@ import javax.swing.JTextField;
 						for(int i=0; i < playerList.size(); i++){
 							System.out.println(playerList.get(i).getScore());
 						}
+						printScores();
 					}//end of reading high scores
 //===============================================END OF READING HIGH SCORES					
 					else{
