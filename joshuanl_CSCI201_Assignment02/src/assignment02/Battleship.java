@@ -366,12 +366,12 @@ import javax.swing.JTextField;
 							}//end of else
 						}//end of for
 //===============================================PRINT HIGH SCORES
-						//playerList = orderHighScores(playerList);
-						System.out.println("checking playerlist if ordered");
-						for(int i=0; i < playerList.size(); i++){
-							System.out.println(playerList.get(i).getScore());
-						}
-						printScores();
+//						playerList = orderHighScores(playerList);
+//						System.out.println("checking playerlist if ordered");
+//						for(int i=0; i < playerList.size(); i++){
+//							System.out.println(playerList.get(i).getScore());
+//						}
+//						printScores();
 					}//end of reading high scores
 //===============================================END OF READING HIGH SCORES					
 					else{
@@ -502,34 +502,27 @@ import javax.swing.JTextField;
 		public static Vector<Player> orderHighScores(Vector<Player> playerList){
 			Vector<Player> sortedList = new Vector<Player>();
 			boolean boolarry[] = new boolean[playerList.size()];
-			Player tempPlayer = playerList.get(0);
-			int maxIndex = 0;
-			System.out.println("checking playerlist from method");
+			
+			int maxScore = 0, maxScoreIndex =0;
 			for(int i=0; i < playerList.size(); i++){
-				boolarry[i] = false;
-			}
-			int n = playerList.size();
-			for(int i=0; i< n; i++){
-				for(int k=0; k < n;k++){
+				for(int k=0; k < playerList.size(); k++){
 					if(!boolarry[k]){
-						maxIndex = k;
-						tempPlayer = playerList.get(k);
-						k = n+1;
+						
+						maxScore = playerList.get(k).getScore();
+						System.out.println("setting maxscore: "+maxScore);
+						maxScoreIndex = k;
+						k = playerList.size()+1;
 					}
 				}
-				for(int j=0; j < n; j++){
-					//System.out.println("looking at score: "+playerList.get(j).getScore());
-					if(playerList.get(j).getScore() > tempPlayer.getScore() && !boolarry[j]){
-						maxIndex = j;
-						tempPlayer = new Player(playerList.get(j).getName());
-						tempPlayer.setScore(playerList.get(j).getScore());
-						boolarry[j] = true;
-						System.out.println("new tempPlayer max: "+tempPlayer.getScore());
-
-					}//end of if bigger
+				for(int j=0; j < playerList.size(); j++){
+					if(playerList.get(j).getScore() > maxScore){
+						maxScore = playerList.get(j).getScore();
+						maxScoreIndex = j;
+					}
 				}//end of inner for
-				//System.out.println("new tempPlayer max: "+tempPlayer.getScore());
-				sortedList.add(tempPlayer);
+				boolarry[maxScoreIndex] = true;
+				sortedList.add(playerList.get(maxScoreIndex));
+				maxScore = 0;
 			}//end of outer for
 			return sortedList;
 		}//end of ordering high scores list 
