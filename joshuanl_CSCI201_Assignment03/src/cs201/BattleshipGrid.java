@@ -32,11 +32,11 @@ public class BattleshipGrid extends JPanel {
 	private boolean editMode;
 	private ArrayList<Battleship> compShips;
 	private ArrayList<Battleship> ship2;
-	private static int placementGird[][];
+	private static int placementGrid[][];
 	
 	BattleshipGrid() {
 		setLayout(new BorderLayout());
-		placementGird = new int[10][10];
+		placementGrid = new int[10][10];
 		JPanel jp1 = new JPanel();
 		JPanel jp2 = new JPanel();
 		JPanel jpCase = new JPanel();
@@ -53,6 +53,8 @@ public class BattleshipGrid extends JPanel {
 			for(int j = 0; j < 10; j++) {
 				temp_button = new JButton("?");
 				temp_button.setPreferredSize(new Dimension(50, 50));
+				PlaceShipsAdapter psa = new PlaceShipsAdapter(i, j);
+				temp_button.addActionListener(psa);
 				buttonGrid1[j][i] = temp_button;
 				jp1.add(buttonGrid1[j][i]);
 			}// end of inner for 
@@ -107,8 +109,8 @@ public class BattleshipGrid extends JPanel {
 			startY = y;
 		}
 		public void actionPerformed(ActionEvent e) {
-			
-			
+			PlaceShipWindow psw = new PlaceShipWindow("AirCraft Carrier", placementGrid, 2, 3, 1, 1, 1, 2);
+			char tag = psw.showScreen();
 		}//end of action performed	
 	}//end of PlaceShipsAdapter
 	
