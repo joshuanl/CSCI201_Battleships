@@ -2,32 +2,45 @@ package cs201;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 @SuppressWarnings("serial")
 public class BattleshipGrid extends JPanel {
 	private JButton buttonGrid1[][];
 	//private JButton buttonGrad1[][];
 	private JButton buttonGrid2[][];
-	private JLabel logLabel;
 	private JLabel openedFileLabel;
+	private JLabel playerName = new JLabel();
+	private JLabel computerName = new JLabel();
 	private JButton openFileButton;
 	private JButton startButton;
+	private JTextArea console;
 	private String spacer = "                      ";
 	private boolean editMode;
 	private ArrayList<Battleship> compShips;
@@ -47,12 +60,27 @@ public class BattleshipGrid extends JPanel {
 		buttonGrid2 = new JButton[10][10];
 		compShips = new ArrayList<Battleship>();
 		JButton temp_button;
+//====================================================================SET NORTH LABELS
+		playerName.setText("Player");
+		computerName.setText("Computer");
+		JPanel northPanel = new JPanel();
+		northPanel.setLayout(new GridLayout(1,2));
+		JPanel playerNamePanel = new JPanel();
+		playerNamePanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+		JPanel computerNamePanel = new JPanel();
+		computerNamePanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+		playerNamePanel.add(playerName);
+		computerNamePanel.add(computerName);
 		
+		northPanel.add(playerNamePanel);
+		northPanel.add(computerNamePanel);
+		add(northPanel, BorderLayout.NORTH);
+//==================================================================== CREATE BOARD		
 		for(int i = 0; i < 10; i++) {
 			jp1.add(new JLabel(Character.toString((char)(0x41+i)), SwingConstants.CENTER));//0x41 is 'A' increment by i to go down the alphabet
 			for(int j = 0; j < 10; j++) {
 				temp_button = new JButton("?");
-				temp_button.setPreferredSize(new Dimension(50, 50));
+				temp_button.setPreferredSize(new Dimension(45, 45));
 				PlaceShipsAdapter psa = new PlaceShipsAdapter(i, j);
 				temp_button.addActionListener(psa);
 				buttonGrid1[j][i] = temp_button;
@@ -71,7 +99,7 @@ public class BattleshipGrid extends JPanel {
 			jp2.add(new JLabel(Character.toString((char)(0x41+i)), SwingConstants.CENTER));//0x41 is 'A' increment by i to go down the alphabet
 			for(int j = 0; j < 10; j++) {
 				temp_button = new JButton("?");
-				temp_button.setPreferredSize(new Dimension(50, 50));
+				temp_button.setPreferredSize(new Dimension(45, 45));
 				buttonGrid2[j][i] = temp_button;
 				jp2.add(buttonGrid2[j][i]);
 			}// end of inner for 
@@ -86,18 +114,55 @@ public class BattleshipGrid extends JPanel {
 		jpCase.add(jp1);
 		jpCase.add(jp2);
 		add(jpCase, BorderLayout.CENTER);
-//==================================================================================== creating bottom panel		
-		jpbottom.setLayout(new BoxLayout(jpbottom, BoxLayout.X_AXIS));
+//==================================================================================== creating bottom panel
+		JPanel bottomA = new JPanel();	
+		JPanel logPanel = new JPanel();
+		JPanel consolePanel = new JPanel();
+		consolePanel.setLayout(new BoxLayout(consolePanel, BoxLayout.X_AXIS));
+		logPanel.setLayout(new BoxLayout(logPanel, BoxLayout.X_AXIS));
+		bottomA.setLayout(new FlowLayout(FlowLayout.LEFT));
+		jpbottom.setLayout(new BoxLayout(jpbottom, BoxLayout.Y_AXIS));
 		editMode = true;
-		logLabel = new JLabel(spacer+"Log:   You are in edit mode.  Click button to place ships"+spacer);
-		jpbottom.add(logLabel);
+		console = new JTextArea(3,50);
+		JScrollPane scroll = new JScrollPane(console, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		console.setLineWrap(true);
+		console.setWrapStyleWord(true);
+		consolePanel.add(scroll);
+		consolePanel.add(Box.createGlue());
+		bottomA.add(consolePanel);
+		console.setText("You are in edit mode.  Click button on Player's Grid to place ships\n");
+		JLabel logLabel = new JLabel("   Log");
+		logPanel.add(logLabel);
+		logPanel.add(Box.createGlue());
 		openFileButton = new JButton("Load File");
-		jpbottom.add(openFileButton);
+		bottomA.add(openFileButton);
 		openedFileLabel = new JLabel("File:"+spacer);
-		jpbottom.add(openedFileLabel);
+		bottomA.add(openedFileLabel);
 		startButton = new JButton("START");
-		jpbottom.add(startButton);
+		bottomA.add(startButton);
 		
+		openFileButton.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				JFileChooser fileChooser = new JFileChooser();
+				FileFilter filter = new FileNameExtensionFilter(".battle",".txt");
+				fileChooser.setFileFilter(filter);
+				FileReader fr = null;
+				BufferedReader br = null;
+				System.out.println("in here");
+		        int returnValue = fileChooser.showOpenDialog(null);
+		        if (returnValue == JFileChooser.APPROVE_OPTION) {
+		        	File selectedFile = fileChooser.getSelectedFile();
+		        	if(selectedFile.getPath().contains(".battle")){
+		        		System.out.println(selectedFile.getPath());
+		        		loadMap(selectedFile.getPath());
+		        	}
+		        }//end of if
+			}
+		});
+		jpbottom.add(logPanel);
+		jpbottom.add(bottomA);
+		//logPanel.add(console);
+		//jpbottom.add(logPanel);
 		add(jpbottom, BorderLayout.SOUTH);
 		
 	}//=================================================================================end of constructor

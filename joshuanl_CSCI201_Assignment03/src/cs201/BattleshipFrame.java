@@ -10,7 +10,7 @@ public class BattleshipFrame extends JFrame{
 		
 		add(bsg);
 		
-		setSize(1200,625);
+		setSize(1100,650);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
 		setVisible(true);
