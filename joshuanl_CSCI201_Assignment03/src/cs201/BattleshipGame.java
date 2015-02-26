@@ -16,7 +16,7 @@ public class BattleshipGame {
 	public static void main(String[] args) {
 		
 		BattleshipGame bsgm = new BattleshipGame();
-		bsgm.readFile();
+		//bsgm.readFile();
 		bsgm.playGame();
 		System.exit(0);
 	}
@@ -26,7 +26,7 @@ public class BattleshipGame {
 		int turn = 1;
 		scan.useDelimiter(System.getProperty("line.separator"));
 		do{
-			System.out.print("Turn "+turn+" - Please enter a Coordinate:");
+			//System.out.print("Turn "+turn+" - Please enter a Coordinate:");
 			if(bsg.hitCoord(scan.nextLine())) turn++;
 			isOver = (bsg.getNumSunk()==5);
 		}while(!isOver);

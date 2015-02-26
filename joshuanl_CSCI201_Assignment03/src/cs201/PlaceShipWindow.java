@@ -2,6 +2,8 @@ package cs201;
 
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Vector;
 
 import javax.swing.BoxLayout;
@@ -20,6 +22,10 @@ import javax.swing.JRadioButton;
 public class PlaceShipWindow extends JFrame{
 	public static final long serializationUID = 1;
 	private static JFrame windowFrame;	
+	private int grid[][];
+	private int startX;
+	private int startY;
+	private JButton placeShipButton;
 	public PlaceShipWindow(String title, int placementGrid[][], int startX, int startY, int numOf_AC, 
 							int numOf_BS, int numOf_C, int numOf_D){
 		super(title);
@@ -27,6 +33,10 @@ public class PlaceShipWindow extends JFrame{
 		setSize(275,150);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
+		
+		grid = placementGrid;
+		this.startX = startX;
+		this.startY = startY;
 		
 		JPanel jp1 = new JPanel();
 		jp1.setLayout(new BoxLayout(jp1, BoxLayout.X_AXIS));
@@ -76,19 +86,21 @@ public class PlaceShipWindow extends JFrame{
 		add(jp3);
 		
 		JPanel bottomPanel = new JPanel();
-		JButton placeShipButton = new JButton("Place Ship");
+		placeShipButton = new JButton("Place Ship");
 		bottomPanel.add(placeShipButton);
-		add(bottomPanel);
-		
+
+		add(bottomPanel);		
 		
 		//setVisible(true);
 		windowFrame = this;
 		//windowFrame.setVisible(true);
 	}//end of constructor 
+	
 	//public Battleship(char tag, Point startPoint, Point endPoint)
 	public char showScreen(){
 		char tag = 'A';
 		windowFrame.setVisible(true);
+		
 		return tag;
 	}//end of 
 }//end of class

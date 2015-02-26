@@ -16,14 +16,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Vector;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
@@ -44,10 +49,19 @@ public class BattleshipGrid extends JPanel {
 	private String spacer = "                      ";
 	private boolean editMode;
 	private ArrayList<Battleship> compShips;
-	private ArrayList<Battleship> ship2;
+	private ArrayList<Battleship> playerShips;
+	private int numOf_AC;
+	private int numOf_BS;
+	private int numOf_C;
+	private int numOf_D;
 	private static int placementGrid[][];
 	
 	BattleshipGrid() {
+		numOf_AC = 1;
+		numOf_BS = 1;
+		numOf_C = 1;
+		numOf_D = 2;
+		
 		setLayout(new BorderLayout());
 		placementGrid = new int[10][10];
 		JPanel jp1 = new JPanel();
@@ -63,6 +77,7 @@ public class BattleshipGrid extends JPanel {
 		buttonGrid1 = new JButton[10][10];
 		buttonGrid2 = new JButton[10][10];
 		compShips = new ArrayList<Battleship>();
+		playerShips = new ArrayList<Battleship>();
 		JButton temp_button;
 //====================================================================SET NORTH LABELS
 		playerName.setText("Player");
@@ -90,8 +105,8 @@ public class BattleshipGrid extends JPanel {
 				temp_button.setPreferredSize(new Dimension(45, 45));
 				PlaceShipsAdapter psa = new PlaceShipsAdapter(i, j);
 				temp_button.addActionListener(psa);
-				buttonGrid1[j][i] = temp_button;
-				jp1.add(buttonGrid1[j][i]);
+				buttonGrid1[i][j] = temp_button;
+				jp1.add(buttonGrid1[i][j]);
 			}// end of inner for 
 		}//end of outer for
 		
@@ -107,8 +122,8 @@ public class BattleshipGrid extends JPanel {
 			for(int j = 0; j < 10; j++) {
 				temp_button = new JButton("?");
 				temp_button.setPreferredSize(new Dimension(45, 45));
-				buttonGrid2[j][i] = temp_button;
-				jp2.add(buttonGrid2[j][i]);
+				buttonGrid2[i][j] = temp_button;
+				jp2.add(buttonGrid2[i][j]);
 			}// end of inner for 
 		}//end of outer for
 		
@@ -157,8 +172,6 @@ public class BattleshipGrid extends JPanel {
 				JFileChooser fileChooser = new JFileChooser();
 				FileFilter filter = new FileNameExtensionFilter(".battle","battle");
 				fileChooser.setFileFilter(filter);
-				FileReader fr = null;
-				BufferedReader br = null;
 				System.out.println("in here");
 		        int returnValue = fileChooser.showOpenDialog(null);
 		        if (returnValue == JFileChooser.APPROVE_OPTION) {
@@ -179,16 +192,257 @@ public class BattleshipGrid extends JPanel {
 	}//=================================================================================end of constructor
 	
 	class PlaceShipsAdapter implements ActionListener{
-		int startX; int startY;
+		private int startX; private int startY;
+		private int orientation;
+		private ButtonGroup jbg;
+		private JButton placeShipButton;
 		PlaceShipsAdapter(int x, int y){
 			startX = x;
 			startY = y;
 		}
 		public void actionPerformed(ActionEvent e) {
-			PlaceShipWindow psw = new PlaceShipWindow("AirCraft Carrier", placementGrid, 2, 3, 1, 1, 1, 2);
-			char tag = psw.showScreen();
+			System.out.println("x: "+startX);
+			System.out.println("y: "+startY);
+			JFrame PSW = new JFrame();
+			PSW.setTitle("Place Ship");
+			PSW.setLocation(300,300);
+			PSW.setSize(275,150);
+			//PSW.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			PSW.getContentPane().setLayout(new BoxLayout(PSW.getContentPane(), BoxLayout.Y_AXIS));
+		
+			
+			JPanel jp1 = new JPanel();
+			jp1.setLayout(new BoxLayout(jp1, BoxLayout.X_AXIS));
+			JLabel jl = new JLabel("Select Ship   ");
+			jp1.add(jl);
+			Vector<String> listofships = new Vector<String>();
+			listofships.add("Select Ship");
+			for(int i=0; i < numOf_AC; i++){
+				listofships.add("Aircraft Carrier");
+			}//end of for
+			for(int i=0; i < numOf_BS; i++){
+				listofships.add("Battleship");
+			}//end of for
+			for(int i=0; i < numOf_C; i++){
+				listofships.add("Cruiser");
+			}//end of for
+			for(int i=0; i < numOf_D; i++){
+				listofships.add("Destroyer");
+			}//end of for
+			JComboBox<String> jcb = new JComboBox<String>(listofships);
+			jcb.setPreferredSize(new Dimension(10,10));
+			jp1.add(jcb);
+			PSW.add(jp1);
+			
+			jbg = new ButtonGroup();
+			JRadioButton northRB = new JRadioButton("Face North");
+			northRB.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent ae){
+					placeShipButton.setEnabled(true);
+					orientation = 1;
+				}
+			});
+			JRadioButton eastRB = new JRadioButton("Face East");
+			eastRB.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent ae){
+					placeShipButton.setEnabled(true);
+					orientation = 2;
+				}
+			});
+			JRadioButton southRB = new JRadioButton("Face South");
+			southRB.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent ae){
+					placeShipButton.setEnabled(true);
+					orientation = 3;
+				}
+			});
+			JRadioButton westRB = new JRadioButton("Face West");
+			westRB.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent ae){
+					placeShipButton.setEnabled(true);
+					orientation = 4;
+				}
+			});
+			jbg.add(northRB);
+			jbg.add(eastRB);
+			jbg.add(southRB);
+			jbg.add(westRB);
+			
+			JPanel jp2 = new JPanel();
+			jp2.setLayout(new BoxLayout(jp2, BoxLayout.X_AXIS));
+			jp2.add(northRB);
+			jp2.add(eastRB);
+			PSW.add(jp2);
+			
+			JPanel jp3 = new JPanel();
+			jp3.setLayout(new BoxLayout(jp3, BoxLayout.X_AXIS));
+			jp3.add(southRB);
+			jp3.add(westRB);
+			PSW.add(jp3);
+			
+			
+			JPanel bottomPanel = new JPanel();
+			placeShipButton = new JButton("Place Ship");
+			placeShipButton.setEnabled(false);
+			placeShipButton.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent ae){
+					int index = 0;
+					if(jcb.getSelectedItem().toString() == "Aircraft Carrier"){
+						index = 1;
+					}
+					else if(jcb.getSelectedItem().toString() == "Battleship"){
+						index = 2;
+					}
+					else if(jcb.getSelectedItem().toString() == "Cruiser"){
+						index = 3;
+					}
+					else if(jcb.getSelectedItem().toString() == "Destroyer"){
+						index = 4;
+					}
+					if(index == 0){
+						System.out.println("no ship selected");
+						return;
+					}
+					if(validPlace(startX, startY, index, orientation)){
+						Point startPoint = new Point(startX, startY);
+						Point endPoint = null;
+						char tag = 'F';
+						switch(index){
+							case 1:
+								endPoint = new Point(startX, startY+index);
+								tag = 'A';
+								numOf_AC--;
+								break;
+							case 2:
+								endPoint = new Point(startX, startY+index);
+								tag = 'B';
+								numOf_BS--;
+								break;
+							case 3:
+								endPoint = new Point(startX, startY+index);
+								tag = 'C';
+								numOf_C--;
+								break;
+							case 4:
+								endPoint = new Point(startX, startY+index);
+								tag = 'D';
+								numOf_D--;
+								break;
+						}//end of switch
+						playerShips.add(new Battleship(tag, startPoint, endPoint));
+					}//end of if
+					PSW.dispose();
+				}//end of button listener
+			});
+			bottomPanel.add(placeShipButton);
+			
+			PSW.add(bottomPanel);	
+			PSW.setVisible(true);
 		}//end of action performed	
 	}//end of PlaceShipsAdapter
+	
+	public boolean validPlace(int startX, int startY, int shipNum, int orientation){
+		int grid[][] = placementGrid;
+		int length = 6-shipNum;
+		System.out.println("shiplength: " + length);
+		System.out.println("getting x: "+startX);
+		System.out.println("getting y: "+startY);
+		switch(orientation){
+			case 1:			//face north
+				for(int i=0; i < length; i++){
+					if(startX > 9){
+						return false;
+					}
+					if(grid[startX][startY] != 0){
+						return false;
+					}
+					grid[startX][startY] = length;
+					startX++;
+				}//end of for
+				startX -= (length);
+				break;
+			case 2:			//face east
+				for(int i=0; i < length; i++){
+					if(startY < 0){
+						return false;
+					}
+					if(grid[startX][startY] != 0){
+						return false;
+					}
+					grid[startX][startY] = length;
+					startY--;
+				}//end of for
+				startY += (length);
+				break;
+			case 3:			//face south
+				for(int i=0; i < length; i++){
+					if(startX < 0){
+						return false;
+					}
+					if(grid[startX][startY] != 0){
+						return false;
+					}
+					grid[startX][startY] = length;
+					startX--;
+				}//end of for
+				startX += (length);
+				break;
+			case 4:			//face west
+				for(int i=0; i < length; i++){
+					if(startY > 9){
+						return false;
+					}
+					if(grid[startX][startY] != 0){
+						return false;
+					}
+					grid[startX][startY] = length;
+					startY++;
+				}//end of for
+				startY -= (length);
+				break;
+		}//end of switch
+		
+		System.out.println("was able to place ship, returning true, resetting placementGrid");
+		System.out.println("getting x: "+startX);
+		System.out.println("getting y: "+startY);
+		placementGrid = grid;
+		//debug
+		for(int i=0; i < 10; i++){
+			for(int j=0; j < 10; j++){
+				System.out.print(grid[i][j]+ " ");
+			}
+			System.out.println();
+		}
+		//=================resetting buttons
+		switch(orientation){
+		case 1:			//face north
+			for(int i=0; i < length; i++){
+				System.out.println("in face north button test reset loop");
+				buttonGrid1[startX][startY].setText(""+length);
+				startX++;
+			}//end of for
+			break;
+		case 2:			//face east
+			for(int i=0; i < length; i++){
+				buttonGrid1[startX][startY].setText(""+length);
+				startY--;
+			}//end of for
+			break;
+		case 3:			//face south
+			for(int i=0; i < length; i++){
+				buttonGrid1[startX][startY].setText(""+length);
+				startX--;
+			}//end of for
+			break;
+		case 4:			//face west
+			for(int i=0; i < length; i++){
+				buttonGrid1[startX][startY].setText(""+length);
+				startY++;
+			}//end of for
+			break;
+	}//end of switch
+		return true;
+	}//end of valid placement method
 	
 	public int getNumSunk() {
 		int total = 0;
