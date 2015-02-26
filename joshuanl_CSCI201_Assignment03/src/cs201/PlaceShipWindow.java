@@ -13,6 +13,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
+
+//start and end point of ship and make a vector, then check for intersection 
+//add remove 
+
 public class PlaceShipWindow extends JFrame{
 	public static final long serializationUID = 1;
 	private static JFrame windowFrame;	
@@ -75,6 +79,7 @@ public class PlaceShipWindow extends JFrame{
 		JButton placeShipButton = new JButton("Place Ship");
 		bottomPanel.add(placeShipButton);
 		add(bottomPanel);
+		
 		
 		//setVisible(true);
 		windowFrame = this;

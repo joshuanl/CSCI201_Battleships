@@ -55,7 +55,11 @@ public class BattleshipGrid extends JPanel {
 		JPanel jpCase = new JPanel();
 		JPanel jpbottom = new JPanel();
 		jp1.setLayout(new GridLayout(11,11));
+		jp1.setOpaque(false);
 		jp2.setLayout(new GridLayout(11,11));
+		jp2.setOpaque(false);
+		jpCase.setOpaque(false);
+		jpbottom.setOpaque(false);
 		buttonGrid1 = new JButton[10][10];
 		buttonGrid2 = new JButton[10][10];
 		compShips = new ArrayList<Battleship>();
@@ -64,10 +68,13 @@ public class BattleshipGrid extends JPanel {
 		playerName.setText("Player");
 		computerName.setText("Computer");
 		JPanel northPanel = new JPanel();
+		northPanel.setOpaque(false);
 		northPanel.setLayout(new GridLayout(1,2));
 		JPanel playerNamePanel = new JPanel();
+		playerNamePanel.setOpaque(false);
 		playerNamePanel.setLayout(new FlowLayout(FlowLayout.CENTER));
 		JPanel computerNamePanel = new JPanel();
+		computerNamePanel.setOpaque(false);
 		computerNamePanel.setLayout(new FlowLayout(FlowLayout.CENTER));
 		playerNamePanel.add(playerName);
 		computerNamePanel.add(computerName);
@@ -119,9 +126,13 @@ public class BattleshipGrid extends JPanel {
 		JPanel logPanel = new JPanel();
 		JPanel consolePanel = new JPanel();
 		consolePanel.setLayout(new BoxLayout(consolePanel, BoxLayout.X_AXIS));
+		consolePanel.setOpaque(false);
 		logPanel.setLayout(new BoxLayout(logPanel, BoxLayout.X_AXIS));
+		logPanel.setOpaque(false);
 		bottomA.setLayout(new FlowLayout(FlowLayout.LEFT));
+		bottomA.setOpaque(false);
 		jpbottom.setLayout(new BoxLayout(jpbottom, BoxLayout.Y_AXIS));
+		jpbottom.setOpaque(false);
 		editMode = true;
 		console = new JTextArea(3,50);
 		JScrollPane scroll = new JScrollPane(console, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -140,11 +151,11 @@ public class BattleshipGrid extends JPanel {
 		bottomA.add(openedFileLabel);
 		startButton = new JButton("START");
 		bottomA.add(startButton);
-		
+//================================================================== FILE CHOOSER		
 		openFileButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
 				JFileChooser fileChooser = new JFileChooser();
-				FileFilter filter = new FileNameExtensionFilter(".battle",".txt");
+				FileFilter filter = new FileNameExtensionFilter(".battle","battle");
 				fileChooser.setFileFilter(filter);
 				FileReader fr = null;
 				BufferedReader br = null;
@@ -164,7 +175,7 @@ public class BattleshipGrid extends JPanel {
 		//logPanel.add(console);
 		//jpbottom.add(logPanel);
 		add(jpbottom, BorderLayout.SOUTH);
-		
+		setOpaque(false);
 	}//=================================================================================end of constructor
 	
 	class PlaceShipsAdapter implements ActionListener{
