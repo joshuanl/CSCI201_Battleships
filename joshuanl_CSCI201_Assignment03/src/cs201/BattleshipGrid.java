@@ -49,6 +49,7 @@ public class BattleshipGrid extends JPanel {
 	private JTextArea console;
 	private String spacer = "                      ";
 	private boolean editMode;
+	private boolean fileLoaded;
 	private ArrayList<Battleship> compShips;
 	private ArrayList<Battleship> playerShips;
 	private int numOf_AC;
@@ -62,6 +63,7 @@ public class BattleshipGrid extends JPanel {
 		numOf_BS = 1;
 		numOf_C = 1;
 		numOf_D = 2;
+		fileLoaded = false;
 		
 		setLayout(new BorderLayout());
 		placementGrid = new int[10][10];
@@ -149,7 +151,7 @@ public class BattleshipGrid extends JPanel {
 		bottomA.setOpaque(false);
 		jpbottom.setLayout(new BoxLayout(jpbottom, BoxLayout.Y_AXIS));
 		jpbottom.setOpaque(false);
-		editMode = true;
+		//editMode = true;
 		console = new JTextArea(3,50);
 		JScrollPane scroll = new JScrollPane(console, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		console.setLineWrap(true);
@@ -157,7 +159,10 @@ public class BattleshipGrid extends JPanel {
 		consolePanel.add(scroll);
 		consolePanel.add(Box.createGlue());
 		bottomA.add(consolePanel);
-		console.setText("You are in edit mode.  Click button on Player's Grid to place ships\n");
+		console.setText("You are in edit mode.  Click button on your grid to place your ships\n");
+		console.append("When you are finished placing your ships, load .battle file for the computer's grid\n");
+		console.append("After you've finished placing your ships and loading a .battle file, press Start to begin the game");
+		
 		JLabel logLabel = new JLabel("   Log");
 		logPanel.add(logLabel);
 		logPanel.add(Box.createGlue());
@@ -166,23 +171,37 @@ public class BattleshipGrid extends JPanel {
 		openedFileLabel = new JLabel("File:"+spacer);
 		bottomA.add(openedFileLabel);
 		startButton = new JButton("START");
+		startButton.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				System.out.println(numOf_AC + " " + numOf_BS+ " " +numOf_C+" " + numOf_D);
+				if(fileLoaded && numOf_AC == 0 && numOf_BS == 0 && numOf_C == 0 && numOf_D == 0){
+					playGame();
+				}
+			}
+		});
 		bottomA.add(startButton);
 //================================================================== FILE CHOOSER		
 		openFileButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
+				JFrame tempFrame = new JFrame();
 				JFileChooser fileChooser = new JFileChooser();
 				FileFilter filter = new FileNameExtensionFilter(".battle","battle");
 				fileChooser.setFileFilter(filter);
-				System.out.println("in here");
 		        int returnValue = fileChooser.showOpenDialog(null);
 		        if (returnValue == JFileChooser.APPROVE_OPTION) {
 		        	File selectedFile = fileChooser.getSelectedFile();
 		        	if(selectedFile.getPath().contains(".battle")){
 		        		System.out.println(selectedFile.getPath());
 		        		loadMap(selectedFile.getPath());
-		        	}
-		        }//end of if
-			}
+		        		console.append("\nLoaded File: "+selectedFile.getPath());
+		        		fileLoaded = true;
+		        	}//end of if
+		        	else{
+			        	JOptionPane.showMessageDialog(tempFrame, "Not a \".battle\" file");
+			        }//end of else not acceptable file
+		        }//end of if acceptable file
+		        
+			}//end of action performed
 		});
 		jpbottom.add(logPanel);
 		jpbottom.add(bottomA);
@@ -191,6 +210,11 @@ public class BattleshipGrid extends JPanel {
 		add(jpbottom, BorderLayout.SOUTH);
 		setOpaque(false);
 	}//=================================================================================end of constructor
+	
+	public void playGame(){
+		System.out.println("playing game");
+		
+	}//end of playgame
 	
 	class PlaceShipsAdapter implements ActionListener{
 		private int startX; private int startY;
