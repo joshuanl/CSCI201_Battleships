@@ -27,6 +27,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -203,11 +204,36 @@ public class BattleshipGrid extends JPanel {
 		public void actionPerformed(ActionEvent e) {
 			System.out.println("x: "+startX);
 			System.out.println("y: "+startY);
+			if(placementGrid[startX][startY] != 0){
+				String shipType = "";
+				JFrame tempFrame = new JFrame();
+				switch(placementGrid[startX][startY]){
+					case 5:
+						shipType = "Aircraft Carrier";
+						break;
+					case 4:
+						shipType = "Battleshipe";
+						break;
+					case 3:
+						shipType = "Cruiser";
+						break;
+					case 2:
+					case 1:
+						shipType = "Destroyer";
+						break;
+				}//end of switch
+				System.out.println("remove");
+				String msg = "Do you really want to delete this ship? \n\""+shipType+"\"";
+				int choice = JOptionPane.showConfirmDialog(tempFrame, msg, "Confirmation", JOptionPane.OK_CANCEL_OPTION);
+				if(choice == 0){
+					removeShip(startX, startY);
+				}
+				return;
+			}
 			JFrame PSW = new JFrame();
 			PSW.setTitle("Place Ship");
 			PSW.setLocation(300,300);
 			PSW.setSize(275,150);
-			//PSW.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			PSW.getContentPane().setLayout(new BoxLayout(PSW.getContentPane(), BoxLayout.Y_AXIS));
 		
 			
@@ -341,9 +367,44 @@ public class BattleshipGrid extends JPanel {
 		}//end of action performed	
 	}//end of PlaceShipsAdapter
 	
+	public void removeShip(int x, int y){
+		int target = placementGrid[x][y];
+		switch(target){
+			case 5:
+				numOf_AC++;
+				break;
+			case 4:
+				numOf_BS++;
+				break;
+			case 3:
+				numOf_C++;
+				break;
+			case 2: 
+				numOf_D++;
+				break;
+			case 1:
+				numOf_D++;
+				break;
+			
+		}//end of switch
+		for(int i=0; i < 10; i++){
+			for(int j=0; j < 10; j++){
+				if(placementGrid[i][j] == target){
+					placementGrid[i][j] = 0;
+					buttonGrid1[i][j].setText("?");
+				}//end of if
+			}//end of inner for
+		}//end of outer for
+	}//end of removing ship
+	
 	public boolean validPlace(int startX, int startY, int shipNum, int orientation){
 		int grid[][] = placementGrid;
 		int length = 6-shipNum;
+		int id = length;
+		System.out.println("numofD: "+numOf_D);
+		if(length == 2 && numOf_D == 1){
+			id = 1;
+		}
 		System.out.println("shiplength: " + length);
 		System.out.println("getting x: "+startX);
 		System.out.println("getting y: "+startY);
@@ -356,7 +417,7 @@ public class BattleshipGrid extends JPanel {
 					if(grid[startX][startY] != 0){
 						return false;
 					}
-					grid[startX][startY] = length;
+					grid[startX][startY] = id;
 					startX++;
 				}//end of for
 				startX -= (length);
@@ -369,7 +430,7 @@ public class BattleshipGrid extends JPanel {
 					if(grid[startX][startY] != 0){
 						return false;
 					}
-					grid[startX][startY] = length;
+					grid[startX][startY] = id;
 					startY--;
 				}//end of for
 				startY += (length);
@@ -382,7 +443,7 @@ public class BattleshipGrid extends JPanel {
 					if(grid[startX][startY] != 0){
 						return false;
 					}
-					grid[startX][startY] = length;
+					grid[startX][startY] = id;
 					startX--;
 				}//end of for
 				startX += (length);
@@ -395,7 +456,7 @@ public class BattleshipGrid extends JPanel {
 					if(grid[startX][startY] != 0){
 						return false;
 					}
-					grid[startX][startY] = length;
+					grid[startX][startY] = id;
 					startY++;
 				}//end of for
 				startY -= (length);
@@ -409,7 +470,7 @@ public class BattleshipGrid extends JPanel {
 		//debug
 		for(int i=0; i < 10; i++){
 			for(int j=0; j < 10; j++){
-				System.out.print(grid[i][j]+ " ");
+				System.out.print(placementGrid[i][j]+ " ");
 			}
 			System.out.println();
 		}
