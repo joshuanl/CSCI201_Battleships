@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.Vector;
 
@@ -215,7 +216,6 @@ public class BattleshipGrid extends JPanel {
 		setOpaque(false);
 	}//=================================================================================end of constructor
 	
-//======================================================
 //=========================================PLAY GAME
 //======================================================	
 	public void playGame(){
@@ -224,13 +224,9 @@ public class BattleshipGrid extends JPanel {
 		editMode = false;
 		enableGrid(false, buttonGrid1);
 		enableGrid(true, buttonGrid2);
-//===================== end of DISABLE/ENABLE		
-
-		
-//===================== 		
 	}//end of playgame
 //===============================================END OF PLAY GAME	
-	
+//=============================================== ATTACK SHIP LISTENER	
 	class AttackShipListener implements ActionListener{
 		private int coordX;
 		private int coordY;
@@ -244,9 +240,10 @@ public class BattleshipGrid extends JPanel {
 		public void actionPerformed(ActionEvent ae){
 			c = getLetter(coordY);
 			String temp = ""+c+coordX;
-			if(hitCoord(temp)){
-				//System.out.println("hit ship");
-				if(getNumSunk()==5){
+			if(hitCoord(temp, 2)){
+				//=============================================END OF GAME
+				//=============================================END OF GAME
+				if(getNumSunk(compShips)==5){
 					console.append("\nYou won!");
 					for(int i = 0; i < 10; i++) {
 						for(int j = 0; j < 10; j++) {
@@ -255,9 +252,10 @@ public class BattleshipGrid extends JPanel {
 					}//end of outer for
 				}//end of if end of game
 				else{
-					console.append("\n"+(5-getNumSunk()) +" ships left");
+					console.append("\n"+(5-getNumSunk(compShips)) +" ships left");
 				}
-			}
+			}//end of if hit
+			compTurn();
 		}//end of actionevent
 		public char getLetter(int n){
 			switch(n){
@@ -285,7 +283,34 @@ public class BattleshipGrid extends JPanel {
 			return 'Z';
 		}//end of getLetter equiv
 	}//end of attackshiplistener class
+//==============================COMPUTERS TURN	
+	public void compTurn(){
+		char pool[] = new char[] {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
+		char c;
+		Random bag = new Random();
+		int x = bag.nextInt(10) + 1;
+		int y = bag.nextInt(10) + 1;
+		c = pool[y];
+		String temp = ""+c+x;
+		if(hitCoord(temp, 1)){
+			//=============================================END OF GAME
+			//=============================================END OF GAME
+			if(getNumSunk(playerShips)==5){
+				console.append("\nYou Lost!");
+				for(int i = 0; i < 10; i++) {
+					for(int j = 0; j < 10; j++) {
+					buttonGrid2[i][j].setEnabled(false);
+					}// end of inner for 
+				}//end of outer for
+			}//end of if end of game
+			else{
+				console.append("\n"+(5-getNumSunk(playerShips)) +" ships left for Computer to sink");
+			}
+		}//end of if hit
+		
+	}//end of compturn
 	
+//============================== PLACE SHIPS LISTENER	
 	class PlaceShipsAdapter implements ActionListener{
 		private int startX; private int startY;
 		private int orientation;
@@ -470,6 +495,8 @@ public class BattleshipGrid extends JPanel {
 				grid[i][j].setEnabled(set);
 			}// end of inner for 
 		}//end of outer for
+		startButton.setEnabled(set);
+		openFileButton.setEnabled(set);
 	}//end of enable grid buttons
 //========================================= REMOVE SHIP	
 	public void removeShip(int x, int y){
@@ -597,15 +624,15 @@ public class BattleshipGrid extends JPanel {
 		return true;
 	}//end of valid placement method
 	
-	public int getNumSunk() {
+	public int getNumSunk(ArrayList<Battleship> AL) {
 		int total = 0;
-		for(Battleship b : compShips) {
+		for(Battleship b : AL) {
 			if(b.isSunk()) total++;
 		}
 		return total;
 	}
 	
-	public boolean hitCoord(String coord) {
+	public boolean hitCoord(String coord, int grid) {
 		if(coord.length()<2 || coord.length()>3) return false;
 		char y = coord.charAt(0);
 		if(y <'A' || y > 'J'){
@@ -626,25 +653,44 @@ public class BattleshipGrid extends JPanel {
 		int xPos = Integer.valueOf(x)-1;
 		if(xPos >9) return false;
 		
-		return hitShips(new Point(xPos,yPos));
+		return hitShips(new Point(xPos,yPos), grid);
 	}
 	
-	private boolean hitShips(Point point) {
-		if(!buttonGrid2[point.x][point.y].getText().equals("?")) return false;
-		boolean hit = false;
-		for(Battleship bs : compShips) {
-			if(bs.attackPoint(point)) {
-				buttonGrid2[point.x][point.y].setText(bs.getTag()+"");
-				hit = true;
-				console.append("\nYou hit a "+bs.getName()+"!");
-				if(bs.getHP() == 0) console.append("\nYou have sunken a "+bs.getName()+"!");
-			
-				break;
-			} else {
-				buttonGrid2[point.x][point.y].setText("MISS!");
+	private boolean hitShips(Point point, int grid) {
+		if(grid == 2){
+			if(!buttonGrid2[point.x][point.y].getText().equals("?")) return false;
+			boolean hit = false;
+			for(Battleship bs : compShips) {
+				if(bs.attackPoint(point)) {
+					buttonGrid2[point.x][point.y].setText(bs.getTag()+"");
+					hit = true;
+					console.append("\nYou hit a "+bs.getName()+"!");
+					if(bs.getHP() == 0) console.append("\nYou have sunken a "+bs.getName()+"!");
+				
+					break;
+				} else {
+					buttonGrid2[point.x][point.y].setText("MISS!");
+				}
 			}
-		}
-		if(!hit) console.append("\nYou missed!");
+			if(!hit) console.append("\nYou missed!");
+		}//end of if grid2
+		else if(grid == 1){
+			if(!buttonGrid1[point.x][point.y].getText().equals("?")) return false;
+			boolean hit = false;
+			for(Battleship bs : playerShips) {
+				if(bs.attackPoint(point)) {
+					buttonGrid1[point.x][point.y].setText(bs.getTag()+"");
+					hit = true;
+					console.append("\nYou hit a "+bs.getName()+"!");
+					if(bs.getHP() == 0) console.append("\nYou have sunken a "+bs.getName()+"!");
+				
+					break;
+				} else {
+					buttonGrid1[point.x][point.y].setText("MISS!");
+				}
+			}
+			if(!hit) console.append("\nYou missed!");
+		}//end of if grid 1
 		return true;
 	}
 
@@ -654,7 +700,7 @@ public class BattleshipGrid extends JPanel {
 				square.setText("?");
 			}
 		}//end of for
-	}//end oc cleargrid
+	}//end of cleargrid
 
 	public boolean loadMap(String pathName) {
 		Scanner inputScan = null;

@@ -26,10 +26,10 @@ public class BattleshipGame {
 		boolean isOver = false;
 		int turn = 1;
 		Random bag = new Random();
+		scan.useDelimiter(System.getProperty("line.separator"));
 		do{
 			//System.out.print("Turn "+turn+" - Please enter a Coordinate:");
-			if(bsg.hitCoord(scan.nextLine())) turn++;
-			isOver = (bsg.getNumSunk()==5);
+		
 		}while(!isOver);
 		System.out.println("You sank all the ships!");
 	}
