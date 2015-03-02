@@ -4,9 +4,11 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -25,17 +27,22 @@ import java.util.Vector;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -60,6 +67,7 @@ public class BattleshipGrid extends JPanel {
 	private int numOf_C;
 	private int numOf_D;
 	private static int placementGrid[][];
+	private static int placementGrid2[][];
 	
 	BattleshipGrid() {
 		numOf_AC = 1;
@@ -70,6 +78,7 @@ public class BattleshipGrid extends JPanel {
 		
 		setLayout(new BorderLayout());
 		placementGrid = new int[10][10];
+		placementGrid2 = new int[10][10];
 		JPanel jp1 = new JPanel();
 		JPanel jp2 = new JPanel();
 		JPanel jpCase = new JPanel();
@@ -217,18 +226,64 @@ public class BattleshipGrid extends JPanel {
 		//jpbottom.add(logPanel);
 		add(jpbottom, BorderLayout.SOUTH);
 		setOpaque(false);
+		
+	
+		
 	}//=================================================================================end of constructor
 	
-//=========================================PLAY GAME
-//======================================================	
+	//=========================================PLAY GAME
 	public void playGame(){
 //===================== DISABLE/ENDABLE BUTTONS
+
 		boolean isOver = false;
 		editMode = false;
 		enableGrid(false, buttonGrid1);
 		enableGrid(true, buttonGrid2);
 	}//end of playgame
-//===============================================END OF PLAY GAME	
+	
+	public void setIcons(int i, int j, int n){
+		System.out.println("setting icon method");
+		
+			if(n == 1){
+				System.out.println(buttonGrid1[i][j].getText());
+				if(placementGrid[i][j] == 5){
+					buttonGrid1[i][j].setIcon(new ImageIcon("A_resized.jpg"));
+					System.out.println("setting icon");
+				}//end of if A
+				else if(placementGrid[i][j] == 4){
+					buttonGrid1[i][j].setIcon(new ImageIcon("B_resized.jpg"));
+					System.out.println("setting icon");
+				}//end of if B
+				else if(placementGrid[i][j] == 3){
+					buttonGrid1[i][j].setIcon(new ImageIcon("C_resized.jpg"));
+					System.out.println("setting icon");
+				}//end of if C
+				else if(placementGrid[i][j] == 2){
+					buttonGrid1[i][j].setIcon(new ImageIcon("D_resized.jpg"));
+					System.out.println("setting icon");
+				}//end of if D
+			}
+			else if (n == 2){
+				System.out.println(buttonGrid1[i][j].getText());
+				if(buttonGrid2[i][j].getText() == "A"){
+					buttonGrid2[i][j].setIcon(new ImageIcon("A_resized.jpg"));
+					System.out.println("setting icon");
+				}//end of if A
+				else if(buttonGrid2[i][j].getText() == "B"){
+					buttonGrid2[i][j].setIcon(new ImageIcon("B_resized.jpg"));
+					System.out.println("setting icon");
+				}//end of if B
+				else if(buttonGrid2[i][j].getText() == "C"){
+					buttonGrid2[i][j].setIcon(new ImageIcon("C_resized.jpg"));
+					System.out.println("setting icon");
+				}//end of if C
+				else if(buttonGrid2[i][j].getText() == "D"){
+					buttonGrid2[i][j].setIcon(new ImageIcon("D_resized.jpg"));
+					System.out.println("setting icon");
+				}//end of if D
+			}
+
+	}//end of set icons
 //=============================================== ATTACK SHIP LISTENER	
 	class AttackShipListener implements ActionListener{
 		private int coordX;
@@ -695,12 +750,12 @@ public class BattleshipGrid extends JPanel {
 			boolean hit = false;
 			for(Battleship bs : compShips) {
 				if(bs.attackPoint(point)) {
-					buttonGrid2[point.x][point.y].setText(bs.getTag()+"");
+					//buttonGrid2[point.x][point.y].setText(bs.getTag()+"");					
 					buttonGrid2[point.x][point.y].setEnabled(false);
 					hit = true;
 					console.append("\nYou hit a "+bs.getName()+"!");
 					if(bs.getHP() == 0) console.append("\nYou have sunken a "+bs.getName()+"!");
-				
+					setIcons(point.x, point.y, 1);
 					break;
 				} else {
 					buttonGrid2[point.x][point.y].setText("MISS!");
@@ -718,13 +773,13 @@ public class BattleshipGrid extends JPanel {
 				if(bs.attackPoint(point)) {
 					//===========================set icon
 					System.out.println("inside hitships checking attack point");
-					buttonGrid1[point.x][point.y].setText("H");
+					//buttonGrid1[point.x][point.y].setText("H");
 					buttonGrid1[point.x][point.y].setEnabled(true);
 					hit = true;
 					System.out.println("comp hit");
 					console.append("\nComp hit a "+bs.getName()+"!");
 					if(bs.getHP() == 0) console.append("\nYou have sunken a "+bs.getName()+"!");
-				
+					setIcons(point.x, point.y, 2);				
 					break;
 				} else {
 					buttonGrid1[point.x][point.y].setText("M");
