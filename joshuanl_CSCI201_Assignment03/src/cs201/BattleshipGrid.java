@@ -260,42 +260,45 @@ public class BattleshipGrid extends JPanel {
 			}//end of if hit
 			compTurn();
 			System.out.println("comp turn over");
-		}//end of actionevent
-		public char getLetter(int n){
-			switch(n){
-				case 0:
-					return 'A';
-				case 1:
-					return 'B';
-				case 2:
-					return 'C';
-				case 3:
-					return 'D';
-				case 4:
-					return 'E';
-				case 5:
-					return 'F';
-				case 6:
-					return 'G';
-				case 7:
-					return 'H';
-				case 8:
-					return 'I';
-				case 9:
-					return 'J';
-			}//end of switch
-			return 'Z';
-		}//end of getLetter equiv
+		}//end of actionevent	
 	}//end of attackshiplistener class
+	
+	public char getLetter(int n){
+		switch(n){
+			case 0:
+				return 'A';
+			case 1:
+				return 'B';
+			case 2:
+				return 'C';
+			case 3:
+				return 'D';
+			case 4:
+				return 'E';
+			case 5:
+				return 'F';
+			case 6:
+				return 'G';
+			case 7:
+				return 'H';
+			case 8:
+				return 'I';
+			case 9:
+				return 'J';
+		}//end of switch
+		return 'Z';
+	}//end of getLetter equiv
 //==============================COMPUTERS TURN	
 	public void compTurn(){
 		char pool[] = new char[] {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
 		char c;
 		Random bag = new Random();
-		int x = bag.nextInt(10) + 1;
+		int x = bag.nextInt(10);
+		x++;
 		int y = bag.nextInt(10);
-		c = pool[y];
+		c = getLetter(y);
 		String temp = ""+c+x;
+		System.out.println("COMP: "+c+x);
 		if(hitCoord(temp, 1)){	
 			//=============================================END OF GAME
 			//=============================================END OF GAME
@@ -452,33 +455,51 @@ public class BattleshipGrid extends JPanel {
 							console.append("\nNo ship selected");
 							return;
 						}
+						//=============fix index
+						
 						if(validPlace(startX, startY, index, orientation)){
 							Point startPoint = new Point(startX, startY);
 							Point endPoint = null;
 							char tag = 'F';
 							switch(index){
 								case 1:
-									endPoint = new Point(startX, startY+index);
 									tag = 'A';
 									numOf_AC--;
 									break;
 								case 2:
-									endPoint = new Point(startX, startY+index);
 									tag = 'B';
 									numOf_BS--;
 									break;
 								case 3:
-									endPoint = new Point(startX, startY+index);
 									tag = 'C';
 									numOf_C--;
 									break;
 								case 4:
-									endPoint = new Point(startX, startY+index);
 									tag = 'D';
 									numOf_D--;
 									break;
 							}//end of switch
-							playerShips.add(new Battleship(tag, startPoint, endPoint));
+							switch(orientation){
+								case 1:
+									endPoint = new Point(startX+(5-index), startY);
+									playerShips.add(new Battleship(tag, startPoint, endPoint));
+									break;
+								case 2:
+									endPoint = new Point(startX, startY-(5-index));
+									playerShips.add(new Battleship(tag, endPoint, startPoint));
+									break;
+								case 3:
+									endPoint = new Point(startX-(5-index), startY);
+									playerShips.add(new Battleship(tag, endPoint, startPoint));
+									break;
+								case 4:
+									endPoint = new Point(startX, startY+(5-index));
+									playerShips.add(new Battleship(tag, startPoint, endPoint));
+									break;
+							}//end of switch
+
+							//playerShips.add(new Battleship(tag, startPoint, endPoint));
+							System.out.println("Added");
 						}//end of if
 						enableGrid(true, buttonGrid1);
 						PSW.dispose();
@@ -667,12 +688,15 @@ public class BattleshipGrid extends JPanel {
 	}
 	
 	private boolean hitShips(Point point, int grid) {
+		
 		if(grid == 2){
+			System.out.println("player in hitships method = ("+ point.getX() + ", "+point.getY()+")");
 			if(!buttonGrid2[point.x][point.y].getText().equals("?")) return false;
 			boolean hit = false;
 			for(Battleship bs : compShips) {
 				if(bs.attackPoint(point)) {
 					buttonGrid2[point.x][point.y].setText(bs.getTag()+"");
+					buttonGrid2[point.x][point.y].setEnabled(false);
 					hit = true;
 					console.append("\nYou hit a "+bs.getName()+"!");
 					if(bs.getHP() == 0) console.append("\nYou have sunken a "+bs.getName()+"!");
@@ -680,19 +704,22 @@ public class BattleshipGrid extends JPanel {
 					break;
 				} else {
 					buttonGrid2[point.x][point.y].setText("MISS!");
+					buttonGrid2[point.x][point.y].setEnabled(false);
 				}
 			}
 			if(!hit) console.append("\nYou missed!");
 		}//end of if grid2
 		else if(grid == 1){
-			System.out.println("comp guesses: "+(point.x)+", "+(point.y-1));
-			if(!buttonGrid1[point.x][point.y].getText().equals("?")) return false;
+			System.out.println(" Comp in hitships method = ("+ point.getX() + ", "+point.getY()+")");
+			if(buttonGrid1[point.x][point.y].getText().equals("M")) return false;
+			System.out.println("in hit ships, comp passed if not ?");
 			boolean hit = false;
 			for(Battleship bs : playerShips) {
 				if(bs.attackPoint(point)) {
 					//===========================set icon
+					System.out.println("inside hitships checking attack point");
 					buttonGrid1[point.x][point.y].setText("H");
-					
+					buttonGrid1[point.x][point.y].setEnabled(true);
 					hit = true;
 					System.out.println("comp hit");
 					console.append("\nComp hit a "+bs.getName()+"!");
@@ -700,7 +727,8 @@ public class BattleshipGrid extends JPanel {
 				
 					break;
 				} else {
-					buttonGrid1[point.x][point.y].setText("M!");
+					buttonGrid1[point.x][point.y].setText("M");
+					buttonGrid1[point.x][point.y].setEnabled(true);
 				}
 			}
 			if(!hit) console.append("\nComp missed!");
@@ -919,6 +947,7 @@ class Battleship {
 		points = new ArrayList<HitPoint>();
 		Point toAdd = new Point(startPoint.x,startPoint.y);
 		if(startPoint.x == endPoint.x) {
+			//System.out.println("hor ship");
 			while(toAdd.y!=endPoint.y) {
 				points.add(new HitPoint(toAdd.x,toAdd.y));
 				toAdd.y++;
@@ -926,6 +955,7 @@ class Battleship {
 			points.add(new HitPoint(toAdd.x,toAdd.y));
 		}
 		else if(startPoint.y == endPoint.y) {
+			//System.out.println("ver ship");
 			while(toAdd.x!=endPoint.x) {
 				points.add(new HitPoint(toAdd.x,toAdd.y));
 				toAdd.x++;
@@ -933,6 +963,7 @@ class Battleship {
 			points.add(new HitPoint(toAdd.x,toAdd.y));
 		}
 		hp = points.size();
+		System.out.println("out of contructor");
 	}
 	
 	public String getName() {
