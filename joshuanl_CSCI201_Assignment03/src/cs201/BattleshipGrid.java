@@ -7,6 +7,9 @@ import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -256,6 +259,7 @@ public class BattleshipGrid extends JPanel {
 				}
 			}//end of if hit
 			compTurn();
+			System.out.println("comp turn over");
 		}//end of actionevent
 		public char getLetter(int n){
 			switch(n){
@@ -289,10 +293,10 @@ public class BattleshipGrid extends JPanel {
 		char c;
 		Random bag = new Random();
 		int x = bag.nextInt(10) + 1;
-		int y = bag.nextInt(10) + 1;
+		int y = bag.nextInt(10);
 		c = pool[y];
 		String temp = ""+c+x;
-		if(hitCoord(temp, 1)){
+		if(hitCoord(temp, 1)){	
 			//=============================================END OF GAME
 			//=============================================END OF GAME
 			if(getNumSunk(playerShips)==5){
@@ -482,6 +486,12 @@ public class BattleshipGrid extends JPanel {
 				});
 				bottomPanel.add(placeShipButton);
 				enableGrid(false, buttonGrid1);
+				PSW.addWindowListener(new WindowAdapter(){
+					public void windowClosing(WindowEvent evt){
+						enableGrid(true, buttonGrid1);
+						PSW.dispose();
+					}
+				});
 				PSW.add(bottomPanel);	
 				PSW.setVisible(true);
 				
@@ -675,21 +685,25 @@ public class BattleshipGrid extends JPanel {
 			if(!hit) console.append("\nYou missed!");
 		}//end of if grid2
 		else if(grid == 1){
+			System.out.println("comp guesses: "+(point.x)+", "+(point.y-1));
 			if(!buttonGrid1[point.x][point.y].getText().equals("?")) return false;
 			boolean hit = false;
 			for(Battleship bs : playerShips) {
 				if(bs.attackPoint(point)) {
-					buttonGrid1[point.x][point.y].setText(bs.getTag()+"");
+					//===========================set icon
+					buttonGrid1[point.x][point.y].setText("H");
+					
 					hit = true;
-					console.append("\nYou hit a "+bs.getName()+"!");
+					System.out.println("comp hit");
+					console.append("\nComp hit a "+bs.getName()+"!");
 					if(bs.getHP() == 0) console.append("\nYou have sunken a "+bs.getName()+"!");
 				
 					break;
 				} else {
-					buttonGrid1[point.x][point.y].setText("MISS!");
+					buttonGrid1[point.x][point.y].setText("M!");
 				}
 			}
-			if(!hit) console.append("\nYou missed!");
+			if(!hit) console.append("\nComp missed!");
 		}//end of if grid 1
 		return true;
 	}
