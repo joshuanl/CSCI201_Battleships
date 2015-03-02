@@ -1,5 +1,6 @@
 package cs201;
 
+import java.util.Random;
 import java.util.Scanner;
 
 public class BattleshipGame {
@@ -24,7 +25,7 @@ public class BattleshipGame {
 	private void playGame() {
 		boolean isOver = false;
 		int turn = 1;
-		scan.useDelimiter(System.getProperty("line.separator"));
+		Random bag = new Random();
 		do{
 			//System.out.print("Turn "+turn+" - Please enter a Coordinate:");
 			if(bsg.hitCoord(scan.nextLine())) turn++;

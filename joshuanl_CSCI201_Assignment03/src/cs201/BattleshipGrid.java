@@ -39,14 +39,13 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 @SuppressWarnings("serial")
 public class BattleshipGrid extends JPanel {
 	private JButton buttonGrid1[][];
-	//private JButton buttonGrad1[][];
 	private JButton buttonGrid2[][];
 	private JLabel openedFileLabel;
 	private JLabel playerName = new JLabel();
 	private JLabel computerName = new JLabel();
 	private JButton openFileButton;
 	private JButton startButton;
-	private JTextArea console;
+	static private JTextArea console;
 	private String spacer = "                      ";
 	private boolean editMode;
 	private boolean fileLoaded;
@@ -125,8 +124,11 @@ public class BattleshipGrid extends JPanel {
 			for(int j = 0; j < 10; j++) {
 				temp_button = new JButton("?");
 				temp_button.setPreferredSize(new Dimension(45, 45));
+				AttackShipListener asl = new AttackShipListener(i,j);
+				temp_button.addActionListener(asl);
 				buttonGrid2[i][j] = temp_button;
 				jp2.add(buttonGrid2[i][j]);
+				buttonGrid2[i][j].setEnabled(false);
 			}// end of inner for 
 		}//end of outer for
 		
@@ -151,7 +153,7 @@ public class BattleshipGrid extends JPanel {
 		bottomA.setOpaque(false);
 		jpbottom.setLayout(new BoxLayout(jpbottom, BoxLayout.Y_AXIS));
 		jpbottom.setOpaque(false);
-		//editMode = true;
+		editMode = true;
 		console = new JTextArea(3,50);
 		JScrollPane scroll = new JScrollPane(console, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		console.setLineWrap(true);
@@ -173,9 +175,10 @@ public class BattleshipGrid extends JPanel {
 		startButton = new JButton("START");
 		startButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				System.out.println(numOf_AC + " " + numOf_BS+ " " +numOf_C+" " + numOf_D);
 				if(fileLoaded && numOf_AC == 0 && numOf_BS == 0 && numOf_C == 0 && numOf_D == 0){
+					startButton.setEnabled(false);
 					playGame();
+					
 				}
 			}
 		});
@@ -191,10 +194,11 @@ public class BattleshipGrid extends JPanel {
 		        if (returnValue == JFileChooser.APPROVE_OPTION) {
 		        	File selectedFile = fileChooser.getSelectedFile();
 		        	if(selectedFile.getPath().contains(".battle")){
-		        		System.out.println(selectedFile.getPath());
+		        		//System.out.println(selectedFile.getPath());
 		        		loadMap(selectedFile.getPath());
-		        		console.append("\nLoaded File: "+selectedFile.getPath());
+		        		console.append("\nLoaded File: "+selectedFile.getName());
 		        		fileLoaded = true;
+		        		openedFileLabel.setText("File: "+selectedFile.getName());
 		        	}//end of if
 		        	else{
 			        	JOptionPane.showMessageDialog(tempFrame, "Not a \".battle\" file");
@@ -211,186 +215,263 @@ public class BattleshipGrid extends JPanel {
 		setOpaque(false);
 	}//=================================================================================end of constructor
 	
+//======================================================
+//=========================================PLAY GAME
+//======================================================	
 	public void playGame(){
-		System.out.println("playing game");
+//===================== DISABLE/ENDABLE BUTTONS
+		boolean isOver = false;
+		editMode = false;
+		enableGrid(false, buttonGrid1);
+		enableGrid(true, buttonGrid2);
+//===================== end of DISABLE/ENABLE		
+
 		
+//===================== 		
 	}//end of playgame
+//===============================================END OF PLAY GAME	
+	
+	class AttackShipListener implements ActionListener{
+		private int coordX;
+		private int coordY;
+		private char c;
+		
+		AttackShipListener(int x, int y){
+			coordX = x+1;
+			coordY = y;
+		}// end of constructor
+		
+		public void actionPerformed(ActionEvent ae){
+			c = getLetter(coordY);
+			String temp = ""+c+coordX;
+			if(hitCoord(temp)){
+				//System.out.println("hit ship");
+				if(getNumSunk()==5){
+					console.append("\nYou won!");
+					for(int i = 0; i < 10; i++) {
+						for(int j = 0; j < 10; j++) {
+						buttonGrid2[i][j].setEnabled(false);
+						}// end of inner for 
+					}//end of outer for
+				}//end of if end of game
+				else{
+					console.append("\n"+(5-getNumSunk()) +" ships left");
+				}
+			}
+		}//end of actionevent
+		public char getLetter(int n){
+			switch(n){
+				case 0:
+					return 'A';
+				case 1:
+					return 'B';
+				case 2:
+					return 'C';
+				case 3:
+					return 'D';
+				case 4:
+					return 'E';
+				case 5:
+					return 'F';
+				case 6:
+					return 'G';
+				case 7:
+					return 'H';
+				case 8:
+					return 'I';
+				case 9:
+					return 'J';
+			}//end of switch
+			return 'Z';
+		}//end of getLetter equiv
+	}//end of attackshiplistener class
 	
 	class PlaceShipsAdapter implements ActionListener{
 		private int startX; private int startY;
 		private int orientation;
 		private ButtonGroup jbg;
 		private JButton placeShipButton;
+
 		PlaceShipsAdapter(int x, int y){
 			startX = x;
 			startY = y;
 		}
 		public void actionPerformed(ActionEvent e) {
-			System.out.println("x: "+startX);
-			System.out.println("y: "+startY);
-			if(placementGrid[startX][startY] != 0){
-				String shipType = "";
-				JFrame tempFrame = new JFrame();
-				switch(placementGrid[startX][startY]){
-					case 5:
-						shipType = "Aircraft Carrier";
-						break;
-					case 4:
-						shipType = "Battleshipe";
-						break;
-					case 3:
-						shipType = "Cruiser";
-						break;
-					case 2:
-					case 1:
-						shipType = "Destroyer";
-						break;
-				}//end of switch
-				System.out.println("remove");
-				String msg = "Do you really want to delete this ship? \n\""+shipType+"\"";
-				int choice = JOptionPane.showConfirmDialog(tempFrame, msg, "Confirmation", JOptionPane.OK_CANCEL_OPTION);
-				if(choice == 0){
-					removeShip(startX, startY);
-				}
-				return;
-			}
-			JFrame PSW = new JFrame();
-			PSW.setTitle("Place Ship");
-			PSW.setLocation(300,300);
-			PSW.setSize(275,150);
-			PSW.getContentPane().setLayout(new BoxLayout(PSW.getContentPane(), BoxLayout.Y_AXIS));
-		
-			
-			JPanel jp1 = new JPanel();
-			jp1.setLayout(new BoxLayout(jp1, BoxLayout.X_AXIS));
-			JLabel jl = new JLabel("Select Ship   ");
-			jp1.add(jl);
-			Vector<String> listofships = new Vector<String>();
-			listofships.add("Select Ship");
-			for(int i=0; i < numOf_AC; i++){
-				listofships.add("Aircraft Carrier");
-			}//end of for
-			for(int i=0; i < numOf_BS; i++){
-				listofships.add("Battleship");
-			}//end of for
-			for(int i=0; i < numOf_C; i++){
-				listofships.add("Cruiser");
-			}//end of for
-			for(int i=0; i < numOf_D; i++){
-				listofships.add("Destroyer");
-			}//end of for
-			JComboBox<String> jcb = new JComboBox<String>(listofships);
-			jcb.setPreferredSize(new Dimension(10,10));
-			jp1.add(jcb);
-			PSW.add(jp1);
-			
-			jbg = new ButtonGroup();
-			JRadioButton northRB = new JRadioButton("Face North");
-			northRB.addActionListener(new ActionListener(){
-				public void actionPerformed(ActionEvent ae){
-					placeShipButton.setEnabled(true);
-					orientation = 1;
-				}
-			});
-			JRadioButton eastRB = new JRadioButton("Face East");
-			eastRB.addActionListener(new ActionListener(){
-				public void actionPerformed(ActionEvent ae){
-					placeShipButton.setEnabled(true);
-					orientation = 2;
-				}
-			});
-			JRadioButton southRB = new JRadioButton("Face South");
-			southRB.addActionListener(new ActionListener(){
-				public void actionPerformed(ActionEvent ae){
-					placeShipButton.setEnabled(true);
-					orientation = 3;
-				}
-			});
-			JRadioButton westRB = new JRadioButton("Face West");
-			westRB.addActionListener(new ActionListener(){
-				public void actionPerformed(ActionEvent ae){
-					placeShipButton.setEnabled(true);
-					orientation = 4;
-				}
-			});
-			jbg.add(northRB);
-			jbg.add(eastRB);
-			jbg.add(southRB);
-			jbg.add(westRB);
-			
-			JPanel jp2 = new JPanel();
-			jp2.setLayout(new BoxLayout(jp2, BoxLayout.X_AXIS));
-			jp2.add(northRB);
-			jp2.add(eastRB);
-			PSW.add(jp2);
-			
-			JPanel jp3 = new JPanel();
-			jp3.setLayout(new BoxLayout(jp3, BoxLayout.X_AXIS));
-			jp3.add(southRB);
-			jp3.add(westRB);
-			PSW.add(jp3);
-			
-			
-			JPanel bottomPanel = new JPanel();
-			placeShipButton = new JButton("Place Ship");
-			placeShipButton.setEnabled(false);
-			placeShipButton.addActionListener(new ActionListener(){
-				public void actionPerformed(ActionEvent ae){
-					int index = 0;
-					if(jcb.getSelectedItem().toString() == "Aircraft Carrier"){
-						index = 1;
+			if(editMode){
+				if(placementGrid[startX][startY] != 0){
+					String shipType = "";
+					JFrame tempFrame = new JFrame();
+					switch(placementGrid[startX][startY]){
+						case 5:
+							shipType = "Aircraft Carrier";
+							break;
+						case 4:
+							shipType = "Battleshipe";
+							break;
+						case 3:
+							shipType = "Cruiser";
+							break;
+						case 2:
+						case 1:
+							shipType = "Destroyer";
+							break;
+					}//end of switch
+					String msg = "Do you really want to delete this ship? \n\""+shipType+"\"";
+					int choice = JOptionPane.showConfirmDialog(tempFrame, msg, "Confirmation", JOptionPane.OK_CANCEL_OPTION);
+					if(choice == 0){
+						removeShip(startX, startY);
+						console.append("\n Removed ship: "+shipType);
 					}
-					else if(jcb.getSelectedItem().toString() == "Battleship"){
-						index = 2;
-					}
-					else if(jcb.getSelectedItem().toString() == "Cruiser"){
-						index = 3;
-					}
-					else if(jcb.getSelectedItem().toString() == "Destroyer"){
-						index = 4;
-					}
-					if(index == 0){
-						System.out.println("no ship selected");
-						return;
-					}
-					if(validPlace(startX, startY, index, orientation)){
-						Point startPoint = new Point(startX, startY);
-						Point endPoint = null;
-						char tag = 'F';
-						switch(index){
-							case 1:
-								endPoint = new Point(startX, startY+index);
-								tag = 'A';
-								numOf_AC--;
-								break;
-							case 2:
-								endPoint = new Point(startX, startY+index);
-								tag = 'B';
-								numOf_BS--;
-								break;
-							case 3:
-								endPoint = new Point(startX, startY+index);
-								tag = 'C';
-								numOf_C--;
-								break;
-							case 4:
-								endPoint = new Point(startX, startY+index);
-								tag = 'D';
-								numOf_D--;
-								break;
-						}//end of switch
-						playerShips.add(new Battleship(tag, startPoint, endPoint));
-					}//end of if
-					PSW.dispose();
-				}//end of button listener
-			});
-			bottomPanel.add(placeShipButton);
+					return;
+				}
+				JFrame PSW = new JFrame();
+				PSW.setTitle("Place Ship");
+				PSW.setLocation(300,300);
+				PSW.setSize(275,150);
+				PSW.getContentPane().setLayout(new BoxLayout(PSW.getContentPane(), BoxLayout.Y_AXIS));
 			
-			PSW.add(bottomPanel);	
-			PSW.setVisible(true);
+				
+				JPanel jp1 = new JPanel();
+				jp1.setLayout(new BoxLayout(jp1, BoxLayout.X_AXIS));
+				JLabel jl = new JLabel("Select Ship   ");
+				jp1.add(jl);
+				Vector<String> listofships = new Vector<String>();
+				listofships.add("Select Ship");
+				for(int i=0; i < numOf_AC; i++){
+					listofships.add("Aircraft Carrier");
+				}//end of for
+				for(int i=0; i < numOf_BS; i++){
+					listofships.add("Battleship");
+				}//end of for
+				for(int i=0; i < numOf_C; i++){
+					listofships.add("Cruiser");
+				}//end of for
+				for(int i=0; i < numOf_D; i++){
+					listofships.add("Destroyer");
+				}//end of for
+				JComboBox<String> jcb = new JComboBox<String>(listofships);
+				jcb.setPreferredSize(new Dimension(10,10));
+				jp1.add(jcb);
+				PSW.add(jp1);
+				
+				jbg = new ButtonGroup();
+				JRadioButton northRB = new JRadioButton("Face North");
+				northRB.addActionListener(new ActionListener(){
+					public void actionPerformed(ActionEvent ae){
+						placeShipButton.setEnabled(true);
+						orientation = 1;
+					}
+				});
+				JRadioButton eastRB = new JRadioButton("Face East");
+				eastRB.addActionListener(new ActionListener(){
+					public void actionPerformed(ActionEvent ae){
+						placeShipButton.setEnabled(true);
+						orientation = 2;
+					}
+				});
+				JRadioButton southRB = new JRadioButton("Face South");
+				southRB.addActionListener(new ActionListener(){
+					public void actionPerformed(ActionEvent ae){
+						placeShipButton.setEnabled(true);
+						orientation = 3;
+					}
+				});
+				JRadioButton westRB = new JRadioButton("Face West");
+				westRB.addActionListener(new ActionListener(){
+					public void actionPerformed(ActionEvent ae){
+						placeShipButton.setEnabled(true);
+						orientation = 4;
+					}
+				});
+				jbg.add(northRB);
+				jbg.add(eastRB);
+				jbg.add(southRB);
+				jbg.add(westRB);
+				
+				JPanel jp2 = new JPanel();
+				jp2.setLayout(new BoxLayout(jp2, BoxLayout.X_AXIS));
+				jp2.add(northRB);
+				jp2.add(eastRB);
+				PSW.add(jp2);
+				
+				JPanel jp3 = new JPanel();
+				jp3.setLayout(new BoxLayout(jp3, BoxLayout.X_AXIS));
+				jp3.add(southRB);
+				jp3.add(westRB);
+				PSW.add(jp3);
+				
+				
+				JPanel bottomPanel = new JPanel();
+				placeShipButton = new JButton("Place Ship");
+				placeShipButton.setEnabled(false);
+				placeShipButton.addActionListener(new ActionListener(){
+					public void actionPerformed(ActionEvent ae){
+						int index = 0;
+						if(jcb.getSelectedItem().toString() == "Aircraft Carrier"){
+							index = 1;
+						}
+						else if(jcb.getSelectedItem().toString() == "Battleship"){
+							index = 2;
+						}
+						else if(jcb.getSelectedItem().toString() == "Cruiser"){
+							index = 3;
+						}
+						else if(jcb.getSelectedItem().toString() == "Destroyer"){
+							index = 4;
+						}
+						if(index == 0){
+							console.append("\nNo ship selected");
+							return;
+						}
+						if(validPlace(startX, startY, index, orientation)){
+							Point startPoint = new Point(startX, startY);
+							Point endPoint = null;
+							char tag = 'F';
+							switch(index){
+								case 1:
+									endPoint = new Point(startX, startY+index);
+									tag = 'A';
+									numOf_AC--;
+									break;
+								case 2:
+									endPoint = new Point(startX, startY+index);
+									tag = 'B';
+									numOf_BS--;
+									break;
+								case 3:
+									endPoint = new Point(startX, startY+index);
+									tag = 'C';
+									numOf_C--;
+									break;
+								case 4:
+									endPoint = new Point(startX, startY+index);
+									tag = 'D';
+									numOf_D--;
+									break;
+							}//end of switch
+							playerShips.add(new Battleship(tag, startPoint, endPoint));
+						}//end of if
+						enableGrid(true, buttonGrid1);
+						PSW.dispose();
+					}//end of button listener
+				});
+				bottomPanel.add(placeShipButton);
+				enableGrid(false, buttonGrid1);
+				PSW.add(bottomPanel);	
+				PSW.setVisible(true);
+				
+			}//end of if in edit mode	
 		}//end of action performed	
 	}//end of PlaceShipsAdapter
-	
+//========================================= ENABLE GRID	
+	public void enableGrid(boolean set, JButton grid[][]){
+		for(int i = 0; i < 10; i++) {
+			for(int j = 0; j < 10; j++) {
+				grid[i][j].setEnabled(set);
+			}// end of inner for 
+		}//end of outer for
+	}//end of enable grid buttons
+//========================================= REMOVE SHIP	
 	public void removeShip(int x, int y){
 		int target = placementGrid[x][y];
 		switch(target){
@@ -425,13 +506,10 @@ public class BattleshipGrid extends JPanel {
 		int grid[][] = placementGrid;
 		int length = 6-shipNum;
 		int id = length;
-		System.out.println("numofD: "+numOf_D);
 		if(length == 2 && numOf_D == 1){
 			id = 1;
 		}
-		System.out.println("shiplength: " + length);
-		System.out.println("getting x: "+startX);
-		System.out.println("getting y: "+startY);
+
 		switch(orientation){
 			case 1:			//face north
 				for(int i=0; i < length; i++){
@@ -487,22 +565,12 @@ public class BattleshipGrid extends JPanel {
 				break;
 		}//end of switch
 		
-		System.out.println("was able to place ship, returning true, resetting placementGrid");
-		System.out.println("getting x: "+startX);
-		System.out.println("getting y: "+startY);
 		placementGrid = grid;
-		//debug
-		for(int i=0; i < 10; i++){
-			for(int j=0; j < 10; j++){
-				System.out.print(placementGrid[i][j]+ " ");
-			}
-			System.out.println();
-		}
+
 		//=================resetting buttons
 		switch(orientation){
 		case 1:			//face north
 			for(int i=0; i < length; i++){
-				System.out.println("in face north button test reset loop");
 				buttonGrid1[startX][startY].setText(""+length);
 				startX++;
 			}//end of for
@@ -540,13 +608,17 @@ public class BattleshipGrid extends JPanel {
 	public boolean hitCoord(String coord) {
 		if(coord.length()<2 || coord.length()>3) return false;
 		char y = coord.charAt(0);
-		if(y <'A' || y > 'J') return false;
+		if(y <'A' || y > 'J'){
+			return false;
+		}//end of if invalid coord
 		
 		String x;
 		if(coord.charAt(1) <'1' || coord.charAt(1) > '9') return false;
 		else x = ""+coord.charAt(1);
 		if(coord.length() == 3) {
-			if(coord.charAt(2) != '0') return false;
+			if(coord.charAt(2) != '0'){
+				return false;
+			}
 			else x+=coord.charAt(2);
 		}
 		
@@ -558,18 +630,21 @@ public class BattleshipGrid extends JPanel {
 	}
 	
 	private boolean hitShips(Point point) {
-		if(!buttonGrid1[point.x][point.y].getText().equals("?")) return false;
+		if(!buttonGrid2[point.x][point.y].getText().equals("?")) return false;
 		boolean hit = false;
 		for(Battleship bs : compShips) {
 			if(bs.attackPoint(point)) {
-				buttonGrid1[point.x][point.y].setText(bs.getTag()+"");
+				buttonGrid2[point.x][point.y].setText(bs.getTag()+"");
 				hit = true;
+				console.append("\nYou hit a "+bs.getName()+"!");
+				if(bs.getHP() == 0) console.append("\nYou have sunken a "+bs.getName()+"!");
+			
 				break;
 			} else {
-				buttonGrid1[point.x][point.y].setText("MISS!");
+				buttonGrid2[point.x][point.y].setText("MISS!");
 			}
 		}
-		if(!hit) System.out.println("You missed!");
+		if(!hit) console.append("\nYou missed!");
 		return true;
 	}
 
@@ -578,8 +653,8 @@ public class BattleshipGrid extends JPanel {
 			for(JButton square : buttonGrid1[i]) {
 				square.setText("?");
 			}
-		}
-	}
+		}//end of for
+	}//end oc cleargrid
 
 	public boolean loadMap(String pathName) {
 		Scanner inputScan = null;
@@ -705,7 +780,7 @@ public class BattleshipGrid extends JPanel {
 			if(charCount['C'-'A'] != 3) return false;
 			if(charCount['D'-'A'] != 4) return false;
 			
-			System.out.println(horizDCount + "   " + vertiDCount);
+			//System.out.println(horizDCount + "   " + vertiDCount);
 			
 			if(horizDCount == 2 && vertiDCount == 1) {
 				int posToDestroy = -1;
@@ -756,7 +831,7 @@ public class BattleshipGrid extends JPanel {
 			
 			return true;
 		} catch (FileNotFoundException e) {
-			System.out.println("File path is invalid!");
+			console.append("\nFile path is invalid!");
 			return false;
 		} finally {
 			if(inputScan != null)
@@ -800,15 +875,20 @@ class Battleship {
 		hp = points.size();
 	}
 	
+	public String getName() {
+		return NAMES[tag-'A'];
+	}
+	public int getHP(){
+		return hp;
+	}
+
 	public boolean attackPoint(Point point) {
 		boolean gotHit = false;
 		for(HitPoint hitPoint: points) {
 			if(hitPoint.equals(point)) {
 				hitPoint.hit = true;
 				gotHit = true;
-				System.out.println("You hit a "+NAMES[tag-'A']+"!");
 				hp--;
-				if(hp == 0) System.out.println("You have sunken a "+NAMES[tag-'A']+"!");
 			}
 		}
 		return gotHit;
