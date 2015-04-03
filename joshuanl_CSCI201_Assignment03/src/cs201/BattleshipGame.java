@@ -1,6 +1,5 @@
 package cs201;
 
-import java.util.Random;
 import java.util.Scanner;
 
 public class BattleshipGame {
@@ -24,8 +23,6 @@ public class BattleshipGame {
 
 	private void playGame() {
 		boolean isOver = false;
-		int turn = 1;
-		Random bag = new Random();
 		scan.useDelimiter(System.getProperty("line.separator"));
 		do{
 			//System.out.print("Turn "+turn+" - Please enter a Coordinate:");
@@ -34,10 +31,5 @@ public class BattleshipGame {
 		System.out.println("You sank all the ships!");
 	}
 
-	
-	private void readFile() {
-		do {
-			System.out.print("Please enter a valid file path:");
-		} while(!bsg.loadMap(scan.nextLine()));
-	}
+
 }

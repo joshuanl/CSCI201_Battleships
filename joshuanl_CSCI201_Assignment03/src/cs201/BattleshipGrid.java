@@ -49,11 +49,12 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 @SuppressWarnings("serial")
 public class BattleshipGrid extends JPanel {
-	private JButton buttonGrid1[][];
-	private JButton buttonGrid2[][];
+	private JButton compButtonGrid[][];
+	private JButton playerButtonGrid[][];
 	private JLabel openedFileLabel;
 	private JLabel playerName = new JLabel();
 	private JLabel computerName = new JLabel();
+	private JLabel clockLabel;
 	private JButton openFileButton;
 	private JButton startButton;
 	static private JTextArea console;
@@ -89,28 +90,27 @@ public class BattleshipGrid extends JPanel {
 		jp2.setOpaque(false);
 		jpCase.setOpaque(false);
 		jpbottom.setOpaque(false);
-		buttonGrid1 = new JButton[10][10];
-		buttonGrid2 = new JButton[10][10];
+		compButtonGrid = new JButton[10][10];
+		playerButtonGrid = new JButton[10][10];
 		compShips = new ArrayList<Battleship>();
 		playerShips = new ArrayList<Battleship>();
 		JButton temp_button;
 //====================================================================SET NORTH LABELS
 		playerName.setText("Player");
 		computerName.setText("Computer");
+		clockLabel = new JLabel("Time - 15s");
 		JPanel northPanel = new JPanel();
+		JPanel jp = new JPanel();
 		northPanel.setOpaque(false);
-		northPanel.setLayout(new GridLayout(1,2));
-		JPanel playerNamePanel = new JPanel();
-		playerNamePanel.setOpaque(false);
-		playerNamePanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-		JPanel computerNamePanel = new JPanel();
-		computerNamePanel.setOpaque(false);
-		computerNamePanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-		playerNamePanel.add(playerName);
-		computerNamePanel.add(computerName);
-		
-		northPanel.add(playerNamePanel);
-		northPanel.add(computerNamePanel);
+		northPanel.setLayout(new GridLayout(1,3));
+		jp.add(playerName);
+		northPanel.add(jp);
+		jp = new JPanel();
+		jp.add(clockLabel);
+		northPanel.add(jp);
+		jp = new JPanel();
+		jp.add(computerName);
+		northPanel.add(jp);
 		add(northPanel, BorderLayout.NORTH);
 //==================================================================== CREATE BOARD		
 		for(int i = 0; i < 10; i++) {
@@ -120,8 +120,8 @@ public class BattleshipGrid extends JPanel {
 				temp_button.setPreferredSize(new Dimension(45, 45));
 				PlaceShipsAdapter psa = new PlaceShipsAdapter(i, j);
 				temp_button.addActionListener(psa);
-				buttonGrid1[i][j] = temp_button;
-				jp1.add(buttonGrid1[i][j]);
+				compButtonGrid[i][j] = temp_button;
+				jp1.add(compButtonGrid[i][j]);
 			}// end of inner for 
 		}//end of outer for
 		
@@ -139,9 +139,9 @@ public class BattleshipGrid extends JPanel {
 				temp_button.setPreferredSize(new Dimension(45, 45));
 				AttackShipListener asl = new AttackShipListener(i,j);
 				temp_button.addActionListener(asl);
-				buttonGrid2[i][j] = temp_button;
-				jp2.add(buttonGrid2[i][j]);
-				buttonGrid2[i][j].setEnabled(false);
+				playerButtonGrid[i][j] = temp_button;
+				jp2.add(playerButtonGrid[i][j]);
+				playerButtonGrid[i][j].setEnabled(false);
 			}// end of inner for 
 		}//end of outer for
 		
@@ -237,48 +237,48 @@ public class BattleshipGrid extends JPanel {
 
 		boolean isOver = false;
 		editMode = false;
-		enableGrid(false, buttonGrid1);
-		enableGrid(true, buttonGrid2);
+		enableGrid(false, compButtonGrid);
+		enableGrid(true, playerButtonGrid);
 	}//end of playgame
 	
 	public void setIcons(int i, int j, int n){
 		System.out.println("setting icon method");
 		
 			if(n == 1){
-				System.out.println(buttonGrid1[i][j].getText());
+				System.out.println(compButtonGrid[i][j].getText());
 				if(placementGrid[i][j] == 5){
-					buttonGrid1[i][j].setIcon(new ImageIcon("A_resized.jpg"));
+					compButtonGrid[i][j].setIcon(new ImageIcon("A_resized.jpg"));
 					System.out.println("setting icon");
 				}//end of if A
 				else if(placementGrid[i][j] == 4){
-					buttonGrid1[i][j].setIcon(new ImageIcon("B_resized.jpg"));
+					compButtonGrid[i][j].setIcon(new ImageIcon("B_resized.jpg"));
 					System.out.println("setting icon");
 				}//end of if B
 				else if(placementGrid[i][j] == 3){
-					buttonGrid1[i][j].setIcon(new ImageIcon("C_resized.jpg"));
+					compButtonGrid[i][j].setIcon(new ImageIcon("C_resized.jpg"));
 					System.out.println("setting icon");
 				}//end of if C
 				else if(placementGrid[i][j] == 2){
-					buttonGrid1[i][j].setIcon(new ImageIcon("D_resized.jpg"));
+					compButtonGrid[i][j].setIcon(new ImageIcon("D_resized.jpg"));
 					System.out.println("setting icon");
 				}//end of if D
 			}
 			else if (n == 2){
-				System.out.println(buttonGrid1[i][j].getText());
-				if(buttonGrid2[i][j].getText() == "A"){
-					buttonGrid2[i][j].setIcon(new ImageIcon("A_resized.jpg"));
+				System.out.println(compButtonGrid[i][j].getText());
+				if(playerButtonGrid[i][j].getText() == "A"){
+					playerButtonGrid[i][j].setIcon(new ImageIcon("A_resized.jpg"));
 					System.out.println("setting icon");
 				}//end of if A
-				else if(buttonGrid2[i][j].getText() == "B"){
-					buttonGrid2[i][j].setIcon(new ImageIcon("B_resized.jpg"));
+				else if(playerButtonGrid[i][j].getText() == "B"){
+					playerButtonGrid[i][j].setIcon(new ImageIcon("B_resized.jpg"));
 					System.out.println("setting icon");
 				}//end of if B
-				else if(buttonGrid2[i][j].getText() == "C"){
-					buttonGrid2[i][j].setIcon(new ImageIcon("C_resized.jpg"));
+				else if(playerButtonGrid[i][j].getText() == "C"){
+					playerButtonGrid[i][j].setIcon(new ImageIcon("C_resized.jpg"));
 					System.out.println("setting icon");
 				}//end of if C
-				else if(buttonGrid2[i][j].getText() == "D"){
-					buttonGrid2[i][j].setIcon(new ImageIcon("D_resized.jpg"));
+				else if(playerButtonGrid[i][j].getText() == "D"){
+					playerButtonGrid[i][j].setIcon(new ImageIcon("D_resized.jpg"));
 					System.out.println("setting icon");
 				}//end of if D
 			}
@@ -303,11 +303,8 @@ public class BattleshipGrid extends JPanel {
 				//=============================================END OF GAME
 				if(getNumSunk(compShips)==5){
 					console.append("\nYou won!");
-					for(int i = 0; i < 10; i++) {
-						for(int j = 0; j < 10; j++) {
-						buttonGrid2[i][j].setEnabled(false);
-						}// end of inner for 
-					}//end of outer for
+					enableGrid(false, playerButtonGrid);
+					enableGrid(false, playerButtonGrid);
 				}//end of if end of game
 				else{
 					console.append("\n"+(5-getNumSunk(compShips)) +" ships left");
@@ -359,11 +356,7 @@ public class BattleshipGrid extends JPanel {
 			//=============================================END OF GAME
 			if(getNumSunk(playerShips)==5){
 				console.append("\nYou Lost!");
-				for(int i = 0; i < 10; i++) {
-					for(int j = 0; j < 10; j++) {
-					buttonGrid2[i][j].setEnabled(false);
-					}// end of inner for 
-				}//end of outer for
+				enableGrid(false, playerButtonGrid);
 			}//end of if end of game
 			else{
 				console.append("\n"+(5-getNumSunk(playerShips)) +" ships left for Computer to sink");
@@ -556,15 +549,15 @@ public class BattleshipGrid extends JPanel {
 							//playerShips.add(new Battleship(tag, startPoint, endPoint));
 							System.out.println("Added");
 						}//end of if
-						enableGrid(true, buttonGrid1);
+						enableGrid(true, compButtonGrid);
 						PSW.dispose();
 					}//end of button listener
 				});
 				bottomPanel.add(placeShipButton);
-				enableGrid(false, buttonGrid1);
+				enableGrid(false, compButtonGrid);
 				PSW.addWindowListener(new WindowAdapter(){
 					public void windowClosing(WindowEvent evt){
-						enableGrid(true, buttonGrid1);
+						enableGrid(true, compButtonGrid);
 						PSW.dispose();
 					}
 				});
@@ -609,7 +602,7 @@ public class BattleshipGrid extends JPanel {
 			for(int j=0; j < 10; j++){
 				if(placementGrid[i][j] == target){
 					placementGrid[i][j] = 0;
-					buttonGrid1[i][j].setText("?");
+					compButtonGrid[i][j].setText("?");
 				}//end of if
 			}//end of inner for
 		}//end of outer for
@@ -684,25 +677,25 @@ public class BattleshipGrid extends JPanel {
 		switch(orientation){
 		case 1:			//face north
 			for(int i=0; i < length; i++){
-				buttonGrid1[startX][startY].setText(""+length);
+				compButtonGrid[startX][startY].setText(""+length);
 				startX++;
 			}//end of for
 			break;
 		case 2:			//face east
 			for(int i=0; i < length; i++){
-				buttonGrid1[startX][startY].setText(""+length);
+				compButtonGrid[startX][startY].setText(""+length);
 				startY--;
 			}//end of for
 			break;
 		case 3:			//face south
 			for(int i=0; i < length; i++){
-				buttonGrid1[startX][startY].setText(""+length);
+				compButtonGrid[startX][startY].setText(""+length);
 				startX--;
 			}//end of for
 			break;
 		case 4:			//face west
 			for(int i=0; i < length; i++){
-				buttonGrid1[startX][startY].setText(""+length);
+				compButtonGrid[startX][startY].setText(""+length);
 				startY++;
 			}//end of for
 			break;
@@ -746,27 +739,27 @@ public class BattleshipGrid extends JPanel {
 		
 		if(grid == 2){
 			System.out.println("player in hitships method = ("+ point.getX() + ", "+point.getY()+")");
-			if(!buttonGrid2[point.x][point.y].getText().equals("?")) return false;
+			if(!playerButtonGrid[point.x][point.y].getText().equals("?")) return false;
 			boolean hit = false;
 			for(Battleship bs : compShips) {
 				if(bs.attackPoint(point)) {
-					//buttonGrid2[point.x][point.y].setText(bs.getTag()+"");					
-					buttonGrid2[point.x][point.y].setEnabled(false);
+					playerButtonGrid[point.x][point.y].setText(bs.getTag()+"");					
+					playerButtonGrid[point.x][point.y].setEnabled(false);
 					hit = true;
 					console.append("\nYou hit a "+bs.getName()+"!");
 					if(bs.getHP() == 0) console.append("\nYou have sunken a "+bs.getName()+"!");
 					setIcons(point.x, point.y, 1);
 					break;
 				} else {
-					buttonGrid2[point.x][point.y].setText("MISS!");
-					buttonGrid2[point.x][point.y].setEnabled(false);
+					playerButtonGrid[point.x][point.y].setText("MISS!");
+					playerButtonGrid[point.x][point.y].setEnabled(false);
 				}
 			}
 			if(!hit) console.append("\nYou missed!");
 		}//end of if grid2
 		else if(grid == 1){
 			System.out.println(" Comp in hitships method = ("+ point.getX() + ", "+point.getY()+")");
-			if(buttonGrid1[point.x][point.y].getText().equals("M")) return false;
+			if(compButtonGrid[point.x][point.y].getText().equals("M")) return false;
 			System.out.println("in hit ships, comp passed if not ?");
 			boolean hit = false;
 			for(Battleship bs : playerShips) {
@@ -774,7 +767,6 @@ public class BattleshipGrid extends JPanel {
 					//===========================set icon
 					System.out.println("inside hitships checking attack point");
 					//buttonGrid1[point.x][point.y].setText("H");
-					buttonGrid1[point.x][point.y].setEnabled(true);
 					hit = true;
 					System.out.println("comp hit");
 					console.append("\nComp hit a "+bs.getName()+"!");
@@ -782,8 +774,8 @@ public class BattleshipGrid extends JPanel {
 					setIcons(point.x, point.y, 2);				
 					break;
 				} else {
-					buttonGrid1[point.x][point.y].setText("M");
-					buttonGrid1[point.x][point.y].setEnabled(true);
+					compButtonGrid[point.x][point.y].setText("M");
+					compButtonGrid[point.x][point.y].setEnabled(true);
 				}
 			}
 			if(!hit) console.append("\nComp missed!");
@@ -793,7 +785,7 @@ public class BattleshipGrid extends JPanel {
 
 	public void clearGrid() {
 		for(int i = 0; i < 10; i++) {
-			for(JButton square : buttonGrid1[i]) {
+			for(JButton square : compButtonGrid[i]) {
 				square.setText("?");
 			}
 		}//end of for

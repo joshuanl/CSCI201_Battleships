@@ -38,8 +38,8 @@ public class BattleshipFrame extends JFrame{
 				JFrame jf = new JFrame();
 				jf.setTitle("Instructions");
 				jf.setLocation(150,50);
-				jf.setSize(150, 150);
-				jf.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+				jf.setSize(350, 350);
+				jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 				JPanel jp = new JPanel();
 				jp.setLayout(new BorderLayout());
 				JTextArea jta = new JTextArea(3,50);
@@ -50,6 +50,7 @@ public class BattleshipFrame extends JFrame{
 						+ "Load .battle file for Computer.  After all ships and file is added, press start to begin.\n"
 						+ "Click on the grid under Computer to guess");
 				jp.add(scroll, BorderLayout.CENTER);
+				jf.add(jp);
 				jf.setVisible(true);
 			}
 		});
@@ -64,14 +65,14 @@ public class BattleshipFrame extends JFrame{
 					jf.setSize(400, 400);
 					JPanel jp = new JPanel();
 					jp.setLayout(new BoxLayout(jp, BoxLayout.Y_AXIS));
-					jf.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+					jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 					JLabel jl = new JLabel("Made by Joshua Lum");
 					JLabel jl2 = new JLabel(new ImageIcon("me.jpg"));
 					JLabel jl3 = new JLabel("CSCI201 USC: Assignment 3");
 					jp.add(jl);
 					jp.add(jl2);
 					jp.add(jl3);
-					
+					jf.add(jp);
 					jf.setVisible(true);
 			}
 		});
