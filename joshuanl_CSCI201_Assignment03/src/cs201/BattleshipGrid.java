@@ -88,6 +88,8 @@ public class BattleshipGrid extends JPanel {
 		roundCount = 0;
 		coordGuess = "";
 		
+		
+		
 		setLayout(new BorderLayout());
 		placementGrid = new int[10][10];
 		JPanel jp1 = new JPanel();
@@ -108,7 +110,7 @@ public class BattleshipGrid extends JPanel {
 //====================================================================SET NORTH LABELS
 		playerName.setText("Player");
 		computerName.setText("Computer");
-		clockLabel = new JLabel("Time - "+turnTime+"s");
+		clockLabel = new JLabel("Time - 0:"+turnTime);
 		JPanel northPanel = new JPanel();
 		JPanel jp = new JPanel();
 		northPanel.setOpaque(false);
@@ -281,6 +283,8 @@ public class BattleshipGrid extends JPanel {
 					enableGrid(false, compBG);
 					enableGrid(false, compBG);
 				}//end of if end of game
+				playerTurnTaken = true;
+				enableGrid(false, playerBG);
 			}//end of if hit
 			compTurn();
 			System.out.println("comp turn over");
@@ -330,7 +334,8 @@ public class BattleshipGrid extends JPanel {
 				enableGrid(false, compBG);
 			}//end of if end of game
 		}//end of if hit
-		
+		compTurnTaken = true;
+		enableGrid(false, compBG);
 	}//end of compturn
 	
 //============================== PLACE SHIPS LISTENER	
@@ -977,7 +982,7 @@ public class BattleshipGrid extends JPanel {
 		
 		public TurnThread(){
 		}//end of constructor
-		public void run(){
+		public synchronized void run(){
 			while(compTurnTaken == false && playerTurnTaken == false){
 				try {
 					Thread.sleep(1000);
@@ -985,11 +990,32 @@ public class BattleshipGrid extends JPanel {
 					System.out.println("Interrupted exception in TurnThread::run() "+ie.getMessage());
 				}
 				turnTime--;
-				clockLabel.setText("Time - "+turnTime+"s");
+				clockLabel.setText("Time - "+returnTime(turnTime));
+				if((compTurnTaken == true && playerTurnTaken == true) || turnTime == 0){
+					turnTime = 15;
+					roundCount++; 
+					playerTurnTaken = false;
+					enableGrid(true, playerBG);
+					compTurnTaken = false;
+					enableGrid(true, compBG);
+					try {
+						Thread.sleep(20);
+					} catch (InterruptedException ie) {
+						System.out.println("Interrupted exception in TurnThread::run() "+ie.getMessage());
+					}
+				}
 			}//end of while
-			turnTime = 15;
 		}//end of run
+		
+		public String returnTime(int t){
+			String str = ""+t;
+			if(t < 10){
+				str = "0:"+t;
+			}
+			return str;
+		}//end of returning time
 	}//end of inner class
+	
 }//end of BattleshipGrid class
 
 class Battleship {
