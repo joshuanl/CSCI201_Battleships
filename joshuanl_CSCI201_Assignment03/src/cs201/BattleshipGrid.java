@@ -8,6 +8,8 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -49,8 +51,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 @SuppressWarnings("serial")
 public class BattleshipGrid extends JPanel {
-	private JButton compButtonGrid[][];
-	private JButton playerButtonGrid[][];
+	private JButton playerBG[][];
+	private JButton compBG[][];
 	private JLabel openedFileLabel;
 	private JLabel playerName = new JLabel();
 	private JLabel computerName = new JLabel();
@@ -67,8 +69,10 @@ public class BattleshipGrid extends JPanel {
 	private int numOf_BS;
 	private int numOf_C;
 	private int numOf_D;
+	private static int turnTime;
 	private static int placementGrid[][];
-	private static int placementGrid2[][];
+	private static boolean playerTurnTaken;
+	private static boolean compTurnTaken;
 	
 	BattleshipGrid() {
 		numOf_AC = 1;
@@ -76,10 +80,12 @@ public class BattleshipGrid extends JPanel {
 		numOf_C = 1;
 		numOf_D = 2;
 		fileLoaded = false;
+		playerTurnTaken = false;
+		compTurnTaken = true;
+		turnTime = 15;
 		
 		setLayout(new BorderLayout());
 		placementGrid = new int[10][10];
-		placementGrid2 = new int[10][10];
 		JPanel jp1 = new JPanel();
 		JPanel jp2 = new JPanel();
 		JPanel jpCase = new JPanel();
@@ -90,15 +96,15 @@ public class BattleshipGrid extends JPanel {
 		jp2.setOpaque(false);
 		jpCase.setOpaque(false);
 		jpbottom.setOpaque(false);
-		compButtonGrid = new JButton[10][10];
-		playerButtonGrid = new JButton[10][10];
+		playerBG = new JButton[10][10];
+		compBG = new JButton[10][10];
 		compShips = new ArrayList<Battleship>();
 		playerShips = new ArrayList<Battleship>();
 		JButton temp_button;
 //====================================================================SET NORTH LABELS
 		playerName.setText("Player");
 		computerName.setText("Computer");
-		clockLabel = new JLabel("Time - 15s");
+		clockLabel = new JLabel("Time - "+turnTime+"s");
 		JPanel northPanel = new JPanel();
 		JPanel jp = new JPanel();
 		northPanel.setOpaque(false);
@@ -120,8 +126,8 @@ public class BattleshipGrid extends JPanel {
 				temp_button.setPreferredSize(new Dimension(45, 45));
 				PlaceShipsAdapter psa = new PlaceShipsAdapter(i, j);
 				temp_button.addActionListener(psa);
-				compButtonGrid[i][j] = temp_button;
-				jp1.add(compButtonGrid[i][j]);
+				playerBG[i][j] = temp_button;
+				jp1.add(playerBG[i][j]);
 			}// end of inner for 
 		}//end of outer for
 		
@@ -139,9 +145,9 @@ public class BattleshipGrid extends JPanel {
 				temp_button.setPreferredSize(new Dimension(45, 45));
 				AttackShipListener asl = new AttackShipListener(i,j);
 				temp_button.addActionListener(asl);
-				playerButtonGrid[i][j] = temp_button;
-				jp2.add(playerButtonGrid[i][j]);
-				playerButtonGrid[i][j].setEnabled(false);
+				compBG[i][j] = temp_button;
+				jp2.add(compBG[i][j]);
+				compBG[i][j].setEnabled(false);
 			}// end of inner for 
 		}//end of outer for
 		
@@ -167,8 +173,13 @@ public class BattleshipGrid extends JPanel {
 		jpbottom.setLayout(new BoxLayout(jpbottom, BoxLayout.Y_AXIS));
 		jpbottom.setOpaque(false);
 		editMode = true;
-		console = new JTextArea(3,50);
+		console = new JTextArea(7,50);
 		JScrollPane scroll = new JScrollPane(console, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scroll.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {  
+	        public void adjustmentValueChanged(AdjustmentEvent e) {  
+	            e.getAdjustable().setValue(e.getAdjustable().getMaximum());  
+	        }
+	    });
 		console.setLineWrap(true);
 		console.setWrapStyleWord(true);
 		consolePanel.add(scroll);
@@ -196,30 +207,32 @@ public class BattleshipGrid extends JPanel {
 			}
 		});
 		bottomA.add(startButton);
-//================================================================== FILE CHOOSER		
-		openFileButton.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent ae){
-				JFrame tempFrame = new JFrame();
-				JFileChooser fileChooser = new JFileChooser();
-				FileFilter filter = new FileNameExtensionFilter(".battle","battle");
-				fileChooser.setFileFilter(filter);
-		        int returnValue = fileChooser.showOpenDialog(null);
-		        if (returnValue == JFileChooser.APPROVE_OPTION) {
-		        	File selectedFile = fileChooser.getSelectedFile();
-		        	if(selectedFile.getPath().contains(".battle")){
-		        		//System.out.println(selectedFile.getPath());
-		        		loadMap(selectedFile.getPath());
-		        		console.append("\nLoaded File: "+selectedFile.getName());
-		        		fileLoaded = true;
-		        		openedFileLabel.setText("File: "+selectedFile.getName());
-		        	}//end of if
-		        	else{
-			        	JOptionPane.showMessageDialog(tempFrame, "Not a \".battle\" file");
-			        }//end of else not acceptable file
-		        }//end of if acceptable file
-		        
-			}//end of action performed
-		});
+//================================================================== FILE CHOOSER
+		loadMap("test.battle");
+		fileLoaded = true;
+//		openFileButton.addActionListener(new ActionListener(){
+//			public void actionPerformed(ActionEvent ae){
+//				JFrame tempFrame = new JFrame();
+//				JFileChooser fileChooser = new JFileChooser();
+//				FileFilter filter = new FileNameExtensionFilter(".battle","battle");
+//				fileChooser.setFileFilter(filter);
+//		        int returnValue = fileChooser.showOpenDialog(null);
+//		        if (returnValue == JFileChooser.APPROVE_OPTION) {
+//		        	File selectedFile = fileChooser.getSelectedFile();
+//		        	if(selectedFile.getPath().contains(".battle")){
+//		        		//System.out.println(selectedFile.getPath());
+//		        		loadMap(selectedFile.getPath());
+//		        		console.append("\nLoaded File: "+selectedFile.getName());
+//		        		fileLoaded = true;
+//		        		openedFileLabel.setText("File: "+selectedFile.getName());
+//		        	}//end of if
+//		        	else{
+//			        	JOptionPane.showMessageDialog(tempFrame, "Not a \".battle\" file");
+//			        }//end of else not acceptable file
+//		        }//end of if acceptable file
+//		        
+//			}//end of action performed
+//		});
 		jpbottom.add(logPanel);
 		jpbottom.add(bottomA);
 		//logPanel.add(console);
@@ -234,56 +247,14 @@ public class BattleshipGrid extends JPanel {
 	//=========================================PLAY GAME
 	public void playGame(){
 //===================== DISABLE/ENDABLE BUTTONS
-
+		new TurnThread().start();
+		System.out.println("thread started");
 		boolean isOver = false;
 		editMode = false;
-		enableGrid(false, compButtonGrid);
-		enableGrid(true, playerButtonGrid);
+		enableGrid(false, playerBG);
+		enableGrid(true, compBG);
 	}//end of playgame
 	
-	public void setIcons(int i, int j, int n){
-		System.out.println("setting icon method");
-		
-			if(n == 1){
-				System.out.println(compButtonGrid[i][j].getText());
-				if(placementGrid[i][j] == 5){
-					compButtonGrid[i][j].setIcon(new ImageIcon("A_resized.jpg"));
-					System.out.println("setting icon");
-				}//end of if A
-				else if(placementGrid[i][j] == 4){
-					compButtonGrid[i][j].setIcon(new ImageIcon("B_resized.jpg"));
-					System.out.println("setting icon");
-				}//end of if B
-				else if(placementGrid[i][j] == 3){
-					compButtonGrid[i][j].setIcon(new ImageIcon("C_resized.jpg"));
-					System.out.println("setting icon");
-				}//end of if C
-				else if(placementGrid[i][j] == 2){
-					compButtonGrid[i][j].setIcon(new ImageIcon("D_resized.jpg"));
-					System.out.println("setting icon");
-				}//end of if D
-			}
-			else if (n == 2){
-				System.out.println(compButtonGrid[i][j].getText());
-				if(playerButtonGrid[i][j].getText() == "A"){
-					playerButtonGrid[i][j].setIcon(new ImageIcon("A_resized.jpg"));
-					System.out.println("setting icon");
-				}//end of if A
-				else if(playerButtonGrid[i][j].getText() == "B"){
-					playerButtonGrid[i][j].setIcon(new ImageIcon("B_resized.jpg"));
-					System.out.println("setting icon");
-				}//end of if B
-				else if(playerButtonGrid[i][j].getText() == "C"){
-					playerButtonGrid[i][j].setIcon(new ImageIcon("C_resized.jpg"));
-					System.out.println("setting icon");
-				}//end of if C
-				else if(playerButtonGrid[i][j].getText() == "D"){
-					playerButtonGrid[i][j].setIcon(new ImageIcon("D_resized.jpg"));
-					System.out.println("setting icon");
-				}//end of if D
-			}
-
-	}//end of set icons
 //=============================================== ATTACK SHIP LISTENER	
 	class AttackShipListener implements ActionListener{
 		private int coordX;
@@ -303,8 +274,8 @@ public class BattleshipGrid extends JPanel {
 				//=============================================END OF GAME
 				if(getNumSunk(compShips)==5){
 					console.append("\nYou won!");
-					enableGrid(false, playerButtonGrid);
-					enableGrid(false, playerButtonGrid);
+					enableGrid(false, compBG);
+					enableGrid(false, compBG);
 				}//end of if end of game
 				else{
 					console.append("\n"+(5-getNumSunk(compShips)) +" ships left");
@@ -342,7 +313,6 @@ public class BattleshipGrid extends JPanel {
 	}//end of getLetter equiv
 //==============================COMPUTERS TURN	
 	public void compTurn(){
-		char pool[] = new char[] {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
 		char c;
 		Random bag = new Random();
 		int x = bag.nextInt(10);
@@ -356,7 +326,7 @@ public class BattleshipGrid extends JPanel {
 			//=============================================END OF GAME
 			if(getNumSunk(playerShips)==5){
 				console.append("\nYou Lost!");
-				enableGrid(false, playerButtonGrid);
+				enableGrid(false, compBG);
 			}//end of if end of game
 			else{
 				console.append("\n"+(5-getNumSunk(playerShips)) +" ships left for Computer to sink");
@@ -549,15 +519,15 @@ public class BattleshipGrid extends JPanel {
 							//playerShips.add(new Battleship(tag, startPoint, endPoint));
 							System.out.println("Added");
 						}//end of if
-						enableGrid(true, compButtonGrid);
+						enableGrid(true, playerBG);
 						PSW.dispose();
 					}//end of button listener
 				});
 				bottomPanel.add(placeShipButton);
-				enableGrid(false, compButtonGrid);
+				enableGrid(false, playerBG);
 				PSW.addWindowListener(new WindowAdapter(){
 					public void windowClosing(WindowEvent evt){
-						enableGrid(true, compButtonGrid);
+						enableGrid(true, playerBG);
 						PSW.dispose();
 					}
 				});
@@ -602,7 +572,7 @@ public class BattleshipGrid extends JPanel {
 			for(int j=0; j < 10; j++){
 				if(placementGrid[i][j] == target){
 					placementGrid[i][j] = 0;
-					compButtonGrid[i][j].setText("?");
+					playerBG[i][j].setText("?");
 				}//end of if
 			}//end of inner for
 		}//end of outer for
@@ -677,25 +647,25 @@ public class BattleshipGrid extends JPanel {
 		switch(orientation){
 		case 1:			//face north
 			for(int i=0; i < length; i++){
-				compButtonGrid[startX][startY].setText(""+length);
+				playerBG[startX][startY].setText(""+length);
 				startX++;
 			}//end of for
 			break;
 		case 2:			//face east
 			for(int i=0; i < length; i++){
-				compButtonGrid[startX][startY].setText(""+length);
+				playerBG[startX][startY].setText(""+length);
 				startY--;
 			}//end of for
 			break;
 		case 3:			//face south
 			for(int i=0; i < length; i++){
-				compButtonGrid[startX][startY].setText(""+length);
+				playerBG[startX][startY].setText(""+length);
 				startX--;
 			}//end of for
 			break;
 		case 4:			//face west
 			for(int i=0; i < length; i++){
-				compButtonGrid[startX][startY].setText(""+length);
+				playerBG[startX][startY].setText(""+length);
 				startY++;
 			}//end of for
 			break;
@@ -736,46 +706,77 @@ public class BattleshipGrid extends JPanel {
 	}
 	
 	private boolean hitShips(Point point, int grid) {
-		
+		//============================PLAYER GUESSING
 		if(grid == 2){
-			System.out.println("player in hitships method = ("+ point.getX() + ", "+point.getY()+")");
-			if(!playerButtonGrid[point.x][point.y].getText().equals("?")) return false;
+			if(!compBG[point.x][point.y].getText().equals("?")) return false;
 			boolean hit = false;
 			for(Battleship bs : compShips) {
 				if(bs.attackPoint(point)) {
-					playerButtonGrid[point.x][point.y].setText(bs.getTag()+"");					
-					playerButtonGrid[point.x][point.y].setEnabled(false);
+					System.out.println("hit ship: " + bs.getTag());
+					//===========================set icon
+					if(bs.getTag() == 'A'){
+						compBG[point.x][point.y].setIcon(new ImageIcon("A_resized.jpg"));
+						System.out.println("setting icon for: "+ bs.getTag());
+					}//end of if A
+					else if(bs.getTag() == 'B'){
+						compBG[point.x][point.y].setIcon(new ImageIcon("B_resized.jpg"));
+						System.out.println("setting icon for: "+ bs.getTag());
+					}//end of if B
+					else if(bs.getTag() == 'C'){
+						compBG[point.x][point.y].setIcon(new ImageIcon("C_resized.jpg"));
+						System.out.println("setting icon for: "+ bs.getTag());
+					}//end of if C
+					else if(bs.getTag() == 'D'){
+						compBG[point.x][point.y].setIcon(new ImageIcon("D_resized.jpg"));
+						System.out.println("setting icon for: "+ bs.getTag());
+					}//end of if D
+					//=================done setting icon
+					
 					hit = true;
 					console.append("\nYou hit a "+bs.getName()+"!");
 					if(bs.getHP() == 0) console.append("\nYou have sunken a "+bs.getName()+"!");
-					setIcons(point.x, point.y, 1);
+					//setIcons(point.x, point.y, 2);
 					break;
-				} else {
-					playerButtonGrid[point.x][point.y].setText("MISS!");
-					playerButtonGrid[point.x][point.y].setEnabled(false);
+				} else { //set miss animation here
+					compBG[point.x][point.y].setText("M");
+					
 				}
 			}
 			if(!hit) console.append("\nYou missed!");
+			compBG[point.x][point.y].setEnabled(false);
 		}//end of if grid2
+		//===================================COMPUTER GUESSING 
 		else if(grid == 1){
-			System.out.println(" Comp in hitships method = ("+ point.getX() + ", "+point.getY()+")");
-			if(compButtonGrid[point.x][point.y].getText().equals("M")) return false;
-			System.out.println("in hit ships, comp passed if not ?");
+			if(playerBG[point.x][point.y].getText().equals("M")) return false;
 			boolean hit = false;
 			for(Battleship bs : playerShips) {
 				if(bs.attackPoint(point)) {
 					//===========================set icon
-					System.out.println("inside hitships checking attack point");
-					//buttonGrid1[point.x][point.y].setText("H");
+					if(placementGrid[point.x][point.y] == 5){
+						playerBG[point.x][point.y].setIcon(new ImageIcon("A_resized.jpg"));
+						System.out.println("setting icon");
+					}//end of if A
+					else if(placementGrid[point.x][point.y] == 4){
+						playerBG[point.x][point.y].setIcon(new ImageIcon("B_resized.jpg"));
+						System.out.println("setting icon");
+					}//end of if B
+					else if(placementGrid[point.x][point.y] == 3){
+						playerBG[point.x][point.y].setIcon(new ImageIcon("C_resized.jpg"));
+						System.out.println("setting icon");
+					}//end of if C
+					else if(placementGrid[point.x][point.y] == 2){
+						playerBG[point.x][point.y].setIcon(new ImageIcon("D_resized.jpg"));
+						System.out.println("setting icon");
+					}//end of if D
+					//=================done setting icon
 					hit = true;
 					System.out.println("comp hit");
 					console.append("\nComp hit a "+bs.getName()+"!");
 					if(bs.getHP() == 0) console.append("\nYou have sunken a "+bs.getName()+"!");
-					setIcons(point.x, point.y, 2);				
+					//setIcons(point.x, point.y, 1);				
 					break;
-				} else {
-					compButtonGrid[point.x][point.y].setText("M");
-					compButtonGrid[point.x][point.y].setEnabled(true);
+				} else { //set miss animation here
+					playerBG[point.x][point.y].setText("M");			
 				}
 			}
 			if(!hit) console.append("\nComp missed!");
@@ -785,7 +786,7 @@ public class BattleshipGrid extends JPanel {
 
 	public void clearGrid() {
 		for(int i = 0; i < 10; i++) {
-			for(JButton square : compButtonGrid[i]) {
+			for(JButton square : playerBG[i]) {
 				square.setText("?");
 			}
 		}//end of for
@@ -974,6 +975,24 @@ public class BattleshipGrid extends JPanel {
 		}
 	}//========================================end of loadmap
 
+	
+	class TurnThread extends Thread{
+		
+		public TurnThread(){
+		}//end of constructor
+		public void run(){
+			while(turnTime != 0){
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException ie) {
+					System.out.println("Interrupted exception in TurnThread::run() "+ie.getMessage());
+				}
+				turnTime--;
+				clockLabel.setText("Time - "+turnTime+"s");
+			}//end of while
+			turnTime = 15;
+		}//end of run
+	}//end of inner class
 }//end of BattleshipGrid class
 
 class Battleship {

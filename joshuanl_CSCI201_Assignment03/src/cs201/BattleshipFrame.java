@@ -24,7 +24,7 @@ public class BattleshipFrame extends JFrame{
 	public BattleshipFrame(BattleshipGrid bsg) {
 		super("Battleship");
 		
-		setSize(1100,650);
+		setSize(1100,700);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
 		
