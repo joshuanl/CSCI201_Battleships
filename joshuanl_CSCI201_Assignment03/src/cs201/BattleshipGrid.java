@@ -61,6 +61,7 @@ public class BattleshipGrid extends JPanel {
 	private JButton startButton;
 	static private JTextArea console;
 	private String spacer = "                      ";
+	private String coordGuess;
 	private boolean editMode;
 	private boolean fileLoaded;
 	private ArrayList<Battleship> compShips;
@@ -69,6 +70,7 @@ public class BattleshipGrid extends JPanel {
 	private int numOf_BS;
 	private int numOf_C;
 	private int numOf_D;
+	private int roundCount;
 	private static int turnTime;
 	private static int placementGrid[][];
 	private static boolean playerTurnTaken;
@@ -81,8 +83,10 @@ public class BattleshipGrid extends JPanel {
 		numOf_D = 2;
 		fileLoaded = false;
 		playerTurnTaken = false;
-		compTurnTaken = true;
+		compTurnTaken = false;
 		turnTime = 15;
+		roundCount = 0;
+		coordGuess = "";
 		
 		setLayout(new BorderLayout());
 		placementGrid = new int[10][10];
@@ -268,8 +272,8 @@ public class BattleshipGrid extends JPanel {
 		
 		public void actionPerformed(ActionEvent ae){
 			c = getLetter(coordY);
-			String temp = ""+c+coordX;
-			if(hitCoord(temp, 2)){
+			coordGuess = ""+c+coordX;
+			if(hitCoord(coordGuess, 2)){
 				//=============================================END OF GAME
 				//=============================================END OF GAME
 				if(getNumSunk(compShips)==5){
@@ -277,9 +281,6 @@ public class BattleshipGrid extends JPanel {
 					enableGrid(false, compBG);
 					enableGrid(false, compBG);
 				}//end of if end of game
-				else{
-					console.append("\n"+(5-getNumSunk(compShips)) +" ships left");
-				}
 			}//end of if hit
 			compTurn();
 			System.out.println("comp turn over");
@@ -328,9 +329,6 @@ public class BattleshipGrid extends JPanel {
 				console.append("\nYou Lost!");
 				enableGrid(false, compBG);
 			}//end of if end of game
-			else{
-				console.append("\n"+(5-getNumSunk(playerShips)) +" ships left for Computer to sink");
-			}
 		}//end of if hit
 		
 	}//end of compturn
@@ -733,8 +731,8 @@ public class BattleshipGrid extends JPanel {
 					//=================done setting icon
 					
 					hit = true;
-					console.append("\nYou hit a "+bs.getName()+"!");
-					if(bs.getHP() == 0) console.append("\nYou have sunken a "+bs.getName()+"!");
+					console.append("\nPlayer hit "+coordGuess+ " and hit a"+bs.getName()+"!" + "("+clockLabel.getText()+")");
+					if(bs.getHP() == 0) console.append("\nPlayer sunk Computer's "+bs.getName()+"!");
 					//setIcons(point.x, point.y, 2);
 					break;
 				} else { //set miss animation here
@@ -742,7 +740,7 @@ public class BattleshipGrid extends JPanel {
 					
 				}
 			}
-			if(!hit) console.append("\nYou missed!");
+			if(!hit) console.append("\nPlayer hit "+coordGuess+ " and missed!" + "("+clockLabel.getText()+")");;
 			compBG[point.x][point.y].setEnabled(false);
 		}//end of if grid2
 		//===================================COMPUTER GUESSING 
@@ -770,16 +768,15 @@ public class BattleshipGrid extends JPanel {
 					}//end of if D
 					//=================done setting icon
 					hit = true;
-					System.out.println("comp hit");
-					console.append("\nComp hit a "+bs.getName()+"!");
-					if(bs.getHP() == 0) console.append("\nYou have sunken a "+bs.getName()+"!");
+					console.append("\nComputer hit "+coordGuess+ " and hit a"+bs.getName()+"!" + "("+clockLabel.getText()+")");
+					if(bs.getHP() == 0) console.append("\nComputer sunk Player's a "+bs.getName()+"!");
 					//setIcons(point.x, point.y, 1);				
 					break;
 				} else { //set miss animation here
 					playerBG[point.x][point.y].setText("M");			
 				}
 			}
-			if(!hit) console.append("\nComp missed!");
+			if(!hit) console.append("\nComputer hit "+coordGuess+ " and missed!" + "("+clockLabel.getText()+")");
 		}//end of if grid 1
 		return true;
 	}
@@ -981,7 +978,7 @@ public class BattleshipGrid extends JPanel {
 		public TurnThread(){
 		}//end of constructor
 		public void run(){
-			while(turnTime != 0){
+			while(compTurnTaken == false && playerTurnTaken == false){
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException ie) {
