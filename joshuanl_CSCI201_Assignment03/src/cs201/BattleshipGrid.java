@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Vector;
+import java.util.concurrent.Semaphore;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -71,7 +72,7 @@ public class BattleshipGrid extends JPanel {
 	private int numOf_C;
 	private int numOf_D;
 	private int roundCount;
-	private static int turnTime;
+	static private int turnTime;
 	private static int placementGrid[][];
 	private static boolean playerTurnTaken;
 	private static boolean compTurnTaken;
@@ -256,6 +257,7 @@ public class BattleshipGrid extends JPanel {
 	public void playGame(){
 //===================== DISABLE/ENDABLE BUTTONS
 		new TurnThread().start();
+		
 		boolean isOver = false;
 		editMode = false;
 		enableGrid(false, playerBG);
@@ -287,13 +289,12 @@ public class BattleshipGrid extends JPanel {
 				if(getNumSunk(compShips)==5){
 					console.append("\nYou won!");
 					enableGrid(false, compBG);
-					enableGrid(false, compBG);
+					enableGrid(false, playerBG);
 				}//end of if end of game
 				playerTurnTaken = true;
-				guessed = true;
-				enableGrid(false, playerBG);
+				guessed = true;			
 			}//end of if hit
-			
+			enableGrid(false, playerBG);
 		}//end of actionevent	
 	}//end of attackshiplistener class
 	
@@ -713,7 +714,7 @@ public class BattleshipGrid extends JPanel {
 					//=================done setting icon
 					
 					hit = true;
-					console.append("\nPlayer hit "+coordGuess+ " and hit a "+bs.getName()+"!" + "("+clockLabel.getText()+")");
+					console.append("\nPlayer hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")");
 					if(bs.getHP() == 0) console.append("\nPlayer destroyed Computer's group of "+bs.getName()+"s!");
 					//setIcons(point.x, point.y, 2);
 					break;
@@ -722,7 +723,7 @@ public class BattleshipGrid extends JPanel {
 					
 				}
 			}
-			if(!hit) console.append("\nPlayer hit "+coordGuess+ " and missed!" + "("+clockLabel.getText()+")");;
+			if(!hit) console.append("\nPlayer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");;
 			compBG[point.x][point.y].setEnabled(false);
 		}//end of if grid2
 		//===================================COMPUTER GUESSING 
@@ -746,7 +747,7 @@ public class BattleshipGrid extends JPanel {
 					}//end of if D
 					//=================done setting icon
 					hit = true;
-					console.append("\nComputer hit "+coordGuess+ " and hit a "+bs.getName()+"!" + "("+clockLabel.getText()+")");
+					console.append("\nComputer hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")");
 					if(bs.getHP() == 0) console.append("\nComputer destroyed Player's group of "+bs.getName()+"s!");
 					//setIcons(point.x, point.y, 1);				
 					break;
@@ -754,7 +755,7 @@ public class BattleshipGrid extends JPanel {
 					playerBG[point.x][point.y].setText("M");			
 				}
 			}
-			if(!hit) console.append("\nComputer hit "+coordGuess+ " and missed!" + "("+clockLabel.getText()+")");
+			if(!hit) console.append("\nComputer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
 		}//end of if grid 1
 		return true;
 	}
@@ -950,23 +951,29 @@ public class BattleshipGrid extends JPanel {
 
 	
 	class TurnThread extends Thread{
-		
+		private boolean issueCompTurn;
 		public TurnThread(){
+			issueCompTurn = false;
 		}//end of constructor
-		public synchronized void run(){ 
+		public void run(){ 
 			console.append("\nRound "+roundCount);
-			while(compTurnTaken != true || playerTurnTaken != true){				
+			while(compTurnTaken != true || playerTurnTaken != true){	
+				if(compTurnTaken != true && issueCompTurn == false){
+					issueCompTurn = true;
+					new CompTurn(roundCount).start();
+				}//end of if 	
 				try {
-					if(compTurnTaken != true){
-						compTurn();
-					}
 					Thread.sleep(1000);
-					turnTime--;
-					clockLabel.setText("Time - "+returnTime(turnTime));
 				} catch (InterruptedException ie) {
 					System.out.println("Interrupted exception in TurnThread::run() "+ie.getMessage());
 				}
-				
+				turnTime--;
+				if(turnTime == 3){
+					console.append("\nWarning - "+returnTime(turnTime) + " remaining in the round!");
+				}
+				else{
+					clockLabel.setText("Time - "+returnTime(turnTime));
+				}
 				if((compTurnTaken == true && playerTurnTaken == true) || turnTime == 0){
 					turnTime = 15;
 					clockLabel.setText("Time - "+returnTime(turnTime));
@@ -974,12 +981,8 @@ public class BattleshipGrid extends JPanel {
 					playerTurnTaken = false;
 					enableGrid(true, playerBG);
 					compTurnTaken = false;
+					issueCompTurn = false;
 					enableGrid(true, compBG);
-//					try {
-//						Thread.sleep(10);
-//					} catch (InterruptedException ie) {
-//						System.out.println("Interrupted exception in TurnThread::run() "+ie.getMessage());
-//					}
 					console.append("\nRound "+roundCount);
 				}//end of if
 			}//end of while
@@ -992,28 +995,64 @@ public class BattleshipGrid extends JPanel {
 			}
 			return str;
 		}//end of returning time
-		public void compTurn(){
-			char c;
-			Random bag = new Random();
-			int x = bag.nextInt(10);
-			int delay = bag.nextInt(17)+1;
-			System.out.println("got delay: "+delay);
-			new Timer(delay).start();
-			x++;
-			int y = bag.nextInt(10);
-			c = getLetter(y);
-			String temp = ""+c+x;
-			if(hitCoord(temp, 1)){	
-				if(getNumSunk(playerShips)==5){
-					console.append("\nYou Lost!");
-					enableGrid(false, compBG);
-				}//end of if end of game
-			}//end of if hit
-			compTurnTaken = true;
-		}//end of compturn
+//		public void compTurn(){
+//			char c;
+//			Random bag = new Random();
+//			int x = bag.nextInt(10);
+//			int delay = bag.nextInt(17)+1;
+//			System.out.println("got delay: "+delay);
+//			(new Timer(delay)).run();
+//			x++;
+//			int y = bag.nextInt(10);
+//			c = getLetter(y);
+//			String temp = ""+c+x;
+//			if(hitCoord(temp, 1)){	
+//				if(getNumSunk(playerShips)==5){
+//					console.append("\nYou Lost!");
+//					enableGrid(false, compBG);
+//				}//end of if end of game
+//			}//end of if hit
+//			compTurnTaken = true;
+//		}//end of compturn
 		
 	}//end of inner class
-	
+	class CompTurn extends Thread{
+		private final Semaphore semaphore = new Semaphore(1);
+		private int counter;
+		private boolean iterated;
+		public CompTurn(int roundCount){
+			counter = roundCount;
+			iterated = false;
+		}
+		
+		public synchronized void run(){
+			if(compTurnTaken != true){
+				char c;
+				Random bag = new Random();
+				int x = bag.nextInt(10);
+				int delay = bag.nextInt(17)+1;
+				System.out.println("it is turn: "+ roundCount);
+				System.out.println("got delay: "+delay);
+				if(delay > 14){
+					compTurnTaken = true;
+					(new Timer(turnTime)).run();
+					return;
+				}
+				(new Timer(delay)).run();
+				x++;
+				int y = bag.nextInt(10);
+				c = getLetter(y);
+				String temp = ""+c+x;
+				if(hitCoord(temp, 1)){	
+					if(getNumSunk(playerShips)==5){
+						console.append("\nYou Lost!");
+						enableGrid(false, compBG);
+					}//end of if end of game
+				}//end of if hit
+				compTurnTaken = true;
+			}//end of if
+		}//end of run
+	}//end of comp turn class
 }//end of BattleshipGrid class
 
 class Battleship {
