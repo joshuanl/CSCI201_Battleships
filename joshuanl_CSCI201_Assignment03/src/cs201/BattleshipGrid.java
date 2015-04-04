@@ -75,9 +75,9 @@ public class BattleshipGrid extends JPanel {
 	private static int placementGrid[][];
 	private static boolean playerTurnTaken;
 	private static boolean compTurnTaken;
-	
-	
-	BattleshipGrid() {
+	private int playerFlag;
+	private int compFlag;
+	public BattleshipGrid() {
 		numOf_AC = 1;
 		numOf_BS = 1;
 		numOf_C = 1;
@@ -86,7 +86,7 @@ public class BattleshipGrid extends JPanel {
 		playerTurnTaken = false;
 		compTurnTaken = false;
 		turnTime = 15;
-		roundCount = 0;
+		roundCount = 1;
 		coordGuess = "";
 		//playerSpotsGuessed = new boolean[11][11];
 		//compSpotsGuessed = new boolean[11][11];
@@ -341,29 +341,29 @@ public class BattleshipGrid extends JPanel {
 					JFrame tempFrame = new JFrame();
 					switch(placementGrid[startX][startY]){
 						case 5:
-							shipType = "Aircraft Carrier";
+							shipType = "Hellion";
 							break;
 						case 4:
-							shipType = "Battleshipe";
+							shipType = "Gouf";
 							break;
 						case 3:
-							shipType = "Cruiser";
+							shipType = "Leo";
 							break;
 						case 2:
 						case 1:
-							shipType = "Destroyer";
+							shipType = "Dom Trooper";
 							break;
 					}//end of switch
-					String msg = "Do you really want to delete this ship? \n\""+shipType+"\"";
+					String msg = "Do you really want to delete these Mobile Suits? \n\""+shipType+"\"";
 					int choice = JOptionPane.showConfirmDialog(tempFrame, msg, "Confirmation", JOptionPane.OK_CANCEL_OPTION);
 					if(choice == 0){
 						removeShip(startX, startY);
-						console.append("\n Removed ship: "+shipType);
+						console.append("\n Removed Mobile Suits: "+shipType);
 					}
 					return;
 				}
 				JFrame PSW = new JFrame();
-				PSW.setTitle("Place Ship");
+				PSW.setTitle("Place Mobile Suits");
 				PSW.setLocation(300,300);
 				PSW.setSize(275,150);
 				PSW.getContentPane().setLayout(new BoxLayout(PSW.getContentPane(), BoxLayout.Y_AXIS));
@@ -371,21 +371,21 @@ public class BattleshipGrid extends JPanel {
 				
 				JPanel jp1 = new JPanel();
 				jp1.setLayout(new BoxLayout(jp1, BoxLayout.X_AXIS));
-				JLabel jl = new JLabel("Select Ship   ");
+				JLabel jl = new JLabel("Select MS   ");
 				jp1.add(jl);
 				Vector<String> listofships = new Vector<String>();
-				listofships.add("Select Ship");
+				listofships.add("Select MS");
 				for(int i=0; i < numOf_AC; i++){
-					listofships.add("Aircraft Carrier");
+					listofships.add("Hellion");
 				}//end of for
 				for(int i=0; i < numOf_BS; i++){
-					listofships.add("Battleship");
+					listofships.add("Gouf");
 				}//end of for
 				for(int i=0; i < numOf_C; i++){
-					listofships.add("Cruiser");
+					listofships.add("Leo");
 				}//end of for
 				for(int i=0; i < numOf_D; i++){
-					listofships.add("Destroyer");
+					listofships.add("Dom Trooper");
 				}//end of for
 				JComboBox<String> jcb = new JComboBox<String>(listofships);
 				jcb.setPreferredSize(new Dimension(10,10));
@@ -445,16 +445,16 @@ public class BattleshipGrid extends JPanel {
 				placeShipButton.addActionListener(new ActionListener(){
 					public void actionPerformed(ActionEvent ae){
 						int index = 0;
-						if(jcb.getSelectedItem().toString() == "Aircraft Carrier"){
+						if(jcb.getSelectedItem().toString() == "Hellion"){
 							index = 1;
 						}
-						else if(jcb.getSelectedItem().toString() == "Battleship"){
+						else if(jcb.getSelectedItem().toString() == "Gouf"){
 							index = 2;
 						}
-						else if(jcb.getSelectedItem().toString() == "Cruiser"){
+						else if(jcb.getSelectedItem().toString() == "Leo"){
 							index = 3;
 						}
-						else if(jcb.getSelectedItem().toString() == "Destroyer"){
+						else if(jcb.getSelectedItem().toString() == "Dom Trooper"){
 							index = 4;
 						}
 						if(index == 0){
@@ -713,8 +713,8 @@ public class BattleshipGrid extends JPanel {
 					//=================done setting icon
 					
 					hit = true;
-					console.append("\nPlayer hit "+coordGuess+ " and hit a"+bs.getName()+"!" + "("+clockLabel.getText()+")");
-					if(bs.getHP() == 0) console.append("\nPlayer sunk Computer's "+bs.getName()+"!");
+					console.append("\nPlayer hit "+coordGuess+ " and hit a "+bs.getName()+"!" + "("+clockLabel.getText()+")");
+					if(bs.getHP() == 0) console.append("\nPlayer destroyed Computer's group of "+bs.getName()+"s!");
 					//setIcons(point.x, point.y, 2);
 					break;
 				} else { //set miss animation here
@@ -746,8 +746,8 @@ public class BattleshipGrid extends JPanel {
 					}//end of if D
 					//=================done setting icon
 					hit = true;
-					console.append("\nComputer hit "+coordGuess+ " and hit a"+bs.getName()+"!" + "("+clockLabel.getText()+")");
-					if(bs.getHP() == 0) console.append("\nComputer sunk Player's a "+bs.getName()+"!");
+					console.append("\nComputer hit "+coordGuess+ " and hit a "+bs.getName()+"!" + "("+clockLabel.getText()+")");
+					if(bs.getHP() == 0) console.append("\nComputer destroyed Player's group of "+bs.getName()+"s!");
 					//setIcons(point.x, point.y, 1);				
 					break;
 				} else { //set miss animation here
@@ -953,10 +953,13 @@ public class BattleshipGrid extends JPanel {
 		
 		public TurnThread(){
 		}//end of constructor
-		public synchronized void run(){
-			while(compTurnTaken == false && playerTurnTaken == false){
+		public void run(){
+			console.append("\nRound "+roundCount);
+			while(compTurnTaken != true || playerTurnTaken != true){				
 				try {
-					compTurn();
+					if(compTurnTaken != true){
+						compTurn();
+					}
 					Thread.sleep(1000);
 				} catch (InterruptedException ie) {
 					System.out.println("Interrupted exception in TurnThread::run() "+ie.getMessage());
@@ -975,7 +978,8 @@ public class BattleshipGrid extends JPanel {
 					} catch (InterruptedException ie) {
 						System.out.println("Interrupted exception in TurnThread::run() "+ie.getMessage());
 					}
-				}
+					console.append("\nRound "+roundCount);
+				}//end of if
 			}//end of while
 		}//end of run
 		
@@ -991,7 +995,11 @@ public class BattleshipGrid extends JPanel {
 			Random bag = new Random();
 			int x = bag.nextInt(10);
 			int delay = bag.nextInt(17)+1;
-			
+			try {
+				Thread.sleep(delay);
+			} catch (InterruptedException e) {
+				System.out.println("Interrupted exception in TurnThread::compTurn "+e.getMessage());
+			}
 			x++;
 			int y = bag.nextInt(10);
 			c = getLetter(y);
@@ -1003,7 +1011,6 @@ public class BattleshipGrid extends JPanel {
 				}//end of if end of game
 			}//end of if hit
 			compTurnTaken = true;
-			enableGrid(false, compBG);
 		}//end of compturn
 		
 	}//end of inner class
@@ -1014,7 +1021,7 @@ class Battleship {
 	private Point startPoint;
 	private Point endPoint;
 	private char tag;
-	private static final String[] NAMES = {"Aircraft Carrier", "Battleship", "Cruiser", "Destroyer"};
+	private static final String[] NAMES = {"Hellion", "Gouf", "Leo", "Dom Trooper"};
 	
 	@SuppressWarnings("serial")
 	class HitPoint extends Point{boolean hit; HitPoint(int x, int y){super(x,y);hit=false;}}
