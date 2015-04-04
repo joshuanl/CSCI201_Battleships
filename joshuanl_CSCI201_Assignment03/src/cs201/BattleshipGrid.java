@@ -983,6 +983,7 @@ public class BattleshipGrid extends JPanel {
 			Random bag = new Random();
 			int x = bag.nextInt(10);
 			int delay = bag.nextInt(17)+1;
+			
 			x++;
 			int y = bag.nextInt(10);
 			c = getLetter(y);
