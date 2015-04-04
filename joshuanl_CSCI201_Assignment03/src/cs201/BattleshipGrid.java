@@ -254,7 +254,6 @@ public class BattleshipGrid extends JPanel {
 	public void playGame(){
 //===================== DISABLE/ENDABLE BUTTONS
 		new TurnThread().start();
-		System.out.println("thread started");
 		boolean isOver = false;
 		editMode = false;
 		enableGrid(false, playerBG);
@@ -286,8 +285,7 @@ public class BattleshipGrid extends JPanel {
 				playerTurnTaken = true;
 				enableGrid(false, playerBG);
 			}//end of if hit
-			compTurn();
-			System.out.println("comp turn over");
+			
 		}//end of actionevent	
 	}//end of attackshiplistener class
 	
@@ -316,28 +314,7 @@ public class BattleshipGrid extends JPanel {
 		}//end of switch
 		return 'Z';
 	}//end of getLetter equiv
-//==============================COMPUTERS TURN	
-	public void compTurn(){
-		char c;
-		Random bag = new Random();
-		int x = bag.nextInt(10);
-		x++;
-		int y = bag.nextInt(10);
-		c = getLetter(y);
-		String temp = ""+c+x;
-		System.out.println("COMP: "+c+x);
-		if(hitCoord(temp, 1)){	
-			//=============================================END OF GAME
-			//=============================================END OF GAME
-			if(getNumSunk(playerShips)==5){
-				console.append("\nYou Lost!");
-				enableGrid(false, compBG);
-			}//end of if end of game
-		}//end of if hit
-		compTurnTaken = true;
-		enableGrid(false, compBG);
-	}//end of compturn
-	
+
 //============================== PLACE SHIPS LISTENER	
 	class PlaceShipsAdapter implements ActionListener{
 		private int startX; private int startY;
@@ -518,9 +495,6 @@ public class BattleshipGrid extends JPanel {
 									playerShips.add(new Battleship(tag, startPoint, endPoint));
 									break;
 							}//end of switch
-
-							//playerShips.add(new Battleship(tag, startPoint, endPoint));
-							System.out.println("Added");
 						}//end of if
 						enableGrid(true, playerBG);
 						PSW.dispose();
@@ -715,23 +689,18 @@ public class BattleshipGrid extends JPanel {
 			boolean hit = false;
 			for(Battleship bs : compShips) {
 				if(bs.attackPoint(point)) {
-					System.out.println("hit ship: " + bs.getTag());
 					//===========================set icon
 					if(bs.getTag() == 'A'){
 						compBG[point.x][point.y].setIcon(new ImageIcon("A_resized.jpg"));
-						System.out.println("setting icon for: "+ bs.getTag());
 					}//end of if A
 					else if(bs.getTag() == 'B'){
 						compBG[point.x][point.y].setIcon(new ImageIcon("B_resized.jpg"));
-						System.out.println("setting icon for: "+ bs.getTag());
 					}//end of if B
 					else if(bs.getTag() == 'C'){
 						compBG[point.x][point.y].setIcon(new ImageIcon("C_resized.jpg"));
-						System.out.println("setting icon for: "+ bs.getTag());
 					}//end of if C
 					else if(bs.getTag() == 'D'){
 						compBG[point.x][point.y].setIcon(new ImageIcon("D_resized.jpg"));
-						System.out.println("setting icon for: "+ bs.getTag());
 					}//end of if D
 					//=================done setting icon
 					
@@ -757,19 +726,15 @@ public class BattleshipGrid extends JPanel {
 					//===========================set icon
 					if(placementGrid[point.x][point.y] == 5){
 						playerBG[point.x][point.y].setIcon(new ImageIcon("A_resized.jpg"));
-						System.out.println("setting icon");
 					}//end of if A
 					else if(placementGrid[point.x][point.y] == 4){
 						playerBG[point.x][point.y].setIcon(new ImageIcon("B_resized.jpg"));
-						System.out.println("setting icon");
 					}//end of if B
 					else if(placementGrid[point.x][point.y] == 3){
 						playerBG[point.x][point.y].setIcon(new ImageIcon("C_resized.jpg"));
-						System.out.println("setting icon");
 					}//end of if C
 					else if(placementGrid[point.x][point.y] == 2){
 						playerBG[point.x][point.y].setIcon(new ImageIcon("D_resized.jpg"));
-						System.out.println("setting icon");
 					}//end of if D
 					//=================done setting icon
 					hit = true;
@@ -917,9 +882,7 @@ public class BattleshipGrid extends JPanel {
 			if(charCount['B'-'A'] != 4) return false;
 			if(charCount['C'-'A'] != 3) return false;
 			if(charCount['D'-'A'] != 4) return false;
-			
-			//System.out.println(horizDCount + "   " + vertiDCount);
-			
+						
 			if(horizDCount == 2 && vertiDCount == 1) {
 				int posToDestroy = -1;
 				int pos = 0;
@@ -985,6 +948,7 @@ public class BattleshipGrid extends JPanel {
 		public synchronized void run(){
 			while(compTurnTaken == false && playerTurnTaken == false){
 				try {
+					compTurn();
 					Thread.sleep(1000);
 				} catch (InterruptedException ie) {
 					System.out.println("Interrupted exception in TurnThread::run() "+ie.getMessage());
@@ -999,7 +963,7 @@ public class BattleshipGrid extends JPanel {
 					compTurnTaken = false;
 					enableGrid(true, compBG);
 					try {
-						Thread.sleep(20);
+						Thread.sleep(10);
 					} catch (InterruptedException ie) {
 						System.out.println("Interrupted exception in TurnThread::run() "+ie.getMessage());
 					}
@@ -1014,6 +978,25 @@ public class BattleshipGrid extends JPanel {
 			}
 			return str;
 		}//end of returning time
+		public void compTurn(){
+			char c;
+			Random bag = new Random();
+			int x = bag.nextInt(10);
+			int delay = bag.nextInt(17)+1;
+			x++;
+			int y = bag.nextInt(10);
+			c = getLetter(y);
+			String temp = ""+c+x;
+			if(hitCoord(temp, 1)){	
+				if(getNumSunk(playerShips)==5){
+					console.append("\nYou Lost!");
+					enableGrid(false, compBG);
+				}//end of if end of game
+			}//end of if hit
+			compTurnTaken = true;
+			enableGrid(false, compBG);
+		}//end of compturn
+		
 	}//end of inner class
 	
 }//end of BattleshipGrid class
@@ -1036,7 +1019,6 @@ class Battleship {
 		points = new ArrayList<HitPoint>();
 		Point toAdd = new Point(startPoint.x,startPoint.y);
 		if(startPoint.x == endPoint.x) {
-			//System.out.println("hor ship");
 			while(toAdd.y!=endPoint.y) {
 				points.add(new HitPoint(toAdd.x,toAdd.y));
 				toAdd.y++;
@@ -1044,7 +1026,6 @@ class Battleship {
 			points.add(new HitPoint(toAdd.x,toAdd.y));
 		}
 		else if(startPoint.y == endPoint.y) {
-			//System.out.println("ver ship");
 			while(toAdd.x!=endPoint.x) {
 				points.add(new HitPoint(toAdd.x,toAdd.y));
 				toAdd.x++;
@@ -1052,7 +1033,6 @@ class Battleship {
 			points.add(new HitPoint(toAdd.x,toAdd.y));
 		}
 		hp = points.size();
-		System.out.println("out of contructor");
 	}
 	
 	public String getName() {
