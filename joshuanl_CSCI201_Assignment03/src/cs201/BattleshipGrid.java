@@ -76,6 +76,7 @@ public class BattleshipGrid extends JPanel {
 	private static boolean playerTurnTaken;
 	private static boolean compTurnTaken;
 	
+	
 	BattleshipGrid() {
 		numOf_AC = 1;
 		numOf_BS = 1;
@@ -87,7 +88,8 @@ public class BattleshipGrid extends JPanel {
 		turnTime = 15;
 		roundCount = 0;
 		coordGuess = "";
-		
+		//playerSpotsGuessed = new boolean[11][11];
+		//compSpotsGuessed = new boolean[11][11];
 		
 		
 		setLayout(new BorderLayout());
@@ -265,16 +267,21 @@ public class BattleshipGrid extends JPanel {
 		private int coordX;
 		private int coordY;
 		private char c;
+		private boolean guessed;
 		
 		AttackShipListener(int x, int y){
 			coordX = x+1;
 			coordY = y;
+			guessed = false;
 		}// end of constructor
 		
 		public void actionPerformed(ActionEvent ae){
 			c = getLetter(coordY);
 			coordGuess = ""+c+coordX;
-			if(hitCoord(coordGuess, 2)){
+			if(guessed){
+				return;   //if true then player already has guessed that spot
+			}
+			if (hitCoord(coordGuess, 2)){
 				//=============================================END OF GAME
 				//=============================================END OF GAME
 				if(getNumSunk(compShips)==5){
@@ -283,6 +290,7 @@ public class BattleshipGrid extends JPanel {
 					enableGrid(false, compBG);
 				}//end of if end of game
 				playerTurnTaken = true;
+				guessed = true;
 				enableGrid(false, playerBG);
 			}//end of if hit
 			
