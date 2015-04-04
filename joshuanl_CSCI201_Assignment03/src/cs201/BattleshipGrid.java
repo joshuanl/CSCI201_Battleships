@@ -953,7 +953,7 @@ public class BattleshipGrid extends JPanel {
 		
 		public TurnThread(){
 		}//end of constructor
-		public void run(){
+		public synchronized void run(){ 
 			console.append("\nRound "+roundCount);
 			while(compTurnTaken != true || playerTurnTaken != true){				
 				try {
@@ -961,23 +961,25 @@ public class BattleshipGrid extends JPanel {
 						compTurn();
 					}
 					Thread.sleep(1000);
+					turnTime--;
+					clockLabel.setText("Time - "+returnTime(turnTime));
 				} catch (InterruptedException ie) {
 					System.out.println("Interrupted exception in TurnThread::run() "+ie.getMessage());
 				}
-				turnTime--;
-				clockLabel.setText("Time - "+returnTime(turnTime));
+				
 				if((compTurnTaken == true && playerTurnTaken == true) || turnTime == 0){
 					turnTime = 15;
+					clockLabel.setText("Time - "+returnTime(turnTime));
 					roundCount++; 
 					playerTurnTaken = false;
 					enableGrid(true, playerBG);
 					compTurnTaken = false;
 					enableGrid(true, compBG);
-					try {
-						Thread.sleep(10);
-					} catch (InterruptedException ie) {
-						System.out.println("Interrupted exception in TurnThread::run() "+ie.getMessage());
-					}
+//					try {
+//						Thread.sleep(10);
+//					} catch (InterruptedException ie) {
+//						System.out.println("Interrupted exception in TurnThread::run() "+ie.getMessage());
+//					}
 					console.append("\nRound "+roundCount);
 				}//end of if
 			}//end of while
@@ -995,11 +997,8 @@ public class BattleshipGrid extends JPanel {
 			Random bag = new Random();
 			int x = bag.nextInt(10);
 			int delay = bag.nextInt(17)+1;
-			try {
-				Thread.sleep(delay);
-			} catch (InterruptedException e) {
-				System.out.println("Interrupted exception in TurnThread::compTurn "+e.getMessage());
-			}
+			System.out.println("got delay: "+delay);
+			new Timer(delay).start();
 			x++;
 			int y = bag.nextInt(10);
 			c = getLetter(y);
