@@ -1,6 +1,8 @@
 package cs201;
 
 import java.awt.Graphics;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -18,6 +20,10 @@ public class MyButton extends JButton{
 	private boolean hit;
 	private boolean miss;
 	private Thread t;
+	private SoundLibrary soundMiss = new SoundLibrary("splash.wav");
+	private SoundLibrary soundExplode = new SoundLibrary("explode.wav");
+	private SoundLibrary soundCannon = new SoundLibrary("cannon.wav");
+	private static Lock lock = new ReentrantLock();
 	//make inner class for sound 
 	public MyButton(){
 		t = new Thread(){
@@ -65,6 +71,9 @@ public class MyButton extends JButton{
 		case 1:
 			g.drawImage(water1.getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 			if(hit){
+				if(hitCounter == 0){
+					soundExplode.playSound();
+				}//end of if first iteration	
 				miss = false;
 				g.drawImage(explosion[hitCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 				hitCounter++;
@@ -75,6 +84,9 @@ public class MyButton extends JButton{
 				}
 			}
 			if(miss){
+				if(missCounter == 0){
+					soundMiss.playSound();
+				}//end of if first iteration	
 				g.drawImage(splash[missCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 				missCounter++;
 				if(missCounter > splash.length-1){
@@ -90,6 +102,9 @@ public class MyButton extends JButton{
 		case 2:
 			g.drawImage(water2.getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 			if(hit){
+				if(hitCounter == 0){
+					soundExplode.playSound();
+				}//end of if first iteration	
 				miss = false;
 				g.drawImage(explosion[hitCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 				hitCounter++;
@@ -100,6 +115,10 @@ public class MyButton extends JButton{
 				}
 			}
 			if(miss){
+				if(missCounter == 0){
+					soundMiss.playSound();
+				}//end of if first iteration	
+
 				g.drawImage(splash[missCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 				missCounter++;
 				if(missCounter > splash.length-1){
@@ -125,11 +144,15 @@ public class MyButton extends JButton{
 		msVisible = b;
 	}//end of setting MS to true
 	
-	public void isHit(){
+	public synchronized void isHit(){
+		soundCannon.playSound();
+		new Timer(2);
 		hit = true;
 	}//end of is hit
 	
-	public void isMiss(){
+	public synchronized void isMiss(){
+		soundCannon.playSound();
+		new Timer(2);
 		miss = true;
 	}//end of is miss 
 	

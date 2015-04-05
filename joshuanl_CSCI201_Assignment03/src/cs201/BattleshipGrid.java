@@ -277,6 +277,9 @@ public class BattleshipGrid extends JPanel {
 		private int coordY;
 		private char c;
 		private boolean guessed;
+		SoundLibrary soundFire = new SoundLibrary("cannon.wav");
+		SoundLibrary soundMiss = new SoundLibrary("splash.wav");
+		SoundLibrary soundExplode = new SoundLibrary("explode.wav");
 		
 		AttackShipListener(int x, int y){
 			coordX = x+1;
@@ -284,13 +287,12 @@ public class BattleshipGrid extends JPanel {
 			guessed = false;
 		}// end of constructor
 
-		public void actionPerformed(ActionEvent ae){
+		public synchronized void actionPerformed(ActionEvent ae){
 			c = getLetter(coordY);
 			coordGuess = ""+c+coordX;
 			if(guessed){
 				return;   //if true then player already has guessed that spot
 			}
-			SoundLibrary.playSound("cannon.wav");
 			if (hitCoord(coordGuess, 2)){
 				//=============================================END OF GAME
 				//=============================================END OF GAME
@@ -726,15 +728,13 @@ public class BattleshipGrid extends JPanel {
 		return hitShips(new Point(xPos,yPos), grid);
 	}
 	
-	private boolean hitShips(Point point, int grid) {
+	private synchronized boolean hitShips(Point point, int grid) {
 		//============================PLAYER GUESSING
 		if(grid == 2){
 			//if(!compBG[point.x][point.y].getText().equals("?")) return false;
 			boolean hit = false;
-			SoundLibrary.playSound("cannon.wav");
 			for(Battleship bs : compShips) {
 				if(bs.attackPoint(point)) {
-					SoundLibrary.playSound("explode.wav");
 					compBG[point.x][point.y].isHit();
 					//===========================set icon
 					if(bs.getTag() == 'A'){
@@ -760,22 +760,21 @@ public class BattleshipGrid extends JPanel {
 					//setIcons(point.x, point.y, 2);
 					break;
 				} else { //set miss animation here
-					SoundLibrary.playSound("splash.wav");
 					compBG[point.x][point.y].isMiss();		
 				}
+			}//end of for
+			if(!hit){
+				console.append("\nPlayer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
 			}
-			if(!hit) console.append("\nPlayer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
 			compBG[point.x][point.y].setEnabled(false);
 		}//end of if grid2
 		//===================================COMPUTER GUESSING 
 		else if(grid == 1){
 			//if(playerBG[point.x][point.y].getText().equals("M")) return false;
 			boolean hit = false;
-			SoundLibrary.playSound("cannon.wav");
 			for(Battleship bs : playerShips) {
 				if(bs.attackPoint(point)) {
 					playerBG[point.x][point.y].isHit();
-					SoundLibrary.playSound("explode.wav");
 					//===========================set icon
 					if(placementGrid[point.x][point.y] == 5){
 						playerBG[point.x][point.y].setMSIcon(new ImageIcon("A_resized.png"));
@@ -800,11 +799,13 @@ public class BattleshipGrid extends JPanel {
 					//setIcons(point.x, point.y, 1);				
 					break;
 				} else { //set miss animation here
-					SoundLibrary.playSound("splash.wav");
 					playerBG[point.x][point.y].isMiss();
 				}
+			}//end of for
+			if(!hit){
+				//SoundLibrary.playSound("splash.wav");
+				console.append("\nComputer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
 			}
-			if(!hit) console.append("\nComputer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
 		}//end of if grid 1
 		return true;
 	}
@@ -1076,6 +1077,7 @@ public class BattleshipGrid extends JPanel {
 		
 	}//end of inner class
 	class CompTurn extends Thread{
+		private SoundLibrary soundCannon = new SoundLibrary("cannon.wav");
 		public CompTurn(int roundCount){
 		}
 		
@@ -1095,6 +1097,7 @@ public class BattleshipGrid extends JPanel {
 				int y = bag.nextInt(10);
 				c = getLetter(y);
 				String temp = ""+c+x;
+				new Timer(3);
 				if(hitCoord(temp, 1)){
 					if(getNumSunk(playerShips)==5){
 						console.append("\nYou Lost!");
