@@ -288,9 +288,9 @@ public class BattleshipGrid extends JPanel {
 			c = getLetter(coordY);
 			coordGuess = ""+c+coordX;
 			if(guessed){
-				System.out.println("guessed this spot already");
 				return;   //if true then player already has guessed that spot
 			}
+			SoundLibrary.playSound("cannon.wav");
 			if (hitCoord(coordGuess, 2)){
 				//=============================================END OF GAME
 				//=============================================END OF GAME
@@ -731,8 +731,10 @@ public class BattleshipGrid extends JPanel {
 		if(grid == 2){
 			//if(!compBG[point.x][point.y].getText().equals("?")) return false;
 			boolean hit = false;
+			SoundLibrary.playSound("cannon.wav");
 			for(Battleship bs : compShips) {
 				if(bs.attackPoint(point)) {
+					SoundLibrary.playSound("explode.wav");
 					compBG[point.x][point.y].isHit();
 					//===========================set icon
 					if(bs.getTag() == 'A'){
@@ -758,6 +760,7 @@ public class BattleshipGrid extends JPanel {
 					//setIcons(point.x, point.y, 2);
 					break;
 				} else { //set miss animation here
+					SoundLibrary.playSound("splash.wav");
 					compBG[point.x][point.y].isMiss();		
 				}
 			}
@@ -768,9 +771,11 @@ public class BattleshipGrid extends JPanel {
 		else if(grid == 1){
 			//if(playerBG[point.x][point.y].getText().equals("M")) return false;
 			boolean hit = false;
+			SoundLibrary.playSound("cannon.wav");
 			for(Battleship bs : playerShips) {
 				if(bs.attackPoint(point)) {
 					playerBG[point.x][point.y].isHit();
+					SoundLibrary.playSound("explode.wav");
 					//===========================set icon
 					if(placementGrid[point.x][point.y] == 5){
 						playerBG[point.x][point.y].setMSIcon(new ImageIcon("A_resized.png"));
@@ -795,6 +800,7 @@ public class BattleshipGrid extends JPanel {
 					//setIcons(point.x, point.y, 1);				
 					break;
 				} else { //set miss animation here
+					SoundLibrary.playSound("splash.wav");
 					playerBG[point.x][point.y].isMiss();
 				}
 			}
@@ -1089,7 +1095,7 @@ public class BattleshipGrid extends JPanel {
 				int y = bag.nextInt(10);
 				c = getLetter(y);
 				String temp = ""+c+x;
-				if(hitCoord(temp, 1)){	
+				if(hitCoord(temp, 1)){
 					if(getNumSunk(playerShips)==5){
 						console.append("\nYou Lost!");
 						enableGrid(false, compBG);

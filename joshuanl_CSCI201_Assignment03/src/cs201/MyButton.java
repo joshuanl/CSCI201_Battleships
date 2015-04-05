@@ -133,5 +133,9 @@ public class MyButton extends JButton{
 		miss = true;
 	}//end of is miss 
 	
+	class PlaySound extends Thread{
+		
+	}
+	
 }//end of class
 
