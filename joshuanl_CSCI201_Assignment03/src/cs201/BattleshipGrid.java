@@ -258,8 +258,13 @@ public class BattleshipGrid extends JPanel {
 	//=========================================PLAY GAME
 	public void playGame(){
 //===================== DISABLE/ENDABLE BUTTONS
+		for(int i=0; i<10; i++){
+			for(int j=0; j<10; j++){
+				playerBG[i][j].setMSVisible(false);
+				compBG[i][j].setMSVisible(false);
+			}
+		}
 		new TurnThread().start();
-		
 		boolean isOver = false;
 		editMode = false;
 		enableGrid(false, playerBG);
@@ -290,9 +295,13 @@ public class BattleshipGrid extends JPanel {
 				//=============================================END OF GAME
 				//=============================================END OF GAME
 				if(getNumSunk(compShips)==5){
-					console.append("\nYou won!");
+					console.append("\nYou won!");					
 					enableGrid(false, compBG);
 					enableGrid(false, playerBG);
+					int yesno = JOptionPane.showConfirmDialog(null, "You Won!", "Game Over", JOptionPane.YES_NO_OPTION);
+					if(yesno == 1){
+						//dfdfd
+					}
 				}//end of if end of game
 				playerTurnTaken = true;
 			}//end of if hit
@@ -727,16 +736,20 @@ public class BattleshipGrid extends JPanel {
 					compBG[point.x][point.y].isHit();
 					//===========================set icon
 					if(bs.getTag() == 'A'){
-						compBG[point.x][point.y].setIcon(new ImageIcon("A_resized.png"));
+						compBG[point.x][point.y].setMSIcon(new ImageIcon("A_resized.png"));
+						compBG[point.x][point.y].setMSVisible(false);
 					}//end of if A
 					else if(bs.getTag() == 'B'){
-						compBG[point.x][point.y].setIcon(new ImageIcon("B_resized.png"));
+						compBG[point.x][point.y].setMSIcon(new ImageIcon("B_resized.png"));
+						compBG[point.x][point.y].setMSVisible(false);
 					}//end of if B
 					else if(bs.getTag() == 'C'){
-						compBG[point.x][point.y].setIcon(new ImageIcon("C_resized.png"));
+						compBG[point.x][point.y].setMSIcon(new ImageIcon("C_resized.png"));
+						compBG[point.x][point.y].setMSVisible(false);
 					}//end of if C
 					else if(bs.getTag() == 'D'){
-						compBG[point.x][point.y].setIcon(new ImageIcon("D_resized.png"));
+						compBG[point.x][point.y].setMSIcon(new ImageIcon("D_resized.png"));
+						compBG[point.x][point.y].setMSVisible(false);
 					}//end of if D
 					//=================done setting icon
 					hit = true;
@@ -745,11 +758,10 @@ public class BattleshipGrid extends JPanel {
 					//setIcons(point.x, point.y, 2);
 					break;
 				} else { //set miss animation here
-					compBG[point.x][point.y].isMiss();
-					
+					compBG[point.x][point.y].isMiss();		
 				}
 			}
-			if(!hit) console.append("\nPlayer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");;
+			if(!hit) console.append("\nPlayer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
 			compBG[point.x][point.y].setEnabled(false);
 		}//end of if grid2
 		//===================================COMPUTER GUESSING 
@@ -761,16 +773,20 @@ public class BattleshipGrid extends JPanel {
 					playerBG[point.x][point.y].isHit();
 					//===========================set icon
 					if(placementGrid[point.x][point.y] == 5){
-						playerBG[point.x][point.y].setIcon(new ImageIcon("A_resized.png"));
+						playerBG[point.x][point.y].setMSIcon(new ImageIcon("A_resized.png"));
+						playerBG[point.x][point.y].setMSVisible(false);
 					}//end of if A
 					else if(placementGrid[point.x][point.y] == 4){
-						playerBG[point.x][point.y].setIcon(new ImageIcon("B_resized.png"));
+						playerBG[point.x][point.y].setMSIcon(new ImageIcon("B_resized.png"));
+						playerBG[point.x][point.y].setMSVisible(false);
 					}//end of if B
 					else if(placementGrid[point.x][point.y] == 3){
-						playerBG[point.x][point.y].setIcon(new ImageIcon("C_resized.png"));
+						playerBG[point.x][point.y].setMSIcon(new ImageIcon("C_resized.png"));
+						playerBG[point.x][point.y].setMSVisible(false);
 					}//end of if C
 					else if(placementGrid[point.x][point.y] == 2){
-						playerBG[point.x][point.y].setIcon(new ImageIcon("D_resized.png"));
+						playerBG[point.x][point.y].setMSIcon(new ImageIcon("D_resized.png"));
+						playerBG[point.x][point.y].setMSVisible(false);
 					}//end of if D
 					//=================done setting icon
 					hit = true;
@@ -789,10 +805,20 @@ public class BattleshipGrid extends JPanel {
 
 	public void clearGrid() {
 		for(int i = 0; i < 10; i++) {
-			for(JButton square : playerBG[i]) {
-				square.setText("?");
+			for(MyButton square : playerBG[i]) {
+				square.setMSIcon(null);
+				square.setMSVisible(false);
+			}
+			for(MyButton square : compBG[i]) {
+				square.setMSIcon(null);
+				square.setMSVisible(false);
 			}
 		}//end of for
+		openFileButton.setEnabled(true);
+		fileLoaded = true;
+		new BattleshipGrid();
+		
+		
 	}//end of cleargrid
 
 	public boolean loadMap(String pathName) {

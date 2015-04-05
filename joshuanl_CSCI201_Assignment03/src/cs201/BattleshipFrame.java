@@ -83,13 +83,6 @@ public class BattleshipFrame extends JFrame{
 		jmb.add(jm);
 		setJMenuBar(jmb);
 		
-		//JPanel bgPanel = new JPanel();
-		ImageIcon spaceImage = new ImageIcon("real_space.jpg");
-		add(new JPanel(){public void paintComponent(Graphics g) {
-			super.paintComponent(g); //call super! super is super important
-			g.drawImage(spaceImage.getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
-			}
-		});
 		add(bsg);
 		setVisible(true);
 	}//end of constructor

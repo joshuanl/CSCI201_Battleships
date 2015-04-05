@@ -13,7 +13,6 @@ public class Timer extends Thread{
 	}//end of constructor
 	
 	public void run(){
-		System.out.println("about to delay for "+timeDelay);
 		try {
 			Thread.sleep(timeDelay);
 		} catch (InterruptedException e) {

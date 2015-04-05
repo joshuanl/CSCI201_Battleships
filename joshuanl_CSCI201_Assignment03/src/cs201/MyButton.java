@@ -59,22 +59,22 @@ public class MyButton extends JButton{
 	}//end of constructor
 	
 	
-	public void paintComponent(Graphics g) {
+	public synchronized void paintComponent(Graphics g) {
 		super.paintComponent(g); //call super! super is super important
 		switch(alt){
 		case 1:
 			g.drawImage(water1.getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 			if(hit){
-				System.out.println("displaying hit image");
+				miss = false;
 				g.drawImage(explosion[hitCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 				hitCounter++;
 				if(hitCounter > explosion.length-1){
 					hitCounter = 0;
 					hit = false;
+					msVisible = true;
 				}
 			}
 			if(miss){
-				System.out.println("displaying miss image");
 				g.drawImage(splash[missCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 				missCounter++;
 				if(missCounter > splash.length-1){
@@ -90,16 +90,16 @@ public class MyButton extends JButton{
 		case 2:
 			g.drawImage(water2.getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 			if(hit){
-				System.out.println("displaying hit image");
+				miss = false;
 				g.drawImage(explosion[hitCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 				hitCounter++;
 				if(hitCounter > explosion.length-1){
 					hitCounter = 0;
 					hit = false;
+					msVisible = true;
 				}
 			}
 			if(miss){
-				System.out.println("displaying miss image");
 				g.drawImage(splash[missCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 				missCounter++;
 				if(missCounter > splash.length-1){
