@@ -52,7 +52,7 @@ public class MyButton extends JButton{
 			ii = new ImageIcon("explosion/explosion"+i+".png");
 			explosion[i-1] = ii;
 		}//end of for
-		t.start();
+		//t.start();
 	}//end of constructor
 	
 	
@@ -82,6 +82,20 @@ public class MyButton extends JButton{
 			break;
 		case 2:
 			g.drawImage(water2.getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
+			if(hit){
+				g.drawImage(explosion[hitCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
+				hitCounter++;
+				if(hitCounter > explosion.length){
+					hit = false;
+				}
+			}
+			if(miss){
+				g.drawImage(splash[missCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
+				missCounter++;
+				if(missCounter > splash.length){
+					miss = false;
+				}
+			}
 			if(msVisible){
 				g.drawImage(msIcon.getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 			}
