@@ -52,7 +52,7 @@ public class MyButton extends JButton{
 			ii = new ImageIcon("explosion/explosion"+i+".png");
 			explosion[i-1] = ii;
 		}//end of for
-		//t.start();
+		t.start();
 	}//end of constructor
 	
 	

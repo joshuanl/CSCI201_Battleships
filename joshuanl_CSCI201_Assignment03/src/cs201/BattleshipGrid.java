@@ -478,25 +478,25 @@ public class BattleshipGrid extends JPanel {
 								case 1:
 									length = 5;
 									tag = 'A';
-									msIcon = new ImageIcon("A_resized.jpg");
+									msIcon = new ImageIcon("A_resized.png");
 									numOf_AC--;
 									break;
 								case 2:
 									length = 4;
 									tag = 'B';
-									msIcon = new ImageIcon("B_resized.jpg");
+									msIcon = new ImageIcon("B_resized.png");
 									numOf_BS--;
 									break;
 								case 3:
 									length = 3;
 									tag = 'C';
-									msIcon = new ImageIcon("C_resized.jpg");
+									msIcon = new ImageIcon("C_resized.png");
 									numOf_C--;
 									break;
 								case 4:
 									length = 2;
 									tag = 'D';
-									msIcon = new ImageIcon("D_resized.jpg");
+									msIcon = new ImageIcon("D_resized.png");
 									numOf_D--;
 									break;
 							}//end of switch
@@ -730,16 +730,16 @@ public class BattleshipGrid extends JPanel {
 					System.out.println("hit attack");
 					//===========================set icon
 					if(bs.getTag() == 'A'){
-						compBG[point.x][point.y].setIcon(new ImageIcon("A_resized.jpg"));
+						compBG[point.x][point.y].setIcon(new ImageIcon("A_resized.png"));
 					}//end of if A
 					else if(bs.getTag() == 'B'){
-						compBG[point.x][point.y].setIcon(new ImageIcon("B_resized.jpg"));
+						compBG[point.x][point.y].setIcon(new ImageIcon("B_resized.png"));
 					}//end of if B
 					else if(bs.getTag() == 'C'){
-						compBG[point.x][point.y].setIcon(new ImageIcon("C_resized.jpg"));
+						compBG[point.x][point.y].setIcon(new ImageIcon("C_resized.png"));
 					}//end of if C
 					else if(bs.getTag() == 'D'){
-						compBG[point.x][point.y].setIcon(new ImageIcon("D_resized.jpg"));
+						compBG[point.x][point.y].setIcon(new ImageIcon("D_resized.png"));
 					}//end of if D
 					//=================done setting icon
 					System.out.println("hit ship in hitships()");
@@ -765,16 +765,16 @@ public class BattleshipGrid extends JPanel {
 				if(bs.attackPoint(point)) {
 					//===========================set icon
 					if(placementGrid[point.x][point.y] == 5){
-						playerBG[point.x][point.y].setIcon(new ImageIcon("A_resized.jpg"));
+						playerBG[point.x][point.y].setIcon(new ImageIcon("A_resized.png"));
 					}//end of if A
 					else if(placementGrid[point.x][point.y] == 4){
-						playerBG[point.x][point.y].setIcon(new ImageIcon("B_resized.jpg"));
+						playerBG[point.x][point.y].setIcon(new ImageIcon("B_resized.png"));
 					}//end of if B
 					else if(placementGrid[point.x][point.y] == 3){
-						playerBG[point.x][point.y].setIcon(new ImageIcon("C_resized.jpg"));
+						playerBG[point.x][point.y].setIcon(new ImageIcon("C_resized.png"));
 					}//end of if C
 					else if(placementGrid[point.x][point.y] == 2){
-						playerBG[point.x][point.y].setIcon(new ImageIcon("D_resized.jpg"));
+						playerBG[point.x][point.y].setIcon(new ImageIcon("D_resized.png"));
 					}//end of if D
 					//=================done setting icon
 					hit = true;
