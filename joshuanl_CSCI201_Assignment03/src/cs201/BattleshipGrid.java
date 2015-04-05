@@ -744,7 +744,6 @@ public class BattleshipGrid extends JPanel {
 					//setIcons(point.x, point.y, 2);
 					break;
 				} else { //set miss animation here
-					compBG[point.x][point.y].setText("M");
 					compBG[point.x][point.y].isMiss();
 					
 				}
@@ -779,8 +778,7 @@ public class BattleshipGrid extends JPanel {
 					//setIcons(point.x, point.y, 1);				
 					break;
 				} else { //set miss animation here
-					compBG[point.x][point.y].isMiss();
-					playerBG[point.x][point.y].setText("M");			
+					playerBG[point.x][point.y].isMiss();
 				}
 			}
 			if(!hit) console.append("\nComputer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
