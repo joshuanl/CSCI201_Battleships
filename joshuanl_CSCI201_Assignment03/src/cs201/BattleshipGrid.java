@@ -583,7 +583,8 @@ public class BattleshipGrid extends JPanel {
 			for(int j=0; j < 10; j++){
 				if(placementGrid[i][j] == target){
 					placementGrid[i][j] = 0;
-					playerBG[i][j].setText("?");
+					playerBG[i][j].setMSIcon(null);
+					playerBG[i][j].setMSVisible(false);
 				}//end of if
 			}//end of inner for
 		}//end of outer for
