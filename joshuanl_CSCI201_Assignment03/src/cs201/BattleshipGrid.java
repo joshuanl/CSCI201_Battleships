@@ -52,8 +52,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 @SuppressWarnings("serial")
 public class BattleshipGrid extends JPanel {
-	private JButton playerBG[][];
-	private JButton compBG[][];
+	private MyButton playerBG[][];
+	private MyButton compBG[][];
 	private JLabel openedFileLabel;
 	private JLabel playerName = new JLabel();
 	private JLabel computerName = new JLabel();
@@ -105,11 +105,11 @@ public class BattleshipGrid extends JPanel {
 		jp2.setOpaque(false);
 		jpCase.setOpaque(false);
 		jpbottom.setOpaque(false);
-		playerBG = new JButton[10][10];
-		compBG = new JButton[10][10];
+		playerBG = new MyButton[10][10];
+		compBG = new MyButton[10][10];
 		compShips = new ArrayList<Battleship>();
 		playerShips = new ArrayList<Battleship>();
-		JButton temp_button;
+		MyButton temp_button;
 //====================================================================SET NORTH LABELS
 		playerName.setText("Player");
 		computerName.setText("Computer");
@@ -131,7 +131,7 @@ public class BattleshipGrid extends JPanel {
 		for(int i = 0; i < 10; i++) {
 			jp1.add(new JLabel(Character.toString((char)(0x41+i)), SwingConstants.CENTER));//0x41 is 'A' increment by i to go down the alphabet
 			for(int j = 0; j < 10; j++) {
-				temp_button = new JButton("?");
+				temp_button = new MyButton();
 				temp_button.setPreferredSize(new Dimension(45, 45));
 				PlaceShipsAdapter psa = new PlaceShipsAdapter(i, j);
 				temp_button.addActionListener(psa);
@@ -150,7 +150,7 @@ public class BattleshipGrid extends JPanel {
 		for(int i = 0; i < 10; i++) {
 			jp2.add(new JLabel(Character.toString((char)(0x41+i)), SwingConstants.CENTER));//0x41 is 'A' increment by i to go down the alphabet
 			for(int j = 0; j < 10; j++) {
-				temp_button = new JButton("?");
+				temp_button = new MyButton();
 				temp_button.setPreferredSize(new Dimension(45, 45));
 				AttackShipListener asl = new AttackShipListener(i,j);
 				temp_button.addActionListener(asl);
@@ -467,22 +467,27 @@ public class BattleshipGrid extends JPanel {
 						if(validPlace(startX, startY, index, orientation)){
 							Point startPoint = new Point(startX, startY);
 							Point endPoint = null;
+							ImageIcon msIcon = new ImageIcon();
 							char tag = 'F';
 							switch(index){
 								case 1:
 									tag = 'A';
+									msIcon = new ImageIcon("A_resized.jpg");
 									numOf_AC--;
 									break;
 								case 2:
 									tag = 'B';
+									msIcon = new ImageIcon("B_resized.jpg");
 									numOf_BS--;
 									break;
 								case 3:
 									tag = 'C';
+									msIcon = new ImageIcon("C_resized.jpg");
 									numOf_C--;
 									break;
 								case 4:
 									tag = 'D';
+									msIcon = new ImageIcon("D_resized.jpg");
 									numOf_D--;
 									break;
 							}//end of switch
@@ -504,6 +509,19 @@ public class BattleshipGrid extends JPanel {
 									playerShips.add(new Battleship(tag, startPoint, endPoint));
 									break;
 							}//end of switch
+							Point toAdd = new Point(startPoint.x,startPoint.y);
+							if(startPoint.x == endPoint.x) {
+								while(toAdd.y!=(endPoint.y+1)) {
+									playerBG[toAdd.x][toAdd.y].setMSIcon(msIcon);
+									toAdd.y++;
+								}
+							}//end of if
+							else if(startPoint.y == endPoint.y) {
+								while(toAdd.x!=(endPoint.x+1)) {
+									playerBG[toAdd.x][toAdd.y].setMSIcon(msIcon);
+									toAdd.x++;
+								}
+							}//end of else if
 						}//end of if
 						enableGrid(true, playerBG);
 						PSW.dispose();
@@ -1017,12 +1035,7 @@ public class BattleshipGrid extends JPanel {
 		
 	}//end of inner class
 	class CompTurn extends Thread{
-		private final Semaphore semaphore = new Semaphore(1);
-		private int counter;
-		private boolean iterated;
 		public CompTurn(int roundCount){
-			counter = roundCount;
-			iterated = false;
 		}
 		
 		public synchronized void run(){
