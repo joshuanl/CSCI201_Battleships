@@ -153,7 +153,6 @@ public class BattleshipGrid extends JPanel {
 				temp_button = new MyButton();
 				temp_button.setPreferredSize(new Dimension(45, 45));
 				AttackShipListener asl = new AttackShipListener(i,j);
-				System.out.println("adding action event");
 				temp_button.addActionListener(asl);
 				
 				compBG[i][j] = temp_button;
@@ -212,6 +211,7 @@ public class BattleshipGrid extends JPanel {
 			public void actionPerformed(ActionEvent ae){
 				if(fileLoaded && numOf_AC == 0 && numOf_BS == 0 && numOf_C == 0 && numOf_D == 0){
 					startButton.setEnabled(false);
+					openFileButton.setEnabled(false);
 					playGame();
 					
 				}
@@ -280,14 +280,12 @@ public class BattleshipGrid extends JPanel {
 		}// end of constructor
 
 		public void actionPerformed(ActionEvent ae){
-			System.out.println("attack ship actoin being executed");
 			c = getLetter(coordY);
 			coordGuess = ""+c+coordX;
 			if(guessed){
 				System.out.println("guessed this spot already");
 				return;   //if true then player already has guessed that spot
 			}
-			System.out.println("going to hiCoord method");
 			if (hitCoord(coordGuess, 2)){
 				//=============================================END OF GAME
 				//=============================================END OF GAME
@@ -298,7 +296,7 @@ public class BattleshipGrid extends JPanel {
 				}//end of if end of game
 				playerTurnTaken = true;
 			}//end of if hit
-			enableGrid(false, playerBG);
+			enableGrid(false, compBG);
 		}//end of actionevent	
 	}//end of attackshiplistener class
 	
@@ -723,11 +721,9 @@ public class BattleshipGrid extends JPanel {
 		if(grid == 2){
 			//if(!compBG[point.x][point.y].getText().equals("?")) return false;
 			boolean hit = false;
-			System.out.println("before forloop");
 			for(Battleship bs : compShips) {
-				System.out.println("after for loop");
 				if(bs.attackPoint(point)) {
-					System.out.println("hit attack");
+					compBG[point.x][point.y].isHit();
 					//===========================set icon
 					if(bs.getTag() == 'A'){
 						compBG[point.x][point.y].setIcon(new ImageIcon("A_resized.png"));
@@ -742,15 +738,14 @@ public class BattleshipGrid extends JPanel {
 						compBG[point.x][point.y].setIcon(new ImageIcon("D_resized.png"));
 					}//end of if D
 					//=================done setting icon
-					System.out.println("hit ship in hitships()");
 					hit = true;
 					console.append("\nPlayer hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")");
 					if(bs.getHP() == 0) console.append("\nPlayer destroyed Computer's group of "+bs.getName()+"s!");
 					//setIcons(point.x, point.y, 2);
 					break;
 				} else { //set miss animation here
-					System.out.println("miss attack");
 					compBG[point.x][point.y].setText("M");
+					compBG[point.x][point.y].isMiss();
 					
 				}
 			}
@@ -759,10 +754,11 @@ public class BattleshipGrid extends JPanel {
 		}//end of if grid2
 		//===================================COMPUTER GUESSING 
 		else if(grid == 1){
-			if(playerBG[point.x][point.y].getText().equals("M")) return false;
+			//if(playerBG[point.x][point.y].getText().equals("M")) return false;
 			boolean hit = false;
 			for(Battleship bs : playerShips) {
 				if(bs.attackPoint(point)) {
+					playerBG[point.x][point.y].isHit();
 					//===========================set icon
 					if(placementGrid[point.x][point.y] == 5){
 						playerBG[point.x][point.y].setIcon(new ImageIcon("A_resized.png"));
@@ -783,6 +779,7 @@ public class BattleshipGrid extends JPanel {
 					//setIcons(point.x, point.y, 1);				
 					break;
 				} else { //set miss animation here
+					compBG[point.x][point.y].isMiss();
 					playerBG[point.x][point.y].setText("M");			
 				}
 			}
@@ -1057,8 +1054,6 @@ public class BattleshipGrid extends JPanel {
 				Random bag = new Random();
 				int x = bag.nextInt(10);
 				int delay = bag.nextInt(17)+1;
-				System.out.println("it is turn: "+ roundCount);
-				System.out.println("got delay: "+delay);
 				if(delay > 14){
 					compTurnTaken = true;
 					(new Timer(turnTime)).run();

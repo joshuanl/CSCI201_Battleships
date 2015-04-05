@@ -41,17 +41,20 @@ public class MyButton extends JButton{
 		ImageIcon ii;
 		water1 = new ImageIcon("animatedWater/water1.png");
 		water2 = new ImageIcon("animatedWater/water2.png");
-		splash = new ImageIcon[6];
-		for(int i=1; i <=6; i++){
-			ii = new ImageIcon("splash/spash"+i+".png");
-			splash[i-1] = ii;
-		}//end of for
-		
+		splash = new ImageIcon[7];
+		splash[0] = new ImageIcon("splash/spash1.png");
+		splash[1] = new ImageIcon("splash/spash2.png");
+		splash[2] = new ImageIcon("splash/spash3.png");
+		splash[3] = new ImageIcon("splash/spash4.png");
+		splash[4] = new ImageIcon("splash/spash5.png");
+		splash[5] = new ImageIcon("splash/spash6.png");
+		splash[6] = new ImageIcon("splash/spash7.png");
 		explosion = new ImageIcon[5];
-		for(int i=1; i <=5; i++){
-			ii = new ImageIcon("explosion/explosion"+i+".png");
-			explosion[i-1] = ii;
-		}//end of for
+		explosion[0] = new ImageIcon("explosion/expl1.png");
+		explosion[1] = new ImageIcon("explosion/expl2.png");
+		explosion[2] = new ImageIcon("explosion/expl3.png");
+		explosion[3] = new ImageIcon("explosion/expl4.png");
+		explosion[4] = new ImageIcon("explosion/expl5.png");
 		t.start();
 	}//end of constructor
 	
@@ -62,16 +65,20 @@ public class MyButton extends JButton{
 		case 1:
 			g.drawImage(water1.getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 			if(hit){
+				System.out.println("displaying hit image");
 				g.drawImage(explosion[hitCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 				hitCounter++;
-				if(hitCounter > explosion.length){
+				if(hitCounter > explosion.length-1){
+					hitCounter = 0;
 					hit = false;
 				}
 			}
 			if(miss){
+				System.out.println("displaying miss image");
 				g.drawImage(splash[missCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 				missCounter++;
-				if(missCounter > splash.length){
+				if(missCounter > splash.length-1){
+					missCounter = 0;
 					miss = false;
 				}
 			}
@@ -83,16 +90,20 @@ public class MyButton extends JButton{
 		case 2:
 			g.drawImage(water2.getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 			if(hit){
+				System.out.println("displaying hit image");
 				g.drawImage(explosion[hitCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 				hitCounter++;
-				if(hitCounter > explosion.length){
+				if(hitCounter > explosion.length-1){
+					hitCounter = 0;
 					hit = false;
 				}
 			}
 			if(miss){
+				System.out.println("displaying miss image");
 				g.drawImage(splash[missCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 				missCounter++;
-				if(missCounter > splash.length){
+				if(missCounter > splash.length-1){
+					missCounter = 0;
 					miss = false;
 				}
 			}
