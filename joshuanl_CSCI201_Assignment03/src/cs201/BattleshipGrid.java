@@ -76,8 +76,7 @@ public class BattleshipGrid extends JPanel {
 	private static int placementGrid[][];
 	private static boolean playerTurnTaken;
 	private static boolean compTurnTaken;
-	private int playerFlag;
-	private int compFlag;
+
 	public BattleshipGrid() {
 		numOf_AC = 1;
 		numOf_BS = 1;
@@ -277,9 +276,6 @@ public class BattleshipGrid extends JPanel {
 		private int coordY;
 		private char c;
 		private boolean guessed;
-		SoundLibrary soundFire = new SoundLibrary("cannon.wav");
-		SoundLibrary soundMiss = new SoundLibrary("splash.wav");
-		SoundLibrary soundExplode = new SoundLibrary("explode.wav");
 		
 		AttackShipListener(int x, int y){
 			coordX = x+1;
@@ -759,11 +755,10 @@ public class BattleshipGrid extends JPanel {
 					if(bs.getHP() == 0) console.append("\nPlayer destroyed Computer's group of "+bs.getName()+"s!");
 					//setIcons(point.x, point.y, 2);
 					break;
-				} else { //set miss animation here
-					compBG[point.x][point.y].isMiss();		
-				}
+				} 
 			}//end of for
 			if(!hit){
+				compBG[point.x][point.y].isMiss();
 				console.append("\nPlayer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
 			}
 			compBG[point.x][point.y].setEnabled(false);
@@ -798,12 +793,10 @@ public class BattleshipGrid extends JPanel {
 					if(bs.getHP() == 0) console.append("\nComputer destroyed Player's group of "+bs.getName()+"s!");
 					//setIcons(point.x, point.y, 1);				
 					break;
-				} else { //set miss animation here
-					playerBG[point.x][point.y].isMiss();
-				}
+				} 
 			}//end of for
 			if(!hit){
-				//SoundLibrary.playSound("splash.wav");
+				playerBG[point.x][point.y].isMiss();
 				console.append("\nComputer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
 			}
 		}//end of if grid 1
@@ -1077,7 +1070,7 @@ public class BattleshipGrid extends JPanel {
 		
 	}//end of inner class
 	class CompTurn extends Thread{
-		private SoundLibrary soundCannon = new SoundLibrary("cannon.wav");
+		//private SoundLibrary soundCannon = new SoundLibrary("cannon.wav");
 		public CompTurn(int roundCount){
 		}
 		
@@ -1097,7 +1090,6 @@ public class BattleshipGrid extends JPanel {
 				int y = bag.nextInt(10);
 				c = getLetter(y);
 				String temp = ""+c+x;
-				new Timer(3);
 				if(hitCoord(temp, 1)){
 					if(getNumSunk(playerShips)==5){
 						console.append("\nYou Lost!");

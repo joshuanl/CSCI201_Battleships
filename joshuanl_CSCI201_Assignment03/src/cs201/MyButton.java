@@ -1,6 +1,7 @@
 package cs201;
 
 import java.awt.Graphics;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -16,14 +17,17 @@ public class MyButton extends JButton{
 	private int alt;
 	private int hitCounter;
 	private int missCounter;
+	private int waiting;
 	private boolean msVisible;
 	private boolean hit;
 	private boolean miss;
+	private boolean soundFinished;
 	private Thread t;
-	private SoundLibrary soundMiss = new SoundLibrary("splash.wav");
-	private SoundLibrary soundExplode = new SoundLibrary("explode.wav");
-	private SoundLibrary soundCannon = new SoundLibrary("cannon.wav");
+//	private SoundLibrary soundMiss = new SoundLibrary("splash.wav");
+//	private SoundLibrary soundExplode = new SoundLibrary("explode.wav");
+//	private SoundLibrary soundCannon = new SoundLibrary("cannon.wav");
 	private static Lock lock = new ReentrantLock();
+//	private Condition condition = lock.newCondition();
 	//make inner class for sound 
 	public MyButton(){
 		t = new Thread(){
@@ -41,9 +45,11 @@ public class MyButton extends JButton{
 		alt = 1;
 		hitCounter = 0;
 		missCounter = 0;
+		waiting = 0;
 		hit = false;
 		miss = false;
 		msVisible = false;
+		soundFinished = false;
 		ImageIcon ii;
 		water1 = new ImageIcon("animatedWater/water1.png");
 		water2 = new ImageIcon("animatedWater/water2.png");
@@ -71,9 +77,7 @@ public class MyButton extends JButton{
 		case 1:
 			g.drawImage(water1.getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 			if(hit){
-				if(hitCounter == 0){
-					soundExplode.playSound();
-				}//end of if first iteration	
+
 				miss = false;
 				g.drawImage(explosion[hitCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 				hitCounter++;
@@ -83,10 +87,7 @@ public class MyButton extends JButton{
 					msVisible = true;
 				}
 			}
-			if(miss){
-				if(missCounter == 0){
-					soundMiss.playSound();
-				}//end of if first iteration	
+			if(miss){	
 				g.drawImage(splash[missCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 				missCounter++;
 				if(missCounter > splash.length-1){
@@ -102,9 +103,7 @@ public class MyButton extends JButton{
 		case 2:
 			g.drawImage(water2.getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 			if(hit){
-				if(hitCounter == 0){
-					soundExplode.playSound();
-				}//end of if first iteration	
+
 				miss = false;
 				g.drawImage(explosion[hitCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 				hitCounter++;
@@ -115,10 +114,6 @@ public class MyButton extends JButton{
 				}
 			}
 			if(miss){
-				if(missCounter == 0){
-					soundMiss.playSound();
-				}//end of if first iteration	
-
 				g.drawImage(splash[missCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 				missCounter++;
 				if(missCounter > splash.length-1){
@@ -144,21 +139,97 @@ public class MyButton extends JButton{
 		msVisible = b;
 	}//end of setting MS to true
 	
-	public synchronized void isHit(){
-		soundCannon.playSound();
-		new Timer(2);
-		hit = true;
+	public void isHit(){
+//		lock.lock();
+//		try {
+////			while(!soundFinished)
+////				if(waiting == 0){
+//					cannonSound();
+//					waiting++;
+////				}	
+//				System.out.println("awaiting");
+//		} finally{
+//			System.out.println("in finally block");
+//			lock.unlock();	
+//			SoundLibrary.playSound("explode.wav");	
+		soundThread st = new soundThread("explode.wav", true);
+		st.start();
+		try {
+			st.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+			hit = true;
+			waiting = 0;
+		//}
+		
 	}//end of is hit
 	
-	public synchronized void isMiss(){
-		soundCannon.playSound();
-		new Timer(2);
-		miss = true;
+	public void isMiss(){
+//		lock.lock();
+//		try {
+////			while(!soundFinished)
+////				if(waiting == 0){
+//					cannonSound();
+////					waiting++;
+////				}	
+//		} finally{
+//			System.out.println("in finally block");
+//			lock.unlock();		
+//			SoundLibrary.playSound("splash.wav");
+		soundThread st = new soundThread("splash.wav", true);
+		st.start();
+		try {
+			st.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+			miss = true;
+			waiting = 0;
+		//}
+		
 	}//end of is miss 
 	
-	class PlaySound extends Thread{
+//	public void cannonSound(){
+//		lock.lock();
+//		try{
+//			SoundLibrary.playSound("cannon.wav");	
+//			soundFinished = true;
+//		} finally{
+//			lock.unlock();
+//		}
+//	}//end of playing cannon
+	
+	class soundThread extends Thread{
+		private String sound;
+		private boolean cannon;
+		public soundThread(String sound, boolean cannon){
+			this.sound = sound;
+			this.cannon = cannon;
+			
+		}//end of constructor
 		
-	}
+		public synchronized void run(){
+			System.out.println("playing cannon sound");
+			SoundLibrary.playSound("cannon.wav");
+			for(int i=0; i < 40; i++){
+				try {
+					Thread.sleep(i);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			playsoundtype();
+		}//end of run
+		
+		public void playsoundtype(){
+			System.out.println("playing sound: " + sound);
+			SoundLibrary.playSound(sound);
+		}
+	}//end of sound thread inner class
 	
 }//end of class
 
