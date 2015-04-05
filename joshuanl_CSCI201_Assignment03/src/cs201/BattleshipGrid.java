@@ -467,25 +467,30 @@ public class BattleshipGrid extends JPanel {
 						if(validPlace(startX, startY, index, orientation)){
 							Point startPoint = new Point(startX, startY);
 							Point endPoint = null;
+							int length = 0;
 							ImageIcon msIcon = new ImageIcon();
 							char tag = 'F';
 							switch(index){
 								case 1:
+									length = 5;
 									tag = 'A';
 									msIcon = new ImageIcon("A_resized.jpg");
 									numOf_AC--;
 									break;
 								case 2:
+									length = 4;
 									tag = 'B';
 									msIcon = new ImageIcon("B_resized.jpg");
 									numOf_BS--;
 									break;
 								case 3:
+									length = 3;
 									tag = 'C';
 									msIcon = new ImageIcon("C_resized.jpg");
 									numOf_C--;
 									break;
 								case 4:
+									length = 2;
 									tag = 'D';
 									msIcon = new ImageIcon("D_resized.jpg");
 									numOf_D--;
@@ -511,13 +516,13 @@ public class BattleshipGrid extends JPanel {
 							}//end of switch
 							Point toAdd = new Point(startPoint.x,startPoint.y);
 							if(startPoint.x == endPoint.x) {
-								while(toAdd.y!=(endPoint.y+1)) {
+								for (int i=0; i< length; i++){
 									playerBG[toAdd.x][toAdd.y].setMSIcon(msIcon);
 									toAdd.y++;
 								}
 							}//end of if
 							else if(startPoint.y == endPoint.y) {
-								while(toAdd.x!=(endPoint.x+1)) {
+								for (int i=0; i< length; i++){
 									playerBG[toAdd.x][toAdd.y].setMSIcon(msIcon);
 									toAdd.x++;
 								}
