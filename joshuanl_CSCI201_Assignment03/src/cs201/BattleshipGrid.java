@@ -1148,9 +1148,19 @@ public class BattleshipGrid extends JPanel {
 				Random bag = new Random();
 				int x = bag.nextInt(10);
 				int delay = bag.nextInt(17)+1;
+				int iteration = 0;
+				boolean exit = false;
 				if(delay > 14){
 					compTurnTaken = true;
-					(new Timer(turnTime)).run();
+					Thread t = new Thread();
+					for(int i=0; i < 100; i++){
+						try {
+							t.sleep(i);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
 					return;
 				}
 				(new Timer(delay)).run();
