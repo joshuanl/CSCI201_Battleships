@@ -634,20 +634,22 @@ public class BattleshipGrid extends JPanel {
 					if(grid[startX][startY] != 0){
 						return false;
 					}
-					grid[startX][startY] = id;
 					startX++;
 				}//end of for
 				startX -= (length);
 				break;
 			case 2:			//face east
 				for(int i=0; i < length; i++){
+					System.out.println(length);
+					System.out.println("coord: "+startX +", "+startY);
+					System.out.println("grid[startX][startY]: "+grid[startX][startY]);
 					if(startY < 0){
 						return false;
 					}
 					if(grid[startX][startY] != 0){
+						System.out.println("canceled");
 						return false;
 					}
-					grid[startX][startY] = id;
 					startY--;
 				}//end of for
 				startY += (length);
@@ -660,7 +662,6 @@ public class BattleshipGrid extends JPanel {
 					if(grid[startX][startY] != 0){
 						return false;
 					}
-					grid[startX][startY] = id;
 					startX--;
 				}//end of for
 				startX += (length);
@@ -673,42 +674,41 @@ public class BattleshipGrid extends JPanel {
 					if(grid[startX][startY] != 0){
 						return false;
 					}
-					grid[startX][startY] = id;
 					startY++;
 				}//end of for
 				startY -= (length);
 				break;
 		}//end of switch
-		
-		placementGrid = grid;
+	
 
 		//=================resetting buttons
 		switch(orientation){
 		case 1:			//face north
 			for(int i=0; i < length; i++){
-				playerBG[startX][startY].setText(""+length);
+				grid[startX][startY] = id;
 				startX++;
 			}//end of for
 			break;
 		case 2:			//face east
 			for(int i=0; i < length; i++){
-				playerBG[startX][startY].setText(""+length);
+				grid[startX][startY] = id;
 				startY--;
 			}//end of for
 			break;
 		case 3:			//face south
 			for(int i=0; i < length; i++){
-				playerBG[startX][startY].setText(""+length);
+				grid[startX][startY] = id;
 				startX--;
 			}//end of for
 			break;
 		case 4:			//face west
 			for(int i=0; i < length; i++){
-				playerBG[startX][startY].setText(""+length);
+				grid[startX][startY] = id;
 				startY++;
 			}//end of for
 			break;
 	}//end of switch
+		placementGrid = grid;
 		return true;
 	}//end of valid placement method
 	
