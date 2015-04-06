@@ -54,7 +54,7 @@ public class BattleshipFrame extends JFrame{
 				jf.setVisible(true);
 			}
 		});
-		JMenuItem aboutitem = new JMenuItem("about");
+		JMenuItem aboutitem = new JMenuItem("About");
 		aboutitem.setMnemonic('A');
 		aboutitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.CTRL_MASK));
 		aboutitem.addActionListener(new ActionListener(){
@@ -77,8 +77,19 @@ public class BattleshipFrame extends JFrame{
 			}
 		});
 		
+		JMenuItem quitItem = new JMenuItem("Quit");
+		quitItem.setMnemonic('Q');
+		quitItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
+		quitItem.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				dispose();
+			}
+		});	
+		
+		
 		jm.add(howtoitem);
 		jm.add(aboutitem);
+		jm.add(quitItem);
 		JMenuBar jmb = new JMenuBar();
 		jmb.add(jm);
 		setJMenuBar(jmb);

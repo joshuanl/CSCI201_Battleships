@@ -77,6 +77,7 @@ public class BattleshipGrid extends JPanel {
 	private static boolean playerTurnTaken;
 	private static boolean compTurnTaken;
 
+
 	public BattleshipGrid() {
 		numOf_AC = 1;
 		numOf_BS = 1;
@@ -255,7 +256,7 @@ public class BattleshipGrid extends JPanel {
 	}//=================================================================================end of constructor
 	
 	//=========================================PLAY GAME
-	public void playGame(){
+	public boolean playGame(){
 //===================== DISABLE/ENDABLE BUTTONS
 		for(int i=0; i<10; i++){
 			for(int j=0; j<10; j++){
@@ -268,6 +269,7 @@ public class BattleshipGrid extends JPanel {
 		editMode = false;
 		enableGrid(false, playerBG);
 		enableGrid(true, compBG);
+		return true;
 	}//end of playgame
 	
 //=============================================== ATTACK SHIP LISTENER	
@@ -296,10 +298,7 @@ public class BattleshipGrid extends JPanel {
 					console.append("\nYou won!");					
 					enableGrid(false, compBG);
 					enableGrid(false, playerBG);
-					int yesno = JOptionPane.showConfirmDialog(null, "You Won!", "Game Over", JOptionPane.YES_NO_OPTION);
-					if(yesno == 1){
-						//dfdfd
-					}
+					JOptionPane.showMessageDialog(null, "You Won!", "Game Over", JOptionPane.PLAIN_MESSAGE);
 				}//end of if end of game
 				playerTurnTaken = true;
 			}//end of if hit
@@ -524,19 +523,40 @@ public class BattleshipGrid extends JPanel {
 									break;
 							}//end of switch
 							Point toAdd = new Point(startPoint.x,startPoint.y);
-							if(startPoint.x == endPoint.x) {
-								for (int i=0; i< length; i++){
-									playerBG[toAdd.x][toAdd.y].setMSIcon(msIcon);
-									toAdd.y++;
-								}
-							}//end of if
-							else if(startPoint.y == endPoint.y) {
-								for (int i=0; i< length; i++){
-									playerBG[toAdd.x][toAdd.y].setMSIcon(msIcon);
-									toAdd.x++;
-								}
-							}//end of else if
-						}//end of if
+							if(startPoint.y > endPoint.y){
+								if(startPoint.x == endPoint.x) {
+									for (int i=0; i< length; i++){
+										playerBG[toAdd.x][toAdd.y].setMSIcon(msIcon);
+										toAdd.y--;
+									}
+								}//end of if
+							}//end of outer if
+							else if(startPoint.y < endPoint.y){
+								if(startPoint.x == endPoint.x) {
+									for (int i=0; i< length; i++){
+										playerBG[toAdd.x][toAdd.y].setMSIcon(msIcon);
+										toAdd.y++;
+									}
+								}//end of if
+							}//end of outer else if
+							if(startPoint.x > endPoint.x){
+								if(startPoint.y == endPoint.y) {
+									for (int i=0; i< length; i++){
+										playerBG[toAdd.x][toAdd.y].setMSIcon(msIcon);
+										toAdd.x--;
+									}
+								}//end of else if
+							}//end of outer if
+							else if(startPoint.x < endPoint.x){
+								if(startPoint.y == endPoint.y) {
+									for (int i=0; i< length; i++){
+										playerBG[toAdd.x][toAdd.y].setMSIcon(msIcon);
+										toAdd.x++;
+									}
+								}//end of else if
+							}//end of outer if
+						}//end of if valid
+							
 						enableGrid(true, playerBG);
 						PSW.dispose();
 					}//end of button listener
@@ -752,7 +772,20 @@ public class BattleshipGrid extends JPanel {
 					//=================done setting icon
 					hit = true;
 					console.append("\nPlayer hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")");
-					if(bs.getHP() == 0) console.append("\nPlayer destroyed Computer's group of "+bs.getName()+"s!");
+					if(bs.getHP() == 0){
+						console.append("\nPlayer destroyed Computer's group of "+bs.getName()+"s!");
+						Thread t = new Thread();
+						t.start();
+						for(int i=0; i < 25; i++){
+							try {
+								t.sleep(i);
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+						SendSunkSignal(bs, compBG);
+					}//end of if sunk
 					//setIcons(point.x, point.y, 2);
 					break;
 				} 
@@ -790,7 +823,20 @@ public class BattleshipGrid extends JPanel {
 					//=================done setting icon
 					hit = true;
 					console.append("\nComputer hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")");
-					if(bs.getHP() == 0) console.append("\nComputer destroyed Player's group of "+bs.getName()+"s!");
+					if(bs.getHP() == 0){
+						console.append("\nComputer destroyed Player's group of "+bs.getName()+"s!");
+						Thread t = new Thread();
+						t.start();
+						for(int i=0; i < 25; i++){
+							try {
+								t.sleep(i);
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+						SendSunkSignal(bs, playerBG);
+					}
 					//setIcons(point.x, point.y, 1);				
 					break;
 				} 
@@ -802,6 +848,47 @@ public class BattleshipGrid extends JPanel {
 		}//end of if grid 1
 		return true;
 	}
+
+	private void SendSunkSignal(Battleship bs, MyButton[][] grid) {
+		Point sPoint = bs.getStartPoint();
+		Point ePoint = bs.getEndPoint();
+		System.out.println("startpoint: " + sPoint.x + ", "+sPoint.y);
+		System.out.println("endpoint: " + ePoint.x + ", "+ePoint.y);
+		
+		int x, y;
+		if(sPoint.x > ePoint.x){
+			x = sPoint.x;
+			while(x >= ePoint.x){
+				grid[x][sPoint.y].setSunk(true);
+				System.out.println("animate: " + x + ", "+sPoint.y);
+				x--;
+			}//end of while
+		}//end of if start x is bigger
+		else if(sPoint.x < ePoint.x){
+			x = sPoint.x;
+			while(x <= ePoint.x){
+				grid[x][sPoint.y].setSunk(true);
+				System.out.println("animate: " + x + ", "+sPoint.y);
+				x++;
+			}//end of while
+		}//end of if start x is smaller
+		if(sPoint.y > ePoint.y){
+			y = sPoint.y;
+			while(y >= ePoint.x){
+				grid[sPoint.x][y].setSunk(true);
+				System.out.println("animate: " + sPoint.x + ", "+y);
+				y--;
+			}//end of while
+		}//end of if start y is bigger
+		else if(sPoint.y < ePoint.y){
+			y = sPoint.y;
+			while(y <= ePoint.y){
+				grid[sPoint.x][y].setSunk(true);
+				System.out.println("animate: " + sPoint.x + ", "+y);
+				y++;
+			}//end of while
+		}//end of if start y is bigger
+	}//end of sending signal sunk
 
 	public void clearGrid() {
 		for(int i = 0; i < 10; i++) {
@@ -1048,25 +1135,6 @@ public class BattleshipGrid extends JPanel {
 			}
 			return str;
 		}//end of returning time
-//		public void compTurn(){
-//			char c;
-//			Random bag = new Random();
-//			int x = bag.nextInt(10);
-//			int delay = bag.nextInt(17)+1;
-//			System.out.println("got delay: "+delay);
-//			(new Timer(delay)).run();
-//			x++;
-//			int y = bag.nextInt(10);
-//			c = getLetter(y);
-//			String temp = ""+c+x;
-//			if(hitCoord(temp, 1)){	
-//				if(getNumSunk(playerShips)==5){
-//					console.append("\nYou Lost!");
-//					enableGrid(false, compBG);
-//				}//end of if end of game
-//			}//end of if hit
-//			compTurnTaken = true;
-//		}//end of compturn
 		
 	}//end of inner class
 	class CompTurn extends Thread{
@@ -1093,6 +1161,7 @@ public class BattleshipGrid extends JPanel {
 				if(hitCoord(temp, 1)){
 					if(getNumSunk(playerShips)==5){
 						console.append("\nYou Lost!");
+						JOptionPane.showMessageDialog(null, "You Lost!", "Game Over", JOptionPane.PLAIN_MESSAGE);
 						enableGrid(false, compBG);
 					}//end of if end of game
 				}//end of if hit

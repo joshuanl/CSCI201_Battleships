@@ -17,18 +17,14 @@ public class MyButton extends JButton{
 	private int alt;
 	private int hitCounter;
 	private int missCounter;
-	private int waiting;
 	private boolean msVisible;
 	private boolean hit;
 	private boolean miss;
-	private boolean soundFinished;
+	private boolean sink;
+	private boolean animateSink;
+	private boolean last;
 	private Thread t;
-//	private SoundLibrary soundMiss = new SoundLibrary("splash.wav");
-//	private SoundLibrary soundExplode = new SoundLibrary("explode.wav");
-//	private SoundLibrary soundCannon = new SoundLibrary("cannon.wav");
-	private static Lock lock = new ReentrantLock();
-//	private Condition condition = lock.newCondition();
-	//make inner class for sound 
+
 	public MyButton(){
 		t = new Thread(){
 			public void run(){
@@ -45,11 +41,11 @@ public class MyButton extends JButton{
 		alt = 1;
 		hitCounter = 0;
 		missCounter = 0;
-		waiting = 0;
 		hit = false;
 		miss = false;
 		msVisible = false;
-		soundFinished = false;
+		animateSink = false;
+		last = false;
 		ImageIcon ii;
 		water1 = new ImageIcon("animatedWater/water1.png");
 		water2 = new ImageIcon("animatedWater/water2.png");
@@ -77,7 +73,6 @@ public class MyButton extends JButton{
 		case 1:
 			g.drawImage(water1.getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 			if(hit){
-
 				miss = false;
 				g.drawImage(explosion[hitCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 				hitCounter++;
@@ -85,6 +80,7 @@ public class MyButton extends JButton{
 					hitCounter = 0;
 					hit = false;
 					msVisible = true;
+					System.out.println("sink: " + sink);
 				}
 			}
 			if(miss){	
@@ -97,13 +93,31 @@ public class MyButton extends JButton{
 			}
 			if(msVisible){
 				g.drawImage(msIcon.getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
+				alt++;
+				break;
+			}
+			if(sink){
+				System.out.println("sink is true, sending signal to splashanimate()");
+				animateSink = true;
+				splashAnimate();
+			}
+			if(animateSink || last){
+				System.out.println("animating sink");
+				System.out.println("is last? " + last);
+
+				g.drawImage(splash[missCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
+				missCounter++;
+				if(missCounter > splash.length-1){
+					missCounter = 0;
+					sink = false;
+					animateSink = false;
+				}
 			}
 			alt++;
 			break;
 		case 2:
 			g.drawImage(water2.getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 			if(hit){
-
 				miss = false;
 				g.drawImage(explosion[hitCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 				hitCounter++;
@@ -111,6 +125,8 @@ public class MyButton extends JButton{
 					hitCounter = 0;
 					hit = false;
 					msVisible = true;
+					System.out.println("sink: " + sink);
+					
 				}
 			}
 			if(miss){
@@ -124,11 +140,38 @@ public class MyButton extends JButton{
 			if(msVisible){
 				g.drawImage(msIcon.getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 			}
+			if(sink){
+				System.out.println("sink is true, sending signal to splashanimate()");
+				animateSink = true;
+				splashAnimate();
+			}
+			if(animateSink){
+				System.out.println("animating sink");
+				System.out.println("is last? " + last);
+				g.drawImage(splash[missCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
+				missCounter++;
+				if(missCounter > splash.length-1){
+					missCounter = 0;
+					sink = false;
+					animateSink = false;
+				}
+			}
 			alt--;
 			break;
 		}//end of switch
 
  }//end of paintComponent
+	public boolean checkLast(){
+		return last;
+	}
+	
+	public void isLast(boolean b){
+		last = b;
+	}
+	
+	public void setSunk(boolean b){
+		sink = b;
+	}
 	
 	public void setMSIcon(ImageIcon msIcon){
 		this.msIcon = msIcon;
@@ -140,18 +183,6 @@ public class MyButton extends JButton{
 	}//end of setting MS to true
 	
 	public void isHit(){
-//		lock.lock();
-//		try {
-////			while(!soundFinished)
-////				if(waiting == 0){
-//					cannonSound();
-//					waiting++;
-////				}	
-//				System.out.println("awaiting");
-//		} finally{
-//			System.out.println("in finally block");
-//			lock.unlock();	
-//			SoundLibrary.playSound("explode.wav");	
 		soundThread st = new soundThread("explode.wav", true);
 		st.start();
 		try {
@@ -160,24 +191,11 @@ public class MyButton extends JButton{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-			hit = true;
-			waiting = 0;
-		//}
+		hit = true;
 		
 	}//end of is hit
 	
 	public void isMiss(){
-//		lock.lock();
-//		try {
-////			while(!soundFinished)
-////				if(waiting == 0){
-//					cannonSound();
-////					waiting++;
-////				}	
-//		} finally{
-//			System.out.println("in finally block");
-//			lock.unlock();		
-//			SoundLibrary.playSound("splash.wav");
 		soundThread st = new soundThread("splash.wav", true);
 		st.start();
 		try {
@@ -187,20 +205,11 @@ public class MyButton extends JButton{
 			e.printStackTrace();
 		}
 			miss = true;
-			waiting = 0;
-		//}
-		
 	}//end of is miss 
-	
-//	public void cannonSound(){
-//		lock.lock();
-//		try{
-//			SoundLibrary.playSound("cannon.wav");	
-//			soundFinished = true;
-//		} finally{
-//			lock.unlock();
-//		}
-//	}//end of playing cannon
+	public void splashAnimate(){
+		soundThread st = new soundThread("sinking.wav", false);
+		st.start();
+	}
 	
 	class soundThread extends Thread{
 		private String sound;
@@ -212,11 +221,14 @@ public class MyButton extends JButton{
 		}//end of constructor
 		
 		public synchronized void run(){
-			System.out.println("playing cannon sound");
-			SoundLibrary.playSound("cannon.wav");
+			Thread t = new Thread();
+			t.start();
+			if(cannon){
+				SoundLibrary.playSound("cannon.wav");
+			}//end of if play cannon	
 			for(int i=0; i < 40; i++){
 				try {
-					Thread.sleep(i);
+					t.sleep(i);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -226,7 +238,6 @@ public class MyButton extends JButton{
 		}//end of run
 		
 		public void playsoundtype(){
-			System.out.println("playing sound: " + sound);
 			SoundLibrary.playSound(sound);
 		}
 	}//end of sound thread inner class
