@@ -219,31 +219,31 @@ public class BattleshipGrid extends JPanel {
 		});
 		bottomA.add(startButton);
 //================================================================== FILE CHOOSER
-		loadMap("test.battle");
-		fileLoaded = true;
-//		openFileButton.addActionListener(new ActionListener(){
-//			public void actionPerformed(ActionEvent ae){
-//				JFrame tempFrame = new JFrame();
-//				JFileChooser fileChooser = new JFileChooser();
-//				FileFilter filter = new FileNameExtensionFilter(".battle","battle");
-//				fileChooser.setFileFilter(filter);
-//		        int returnValue = fileChooser.showOpenDialog(null);
-//		        if (returnValue == JFileChooser.APPROVE_OPTION) {
-//		        	File selectedFile = fileChooser.getSelectedFile();
-//		        	if(selectedFile.getPath().contains(".battle")){
-//		        		//System.out.println(selectedFile.getPath());
-//		        		loadMap(selectedFile.getPath());
-//		        		console.append("\nLoaded File: "+selectedFile.getName());
-//		        		fileLoaded = true;
-//		        		openedFileLabel.setText("File: "+selectedFile.getName());
-//		        	}//end of if
-//		        	else{
-//			        	JOptionPane.showMessageDialog(tempFrame, "Not a \".battle\" file");
-//			        }//end of else not acceptable file
-//		        }//end of if acceptable file
-//		        
-//			}//end of action performed
-//		});
+//		loadMap("test.battle");
+//		fileLoaded = true;
+		openFileButton.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				JFrame tempFrame = new JFrame();
+				JFileChooser fileChooser = new JFileChooser();
+				FileFilter filter = new FileNameExtensionFilter(".battle","battle");
+				fileChooser.setFileFilter(filter);
+		        int returnValue = fileChooser.showOpenDialog(null);
+		        if (returnValue == JFileChooser.APPROVE_OPTION) {
+		        	File selectedFile = fileChooser.getSelectedFile();
+		        	if(selectedFile.getPath().contains(".battle")){
+		        		//System.out.println(selectedFile.getPath());
+		        		loadMap(selectedFile.getPath());
+		        		console.append("\nLoaded File: "+selectedFile.getName());
+		        		fileLoaded = true;
+		        		openedFileLabel.setText("File: "+selectedFile.getName());
+		        	}//end of if
+		        	else{
+			        	JOptionPane.showMessageDialog(tempFrame, "Not a \".battle\" file");
+			        }//end of else not acceptable file
+		        }//end of if acceptable file
+		        
+			}//end of action performed
+		});
 		jpbottom.add(logPanel);
 		jpbottom.add(bottomA);
 		//logPanel.add(console);
