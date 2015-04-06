@@ -76,6 +76,8 @@ public class BattleshipGrid extends JPanel {
 	private static int placementGrid[][];
 	private static boolean playerTurnTaken;
 	private static boolean compTurnTaken;
+	private boolean compGuessed[][];
+	private boolean playerGuessed[][];
 	private TurnThread tt;
 
 
@@ -87,6 +89,8 @@ public class BattleshipGrid extends JPanel {
 		fileLoaded = false;
 		playerTurnTaken = false;
 		compTurnTaken = false;
+		playerGuessed = new boolean[10][10];
+		compGuessed = new boolean[10][10];
 		turnTime = 15;
 		roundCount = 1;
 		coordGuess = "";
@@ -286,9 +290,10 @@ public class BattleshipGrid extends JPanel {
 		public synchronized void actionPerformed(ActionEvent ae){
 			c = getLetter(coordY);
 			coordGuess = ""+c+coordX;
-			if(guessed){
+			if(!playerGuessed[coordX][coordY]){
 				return;   //if true then player already has guessed that spot
 			}
+			playerGuessed[coordX][coordY] = true;
 			if (hitCoord(coordGuess, 2)){
 				//=============================================END OF GAME
 				//=============================================END OF GAME
@@ -758,7 +763,6 @@ public class BattleshipGrid extends JPanel {
 	private synchronized boolean hitShips(Point point, int grid) {
 		//============================PLAYER GUESSING
 		if(grid == 2){
-			//if(!compBG[point.x][point.y].getText().equals("?")) return false;
 			boolean hit = false;
 			for(Battleship bs : compShips) {
 				if(bs.attackPoint(point)) {
@@ -1179,6 +1183,9 @@ public class BattleshipGrid extends JPanel {
 				int y = bag.nextInt(10);
 				c = getLetter(y);
 				String temp = ""+c+x;
+//				int yPos = (int)(y-'A');
+//				int xPos = Integer.valueOf(x)-1;
+//				dfdfd 
 				if(hitCoord(temp, 1)){
 					if(getNumSunk(playerShips)==5){
 						for(int i=0; i < 10; i++){
