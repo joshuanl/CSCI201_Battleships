@@ -76,6 +76,7 @@ public class BattleshipGrid extends JPanel {
 	private static int placementGrid[][];
 	private static boolean playerTurnTaken;
 	private static boolean compTurnTaken;
+	private TurnThread tt;
 
 
 	public BattleshipGrid() {
@@ -219,8 +220,7 @@ public class BattleshipGrid extends JPanel {
 		});
 		bottomA.add(startButton);
 //================================================================== FILE CHOOSER
-//		loadMap("test.battle");
-//		fileLoaded = true;
+
 		openFileButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
 				JFrame tempFrame = new JFrame();
@@ -231,7 +231,6 @@ public class BattleshipGrid extends JPanel {
 		        if (returnValue == JFileChooser.APPROVE_OPTION) {
 		        	File selectedFile = fileChooser.getSelectedFile();
 		        	if(selectedFile.getPath().contains(".battle")){
-		        		//System.out.println(selectedFile.getPath());
 		        		loadMap(selectedFile.getPath());
 		        		console.append("\nLoaded File: "+selectedFile.getName());
 		        		fileLoaded = true;
@@ -246,10 +245,8 @@ public class BattleshipGrid extends JPanel {
 		});
 		jpbottom.add(logPanel);
 		jpbottom.add(bottomA);
-		//logPanel.add(console);
-		//jpbottom.add(logPanel);
+
 		add(jpbottom, BorderLayout.SOUTH);
-		//setOpaque(false);
 		
 	
 		
@@ -264,7 +261,8 @@ public class BattleshipGrid extends JPanel {
 				compBG[i][j].setMSVisible(false);
 			}
 		}
-		new TurnThread().start();
+		tt = new TurnThread();
+		tt.start();
 		boolean isOver = false;
 		editMode = false;
 		enableGrid(false, playerBG);
@@ -295,9 +293,26 @@ public class BattleshipGrid extends JPanel {
 				//=============================================END OF GAME
 				//=============================================END OF GAME
 				if(getNumSunk(compShips)==5){
-					console.append("\nYou won!");					
+					console.append("\nYou won!");
+					for(int i=0; i < 10; i++){
+						for(int j=0; j < 10; j++){
+							playerBG[i][j].endGame();
+							compBG[i][j].endGame();
+						}//end of inner for
+					}//end of outer for
 					enableGrid(false, compBG);
 					enableGrid(false, playerBG);
+					tt.EndGame();
+					Thread t = new Thread();
+					t.start();
+					for(int i=0; i < 50; i++){
+						try {
+							t.sleep(i);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
 					JOptionPane.showMessageDialog(null, "You Won!", "Game Over", JOptionPane.PLAIN_MESSAGE);
 				}//end of if end of game
 				playerTurnTaken = true;
@@ -576,14 +591,14 @@ public class BattleshipGrid extends JPanel {
 		}//end of action performed	
 	}//end of PlaceShipsAdapter
 //========================================= ENABLE GRID	
-	public void enableGrid(boolean set, JButton grid[][]){
+	public void enableGrid(boolean set, MyButton grid[][]){
 		for(int i = 0; i < 10; i++) {
 			for(int j = 0; j < 10; j++) {
 				grid[i][j].setEnabled(set);
 			}// end of inner for 
 		}//end of outer for
-		startButton.setEnabled(set);
-		openFileButton.setEnabled(set);
+		//startButton.setEnabled(set);
+		//openFileButton.setEnabled(set);
 	}//end of enable grid buttons
 //========================================= REMOVE SHIP	
 	public void removeShip(int x, int y){
@@ -640,14 +655,10 @@ public class BattleshipGrid extends JPanel {
 				break;
 			case 2:			//face east
 				for(int i=0; i < length; i++){
-					System.out.println(length);
-					System.out.println("coord: "+startX +", "+startY);
-					System.out.println("grid[startX][startY]: "+grid[startX][startY]);
 					if(startY < 0){
 						return false;
 					}
 					if(grid[startX][startY] != 0){
-						System.out.println("canceled");
 						return false;
 					}
 					startY--;
@@ -852,15 +863,12 @@ public class BattleshipGrid extends JPanel {
 	private void SendSunkSignal(Battleship bs, MyButton[][] grid) {
 		Point sPoint = bs.getStartPoint();
 		Point ePoint = bs.getEndPoint();
-		System.out.println("startpoint: " + sPoint.x + ", "+sPoint.y);
-		System.out.println("endpoint: " + ePoint.x + ", "+ePoint.y);
 		
 		int x, y;
 		if(sPoint.x > ePoint.x){
 			x = sPoint.x;
 			while(x >= ePoint.x){
 				grid[x][sPoint.y].setSunk(true);
-				System.out.println("animate: " + x + ", "+sPoint.y);
 				x--;
 			}//end of while
 		}//end of if start x is bigger
@@ -868,7 +876,6 @@ public class BattleshipGrid extends JPanel {
 			x = sPoint.x;
 			while(x <= ePoint.x){
 				grid[x][sPoint.y].setSunk(true);
-				System.out.println("animate: " + x + ", "+sPoint.y);
 				x++;
 			}//end of while
 		}//end of if start x is smaller
@@ -876,7 +883,6 @@ public class BattleshipGrid extends JPanel {
 			y = sPoint.y;
 			while(y >= ePoint.x){
 				grid[sPoint.x][y].setSunk(true);
-				System.out.println("animate: " + sPoint.x + ", "+y);
 				y--;
 			}//end of while
 		}//end of if start y is bigger
@@ -884,7 +890,6 @@ public class BattleshipGrid extends JPanel {
 			y = sPoint.y;
 			while(y <= ePoint.y){
 				grid[sPoint.x][y].setSunk(true);
-				System.out.println("animate: " + sPoint.x + ", "+y);
 				y++;
 			}//end of while
 		}//end of if start y is bigger
@@ -1091,13 +1096,15 @@ public class BattleshipGrid extends JPanel {
 
 	
 	class TurnThread extends Thread{
+		private boolean gameRunning;
 		private boolean issueCompTurn;
 		public TurnThread(){
 			issueCompTurn = false;
+			gameRunning = true;
 		}//end of constructor
 		public void run(){ 
 			console.append("\nRound "+roundCount);
-			while(compTurnTaken != true || playerTurnTaken != true){	
+			while((compTurnTaken != true || playerTurnTaken != true) && gameRunning){	
 				if(compTurnTaken != true && issueCompTurn == false){
 					issueCompTurn = true;
 					new CompTurn(roundCount).start();
@@ -1109,6 +1116,7 @@ public class BattleshipGrid extends JPanel {
 				}
 				turnTime--;
 				if(turnTime == 3){
+					clockLabel.setText("Time - "+returnTime(turnTime));
 					console.append("\nWarning - "+returnTime(turnTime) + " remaining in the round!");
 				}
 				else{
@@ -1129,13 +1137,16 @@ public class BattleshipGrid extends JPanel {
 		}//end of run
 		
 		public String returnTime(int t){
-			String str = ""+t;
+			String str = "0:"+t;
 			if(t < 10){
-				str = "0:"+t;
+				str = "0:0"+t;
 			}
 			return str;
 		}//end of returning time
 		
+		public void EndGame(){
+			gameRunning = false;
+		}
 	}//end of inner class
 	class CompTurn extends Thread{
 		//private SoundLibrary soundCannon = new SoundLibrary("cannon.wav");
@@ -1170,9 +1181,27 @@ public class BattleshipGrid extends JPanel {
 				String temp = ""+c+x;
 				if(hitCoord(temp, 1)){
 					if(getNumSunk(playerShips)==5){
+						for(int i=0; i < 10; i++){
+							for(int j=0; j < 10; j++){
+								playerBG[i][j].endGame();
+								compBG[i][j].endGame();
+							}//end of inner for
+						}//end of outer for
+						tt.EndGame();
+						Thread t = new Thread();
+						t.start();
+						for(int i=0; i < 50; i++){
+							try {
+								t.sleep(i);
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
 						console.append("\nYou Lost!");
 						JOptionPane.showMessageDialog(null, "You Lost!", "Game Over", JOptionPane.PLAIN_MESSAGE);
 						enableGrid(false, compBG);
+						enableGrid(false, playerBG);
 					}//end of if end of game
 				}//end of if hit
 				compTurnTaken = true;

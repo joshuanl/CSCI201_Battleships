@@ -24,11 +24,17 @@ public class MyButton extends JButton{
 	private boolean animateSink;
 	private boolean last;
 	private Thread t;
+	private boolean gameRunning;
+	private boolean signalEnd;
+	private int endAnimationCounter;
 
 	public MyButton(){
+		gameRunning = true;
+		signalEnd = false;
+		endAnimationCounter = 1;
 		t = new Thread(){
 			public void run(){
-				while(true){
+				while(gameRunning){
 					repaint();
 					try {
 						Thread.sleep(350);
@@ -80,7 +86,6 @@ public class MyButton extends JButton{
 					hitCounter = 0;
 					hit = false;
 					msVisible = true;
-					System.out.println("sink: " + sink);
 				}
 			}
 			if(miss){	
@@ -97,22 +102,25 @@ public class MyButton extends JButton{
 				break;
 			}
 			if(sink){
-				System.out.println("sink is true, sending signal to splashanimate()");
 				animateSink = true;
 				splashAnimate();
 			}
 			if(animateSink || last){
-				System.out.println("animating sink");
-				System.out.println("is last? " + last);
-
 				g.drawImage(splash[missCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 				missCounter++;
 				if(missCounter > splash.length-1){
 					missCounter = 0;
 					sink = false;
 					animateSink = false;
+					
 				}
 			}
+			if(signalEnd){
+				if(endAnimationCounter == 7){
+					gameRunning = false;
+				}	
+				endAnimationCounter++;
+			}//end of if end of game
 			alt++;
 			break;
 		case 2:
@@ -124,9 +132,7 @@ public class MyButton extends JButton{
 				if(hitCounter > explosion.length-1){
 					hitCounter = 0;
 					hit = false;
-					msVisible = true;
-					System.out.println("sink: " + sink);
-					
+					msVisible = true;					
 				}
 			}
 			if(miss){
@@ -141,21 +147,25 @@ public class MyButton extends JButton{
 				g.drawImage(msIcon.getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 			}
 			if(sink){
-				System.out.println("sink is true, sending signal to splashanimate()");
 				animateSink = true;
 				splashAnimate();
 			}
 			if(animateSink){
-				System.out.println("animating sink");
-				System.out.println("is last? " + last);
 				g.drawImage(splash[missCounter].getImage(), 0, 0, this.getSize().width, this.getSize().height,null);
 				missCounter++;
 				if(missCounter > splash.length-1){
 					missCounter = 0;
 					sink = false;
 					animateSink = false;
+					
 				}
 			}
+			if(signalEnd){
+				if(endAnimationCounter == 7){
+					gameRunning = false;
+				}	
+				endAnimationCounter++;
+			}//end of if end of game
 			alt--;
 			break;
 		}//end of switch
@@ -241,6 +251,10 @@ public class MyButton extends JButton{
 			SoundLibrary.playSound(sound);
 		}
 	}//end of sound thread inner class
+	
+	public void endGame(){
+		signalEnd = true;
+	}//end of game
 	
 }//end of class
 
