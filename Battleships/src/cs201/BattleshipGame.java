@@ -15,10 +15,10 @@ public class BattleshipGame {
 	
 	public static void main(String[] args) {
 		
-		BattleshipGame bsgm = new BattleshipGame();
-		//bsgm.readFile();
-		bsgm.playGame();
-		System.exit(0);
+		new ConnectWindow();
+//		BattleshipGame bsgm = new BattleshipGame();
+//		bsgm.playGame();
+//		System.exit(0);
 	}
 
 	private void playGame() {
