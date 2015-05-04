@@ -5,7 +5,6 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
@@ -13,9 +12,7 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
-import java.net.URLConnection;
 import java.net.UnknownHostException;
-import java.util.HashMap;
 import java.util.Vector;
 
 import javax.swing.BoxLayout;
@@ -35,7 +32,6 @@ public class ConnectWindow extends JFrame{
 	private JLabel hostGameLabel;
 	private JLabel enterIPLabel;
 	private JLabel customPortLabel;
-	private JLabel portLabel;
 	private JLabel mapsLabel;
 	private JTextField nameTextField;
 	private JTextField ipTextField;
@@ -83,10 +79,9 @@ public class ConnectWindow extends JFrame{
 		}//end of try
 		
 		nameLabel = new JLabel("Name:");
-		hostGameLabel = new JLabel("Host Game");
+		hostGameLabel = new JLabel("Host Game --");
 		enterIPLabel = new JLabel("Enter an IP:");
-		customPortLabel = new JLabel("Custom Port");
-		portLabel = new JLabel("Port:");
+		customPortLabel = new JLabel("Custom Port:");
 		mapsLabel = new JLabel("201 Maps");
 		nameTextField = new JTextField(10);
 		ipTextField = new JTextField(15);
@@ -197,7 +192,6 @@ public class ConnectWindow extends JFrame{
 		jp.setLayout(new FlowLayout(FlowLayout.LEFT));
 		jp.add(customPortRB);
 		jp.add(customPortLabel);
-		jp.add(portLabel);
 		jp.add(portTextField);
 		mainPanel.add(jp);
 		jp = new JPanel();
@@ -237,7 +231,6 @@ public class ConnectWindow extends JFrame{
 			hostGameRB.setEnabled(false);
 			hostGameLabel.setEnabled(false);
 			customPortRB.setEnabled(false);
-			portLabel.setEnabled(false);
 			connectButton.setEnabled(false);
 		}
 		else{
@@ -251,7 +244,6 @@ public class ConnectWindow extends JFrame{
 			hostGameRB.setEnabled(true);
 			hostGameLabel.setEnabled(true);
 			customPortRB.setEnabled(true);
-			portLabel.setEnabled(true);
 			connectButton.setEnabled(true);
 		}
 		
@@ -279,7 +271,7 @@ public class ConnectWindow extends JFrame{
 				JOptionPane.showMessageDialog(ConnectWindow.this, "Unable to locate file, please enter another file name", "Looking for File: "+temp, JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
-
+			setVisible(false);
 			new BattleshipFrame(new BattleshipGrid(b, "", "" , mapContentsVector));
 		}//end of if
 		else if(isHost){

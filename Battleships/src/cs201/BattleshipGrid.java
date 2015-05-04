@@ -1,66 +1,57 @@
 package cs201;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
-import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Vector;
-import java.util.concurrent.Semaphore;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.DefaultCaret;
+
 
 @SuppressWarnings("serial")
 public class BattleshipGrid extends JPanel {
 	private MyButton playerBG[][];
 	private MyButton compBG[][];
-	private JLabel openedFileLabel;
 	private JLabel playerName = new JLabel();
 	private JLabel computerName = new JLabel();
 	private JLabel clockLabel;
-	//private JButton openFileButton;
 	private JButton startButton;
-	static private JTextArea console;
+	static private JTextArea console1;
+	static private JTextArea console2;
+	static private JTextArea console3;
+	static private JPanel consolePanel;
+	static private JPanel console1CP;
+	static private JPanel console2CP;
+	static private JPanel console3CP;
 	private String spacer = "                      ";
 	private String coordGuess;
 	private boolean editMode;
@@ -181,75 +172,34 @@ public class BattleshipGrid extends JPanel {
 //==================================================================================== creating bottom panel
 		JPanel bottomA = new JPanel();	
 		JPanel logPanel = new JPanel();
-		JPanel consolePanel = new JPanel();
-		consolePanel.setLayout(new BoxLayout(consolePanel, BoxLayout.X_AXIS));
-		consolePanel.setOpaque(false);
+		
 		logPanel.setLayout(new BoxLayout(logPanel, BoxLayout.X_AXIS));
 		logPanel.setOpaque(false);
 		bottomA.setLayout(new FlowLayout(FlowLayout.LEFT));
 		bottomA.setOpaque(false);
 		jpbottom.setLayout(new BoxLayout(jpbottom, BoxLayout.Y_AXIS));
 		jpbottom.setOpaque(false);
-		editMode = true;
-		console = new JTextArea(7,50);
-		JScrollPane scroll = new JScrollPane(console, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		scroll.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {  
-	        public void adjustmentValueChanged(AdjustmentEvent e) {  
-	            e.getAdjustable().setValue(e.getAdjustable().getMaximum());  
-	        }
-	    });
-		console.setLineWrap(true);
-		console.setWrapStyleWord(true);
-		consolePanel.add(scroll);
-		consolePanel.add(Box.createGlue());
+		createConsole();
 		bottomA.add(consolePanel);
-		console.setText("You are in edit mode.  Click button on your grid to place your ships\n");
-		console.append("When you are finished placing your ships, load .battle file for the computer's grid\n");
-		console.append("After you've finished placing your ships and loading a .battle file, press Start to begin the game");
+		console1.setText("You are in edit mode.  Click button on your grid to place your ships\n");
+		console1.append("When you are finished placing your ships, load .battle file for the computer's grid\n");
+		console1.append("After you've finished placing your ships and loading a .battle file, press Start to begin the game");
 		
 		JLabel logLabel = new JLabel("   Log");
 		logPanel.add(logLabel);
 		logPanel.add(Box.createGlue());
-		//openFileButton = new JButton("Load File");
-		//bottomA.add(openFileButton);
-		openedFileLabel = new JLabel("File:"+spacer);
-		bottomA.add(openedFileLabel);
+
 		startButton = new JButton("START");
 		startButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
 				if(numOf_AC == 0 && numOf_BS == 0 && numOf_C == 0 && numOf_D == 0){
 					startButton.setEnabled(false);
-					//openFileButton.setEnabled(false);
 					playGame();
 					
 				}
 			}
 		});
 		bottomA.add(startButton);
-//================================================================== FILE CHOOSER
-
-//		openFileButton.addActionListener(new ActionListener(){
-//			public void actionPerformed(ActionEvent ae){
-//				JFrame tempFrame = new JFrame();
-//				JFileChooser fileChooser = new JFileChooser();
-//				FileFilter filter = new FileNameExtensionFilter(".battle","battle");
-//				fileChooser.setFileFilter(filter);
-//		        int returnValue = fileChooser.showOpenDialog(null);
-//		        if (returnValue == JFileChooser.APPROVE_OPTION) {
-//		        	File selectedFile = fileChooser.getSelectedFile();
-//		        	if(selectedFile.getPath().contains(".battle")){
-//		        		loadMap(selectedFile.getPath());
-//		        		console.append("\nLoaded File: "+selectedFile.getName());
-//		        		fileLoaded = true;
-//		        		openedFileLabel.setText("File: "+selectedFile.getName());
-//		        	}//end of if
-//		        	else{
-//			        	JOptionPane.showMessageDialog(tempFrame, "Not a \".battle\" file");
-//			        }//end of else not acceptable file
-//		        }//end of if acceptable file
-//		        
-//			}//end of action performed
-//		});
 		jpbottom.add(logPanel);
 		jpbottom.add(bottomA);
 
@@ -259,6 +209,49 @@ public class BattleshipGrid extends JPanel {
 		
 	}//=================================================================================end of constructor
 	
+	public void createConsole(){
+		consolePanel = new JPanel();
+		consolePanel.setLayout(new CardLayout());
+		console1CP = new JPanel();
+		console2CP = new JPanel();
+		console3CP = new JPanel();
+		console1CP.setLayout(new BorderLayout());
+		console2CP.setLayout(new BorderLayout());
+		console3CP.setLayout(new BorderLayout());
+		JCheckBox filterChat = new JCheckBox("Chat");
+		JCheckBox filterEvents = new JCheckBox("Events");
+		JLabel filterLabel = new JLabel("Filter:");
+		editMode = true;
+		console1 = new JTextArea(7,50);
+		JScrollPane scroll = new JScrollPane(console1, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		DefaultCaret caret = (DefaultCaret)console1.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+		console1.setLineWrap(true);
+		console1.setWrapStyleWord(true);
+		console1CP.add(scroll);
+		
+		console2 = new JTextArea(7,50);
+		scroll = new JScrollPane(console1, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		caret = (DefaultCaret)console1.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+		console2.setLineWrap(true);
+		console2.setWrapStyleWord(true);
+		console2CP.add(scroll);
+		
+		console3 = new JTextArea(7,50);
+		scroll = new JScrollPane(console1, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		caret = (DefaultCaret)console1.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+		console3.setLineWrap(true);
+		console3.setWrapStyleWord(true);
+		console3CP.add(scroll);
+		
+		consolePanel.add(console1CP, "first");
+		consolePanel.add(console2CP, "second");
+		consolePanel.add(console3CP, "third");
+		
+	}//end of creating log/console
+		
 	//=========================================PLAY GAME
 	public boolean playGame(){
 //===================== DISABLE/ENDABLE BUTTONS
@@ -302,7 +295,7 @@ public class BattleshipGrid extends JPanel {
 				//=============================================END OF GAME
 				//=============================================END OF GAME
 				if(getNumSunk(compShips)==5){
-					console.append("\nYou won!");
+					console1.append("\nYou won!");
 					for(int i=0; i < 10; i++){
 						for(int j=0; j < 10; j++){
 							playerBG[i][j].endGame();
@@ -391,7 +384,7 @@ public class BattleshipGrid extends JPanel {
 					int choice = JOptionPane.showConfirmDialog(tempFrame, msg, "Confirmation", JOptionPane.OK_CANCEL_OPTION);
 					if(choice == 0){
 						removeShip(startX, startY);
-						console.append("\n Removed Mobile Suits: "+shipType);
+						console1.append("\n Removed Mobile Suits: "+shipType);
 					}
 					return;
 				}
@@ -491,7 +484,7 @@ public class BattleshipGrid extends JPanel {
 							index = 4;
 						}
 						if(index == 0){
-							console.append("\nNo ship selected");
+							console1.append("\nNo ship selected");
 							return;
 						}
 						//=============fix index
@@ -792,9 +785,9 @@ public class BattleshipGrid extends JPanel {
 					}//end of if D
 					//=================done setting icon
 					hit = true;
-					console.append("\nPlayer hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")");
+					console1.append("\nPlayer hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")");
 					if(bs.getHP() == 0){
-						console.append("\nPlayer destroyed Computer's group of "+bs.getName()+"s!");
+						console1.append("\nPlayer destroyed Computer's group of "+bs.getName()+"s!");
 						Thread t = new Thread();
 						t.start();
 						for(int i=0; i < 25; i++){
@@ -813,7 +806,7 @@ public class BattleshipGrid extends JPanel {
 			}//end of for
 			if(!hit){
 				compBG[point.x][point.y].isMiss();
-				console.append("\nPlayer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
+				console1.append("\nPlayer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
 			}
 			compBG[point.x][point.y].setEnabled(false);
 		}//end of if grid2
@@ -843,9 +836,9 @@ public class BattleshipGrid extends JPanel {
 					}//end of if D
 					//=================done setting icon
 					hit = true;
-					console.append("\nComputer hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")");
+					console1.append("\nComputer hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")");
 					if(bs.getHP() == 0){
-						console.append("\nComputer destroyed Player's group of "+bs.getName()+"s!");
+						console1.append("\nComputer destroyed Player's group of "+bs.getName()+"s!");
 						Thread t = new Thread();
 						t.start();
 						for(int i=0; i < 25; i++){
@@ -864,7 +857,7 @@ public class BattleshipGrid extends JPanel {
 			}//end of for
 			if(!hit){
 				playerBG[point.x][point.y].isMiss();
-				console.append("\nComputer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
+				console1.append("\nComputer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
 			}
 		}//end of if grid 1
 		return true;
@@ -1114,7 +1107,7 @@ public class BattleshipGrid extends JPanel {
 			gameRunning = true;
 		}//end of constructor
 		public void run(){ 
-			console.append("\nRound "+roundCount);
+			console1.append("\nRound "+roundCount);
 			while((compTurnTaken != true || playerTurnTaken != true) && gameRunning){	
 				if(compTurnTaken != true && issueCompTurn == false){
 					issueCompTurn = true;
@@ -1128,7 +1121,7 @@ public class BattleshipGrid extends JPanel {
 				turnTime--;
 				if(turnTime == 3){
 					clockLabel.setText("Time - "+returnTime(turnTime));
-					console.append("\nWarning - "+returnTime(turnTime) + " remaining in the round!");
+					console1.append("\nWarning - "+returnTime(turnTime) + " remaining in the round!");
 				}
 				else{
 					clockLabel.setText("Time - "+returnTime(turnTime));
@@ -1142,7 +1135,7 @@ public class BattleshipGrid extends JPanel {
 					compTurnTaken = false;
 					issueCompTurn = false;
 					enableGrid(true, compBG);
-					console.append("\nRound "+roundCount);
+					console1.append("\nRound "+roundCount);
 				}//end of if
 			}//end of while
 		}//end of run
@@ -1212,7 +1205,7 @@ public class BattleshipGrid extends JPanel {
 								e.printStackTrace();
 							}
 						}
-						console.append("\nYou Lost!");
+						console1.append("\nYou Lost!");
 						JOptionPane.showMessageDialog(null, "You Lost!", "Game Over", JOptionPane.PLAIN_MESSAGE);
 						enableGrid(false, compBG);
 						enableGrid(false, playerBG);
