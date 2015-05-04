@@ -183,6 +183,16 @@ public class BattleshipGrid extends JPanel {
 
 		bottomA.setLayout(new BorderLayout());
 		jpbottom.setLayout(new BoxLayout(jpbottom, BoxLayout.Y_AXIS));
+		startButton = new JButton("START");
+		startButton.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				if(numOf_AC == 0 && numOf_BS == 0 && numOf_C == 0 && numOf_D == 0){
+					startButton.setEnabled(false);
+					playGame();
+					
+				}
+			}
+		});
 		createConsole();
 		bottomA.add(consolePanel, BorderLayout.CENTER);
 		console4.setText("You are in edit mode.  Click button on your grid to place your ships\n");
@@ -197,17 +207,7 @@ public class BattleshipGrid extends JPanel {
 		jp.add(logLabel);
 		jpbottom.add(jp, Box.LEFT_ALIGNMENT);
 
-		startButton = new JButton("START");
-		startButton.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent ae){
-				if(numOf_AC == 0 && numOf_BS == 0 && numOf_C == 0 && numOf_D == 0){
-					startButton.setEnabled(false);
-					playGame();
-					
-				}
-			}
-		});
-		//bottomA.add(startButton);
+
 		jpbottom.add(logLabel);
 		jpbottom.add(bottomA);
 
@@ -275,13 +275,9 @@ public class BattleshipGrid extends JPanel {
 		console4.setText("");
 		console4CP.add(scroll);
 		
-//		console1CPCase.add(console1CP);
 		innerPanel.add(console1CP, "first");
-//		console2CPCase.add(console2CP);
 		innerPanel.add(console2CP, "second");
-//		console3CPCase.add(console3CP);
 		innerPanel.add(console3CP, "third");
-//		console4CPCase.add(console4CP);
 		innerPanel.add(console4CP, "fourth");
 		
 		filterChat.addActionListener(new CheckBoxClicked());
@@ -290,8 +286,8 @@ public class BattleshipGrid extends JPanel {
 			public void actionPerformed(ActionEvent ae){
 				String temp = chatTextField.getText();
 				if(temp.length() != 0){
-					console1.append(temp + "\n");
-					console3.append(temp + "\n");
+					console1.append("\n"+temp);
+					console3.append("\n"+temp);
 				}
 			}
 		});
@@ -299,6 +295,7 @@ public class BattleshipGrid extends JPanel {
 		southPanel.add(playerNameLabel);
 		southPanel.add(chatTextField);
 		southPanel.add(sendButton);
+		southPanel.add(startButton);
 		eastPanel.add(filterLabel);
 		eastPanel.add(filterChat);
 		eastPanel.add(filterEvents);
@@ -373,7 +370,8 @@ public class BattleshipGrid extends JPanel {
 				//=============================================END OF GAME
 				//=============================================END OF GAME
 				if(getNumSunk(compShips)==5){
-					console1.append("\nYou won!");
+					console2.append("\nYou won!");
+					console3.append("\nYou won!");
 					for(int i=0; i < 10; i++){
 						for(int j=0; j < 10; j++){
 							playerBG[i][j].endGame();
@@ -462,7 +460,8 @@ public class BattleshipGrid extends JPanel {
 					int choice = JOptionPane.showConfirmDialog(tempFrame, msg, "Confirmation", JOptionPane.OK_CANCEL_OPTION);
 					if(choice == 0){
 						removeShip(startX, startY);
-						console1.append("\n Removed Mobile Suits: "+shipType);
+						console2.append("\n Removed Mobile Suits: "+shipType);
+						console3.append("\n Removed Mobile Suits: "+shipType);
 					}
 					return;
 				}
@@ -562,7 +561,8 @@ public class BattleshipGrid extends JPanel {
 							index = 4;
 						}
 						if(index == 0){
-							console1.append("\nNo ship selected");
+							console2.append("\nNo ship selected");
+							console3.append("\nNo ship selected");
 							return;
 						}
 						//=============fix index
@@ -863,9 +863,11 @@ public class BattleshipGrid extends JPanel {
 					}//end of if D
 					//=================done setting icon
 					hit = true;
-					console1.append("\nPlayer hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")");
+					console2.append("\nPlayer hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")");
+					console3.append("\nPlayer hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")");
 					if(bs.getHP() == 0){
-						console1.append("\nPlayer destroyed Computer's group of "+bs.getName()+"s!");
+						console2.append("\nPlayer destroyed Computer's group of "+bs.getName()+"s!");
+						console3.append("\nPlayer destroyed Computer's group of "+bs.getName()+"s!");
 						Thread t = new Thread();
 						t.start();
 						for(int i=0; i < 25; i++){
@@ -884,7 +886,8 @@ public class BattleshipGrid extends JPanel {
 			}//end of for
 			if(!hit){
 				compBG[point.x][point.y].isMiss();
-				console1.append("\nPlayer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
+				console2.append("\nPlayer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
+				console3.append("\nPlayer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
 			}
 			compBG[point.x][point.y].setEnabled(false);
 		}//end of if grid2
@@ -914,9 +917,11 @@ public class BattleshipGrid extends JPanel {
 					}//end of if D
 					//=================done setting icon
 					hit = true;
-					console1.append("\nComputer hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")");
+					console2.append("\nComputer hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")");
+					console3.append("\nComputer hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")");
 					if(bs.getHP() == 0){
-						console1.append("\nComputer destroyed Player's group of "+bs.getName()+"s!");
+						console2.append("\nComputer destroyed Player's group of "+bs.getName()+"s!");
+						console3.append("\nComputer destroyed Player's group of "+bs.getName()+"s!");
 						Thread t = new Thread();
 						t.start();
 						for(int i=0; i < 25; i++){
@@ -935,7 +940,8 @@ public class BattleshipGrid extends JPanel {
 			}//end of for
 			if(!hit){
 				playerBG[point.x][point.y].isMiss();
-				console1.append("\nComputer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
+				console2.append("\nComputer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
+				console3.append("\nComputer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
 			}
 		}//end of if grid 1
 		return true;
@@ -1185,7 +1191,8 @@ public class BattleshipGrid extends JPanel {
 			gameRunning = true;
 		}//end of constructor
 		public void run(){ 
-			console1.append("\nRound "+roundCount);
+			console2.append("\nRound "+roundCount);
+			console3.append("\nRound "+roundCount);
 			while((compTurnTaken != true || playerTurnTaken != true) && gameRunning){	
 				if(compTurnTaken != true && issueCompTurn == false){
 					issueCompTurn = true;
@@ -1199,7 +1206,8 @@ public class BattleshipGrid extends JPanel {
 				turnTime--;
 				if(turnTime == 3){
 					clockLabel.setText("Time - "+returnTime(turnTime));
-					console1.append("\nWarning - "+returnTime(turnTime) + " remaining in the round!");
+					console2.append("\nWarning - "+returnTime(turnTime) + " remaining in the round!");
+					console3.append("\nWarning - "+returnTime(turnTime) + " remaining in the round!");
 				}
 				else{
 					clockLabel.setText("Time - "+returnTime(turnTime));
@@ -1213,7 +1221,8 @@ public class BattleshipGrid extends JPanel {
 					compTurnTaken = false;
 					issueCompTurn = false;
 					enableGrid(true, compBG);
-					console1.append("\nRound "+roundCount);
+					console2.append("\nRound "+roundCount);
+					console3.append("\nRound "+roundCount);
 				}//end of if
 			}//end of while
 		}//end of run
@@ -1283,7 +1292,8 @@ public class BattleshipGrid extends JPanel {
 								e.printStackTrace();
 							}
 						}
-						console1.append("\nYou Lost!");
+						console2.append("\nYou Lost!");
+						console3.append("\nYou Lost!");
 						JOptionPane.showMessageDialog(null, "You Lost!", "Game Over", JOptionPane.PLAIN_MESSAGE);
 						enableGrid(false, compBG);
 						enableGrid(false, playerBG);
