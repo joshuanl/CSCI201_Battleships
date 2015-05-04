@@ -79,9 +79,12 @@ public class BattleshipGrid extends JPanel {
 	private boolean compGuessed[][];
 	private boolean playerGuessed[][];
 	private TurnThread tt;
+	private boolean isHost;
+	private String ip;
+	private String port;
+	private File file;
 
-
-	public BattleshipGrid() {
+	public BattleshipGrid(boolean b, String ip, String port, File file) {
 		numOf_AC = 1;
 		numOf_BS = 1;
 		numOf_C = 1;
@@ -94,8 +97,10 @@ public class BattleshipGrid extends JPanel {
 		turnTime = 15;
 		roundCount = 1;
 		coordGuess = "";
-		//playerSpotsGuessed = new boolean[11][11];
-		//compSpotsGuessed = new boolean[11][11];
+		isHost = b;
+		this.ip = ip;
+		this.port = port;
+		this.file = file;
 		
 		
 		setLayout(new BorderLayout());
@@ -912,7 +917,7 @@ public class BattleshipGrid extends JPanel {
 		}//end of for
 		openFileButton.setEnabled(true);
 		fileLoaded = true;
-		new BattleshipGrid();
+		new BattleshipGrid(false, ip, port, file);
 		
 		
 	}//end of cleargrid

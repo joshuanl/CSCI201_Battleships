@@ -4,7 +4,10 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
@@ -12,6 +15,8 @@ import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Vector;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -70,7 +75,6 @@ public class ConnectWindow extends JFrame{
 		topLabel = new JLabel("Your IP: ");
 		try {
 			localIP = InetAddress.getLocalHost().getHostAddress().toString();
-			System.out.println(localIP);
 			topLabel.setText(topLabel.getText() + ""+localIP);
 		} catch (UnknownHostException e) {
 			System.out.println("UknownHost Exception, couldnt get host IP: " + e.getMessage());
@@ -215,7 +219,6 @@ public class ConnectWindow extends JFrame{
 		InetSocketAddress address = new InetSocketAddress("www.google.com", 80);
 		try {
 			s.connect(address, 5000);
-			System.out.println("could connect");
 		} catch (IOException e) {
 			System.out.println("IO exception in connectwindow.checkconnection(): "+e.getMessage());
 			hasInternet = false;
@@ -239,7 +242,6 @@ public class ConnectWindow extends JFrame{
 		else{
 			try {
 				localIP = InetAddress.getLocalHost().getHostAddress().toString();
-				System.out.println(localIP);
 				topLabel.setText("Your IP: "+localIP);
 			} catch (UnknownHostException e) {
 				System.out.println("UknownHost Exception, couldnt get host IP in connectionUpdate: " + e.getMessage());
@@ -255,7 +257,31 @@ public class ConnectWindow extends JFrame{
 	}//end of updating textfields and buttons due to status of internet connection
 	
 	public void connectToGame(boolean b){
-		
-		
+		Vector<String> mapContentsVector = new Vector<String>();
+		if(usingMaps){
+			URL toCheckIp;
+			String temp = mapsTextField.getText() + ".battle";
+			try {
+				toCheckIp = new URL("http://www-scf.usc.edu/~csci201/assignments/"+temp);
+				BufferedReader in = new BufferedReader(new InputStreamReader(toCheckIp.openStream()));
+				temp = in.readLine();
+				while(temp != null){
+					System.out.println("got line: "+temp);
+					mapContentsVector.add(temp);
+					temp = in.readLine();
+				}//end of while	
+			} catch (MalformedURLException e) {
+				System.out.println("malformedurl exception in connectwindow.connecttogame(), could not read address: "+e.getMessage());
+				return;
+			} catch (IOException e) {
+				System.out.println("IOE in connectwindow.connecttogame(), could not readline: "+e.getMessage());
+				return;
+			}
+
+			//new BattleshipFrame(new BattleshipGrid(b, "", "" , file));
+		}//end of if
+		else if(isHost){
+			//check fields and pass to BSG
+		}
 	}//end of connecting to the game server
 }//end of class
