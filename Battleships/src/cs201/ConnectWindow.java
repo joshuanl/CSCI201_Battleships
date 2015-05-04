@@ -22,6 +22,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
@@ -275,6 +276,7 @@ public class ConnectWindow extends JFrame{
 				return;
 			} catch (IOException e) {
 				System.out.println("IOE in connectwindow.connecttogame(), could not readline: "+e.getMessage());
+				JOptionPane.showMessageDialog(ConnectWindow.this, "Unable to locate file, please enter another file name", "Looking for File: "+temp, JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
 
