@@ -272,7 +272,7 @@ public class ConnectWindow extends JFrame{
 				return;
 			}
 			setVisible(false);
-			new BattleshipFrame(new BattleshipGrid(b, "", "" , mapContentsVector));
+			new BattleshipFrame(new BattleshipGrid(b, "", "" , mapContentsVector, nameTextField.getText()));
 		}//end of if
 		else if(isHost){
 			//check fields and pass to BSG

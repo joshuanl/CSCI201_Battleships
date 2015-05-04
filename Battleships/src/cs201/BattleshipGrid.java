@@ -33,6 +33,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.text.DefaultCaret;
 
@@ -41,18 +42,24 @@ import javax.swing.text.DefaultCaret;
 public class BattleshipGrid extends JPanel {
 	private MyButton playerBG[][];
 	private MyButton compBG[][];
-	private JLabel playerName = new JLabel();
+	private JLabel playerNameLabel = new JLabel();
+	private JLabel playerNameLabelTop = new JLabel();
 	private JLabel computerName = new JLabel();
 	private JLabel clockLabel;
 	private JButton startButton;
 	static private JTextArea console1;
 	static private JTextArea console2;
 	static private JTextArea console3;
+	static private JTextArea console4;
 	static private JPanel consolePanel;
 	static private JPanel console1CP;
 	static private JPanel console2CP;
 	static private JPanel console3CP;
-	private String spacer = "                      ";
+	static private JPanel console4CP;
+	private JPanel innerPanel;
+	static private JCheckBox filterChat = new JCheckBox("Chat");
+	static private JCheckBox filterEvents = new JCheckBox("Events");
+	private CardLayout cardlayout = new CardLayout();
 	private String coordGuess;
 	private boolean editMode;
 	private ArrayList<Battleship> compShips;
@@ -74,7 +81,7 @@ public class BattleshipGrid extends JPanel {
 	private String port;
 	private Vector<String> mapContentsVector;
 
-	public BattleshipGrid(boolean b, String ip, String port, Vector<String> mapContentsVector) {
+	public BattleshipGrid(boolean b, String ip, String port, Vector<String> mapContentsVector, String pName) {
 		numOf_AC = 1;
 		numOf_BS = 1;
 		numOf_C = 1;
@@ -110,14 +117,15 @@ public class BattleshipGrid extends JPanel {
 		playerShips = new ArrayList<Battleship>();
 		MyButton temp_button;
 //====================================================================SET NORTH LABELS
-		playerName.setText("Player");
+		playerNameLabel.setText(pName);
+		playerNameLabelTop.setText(pName);
 		computerName.setText("Computer");
 		clockLabel = new JLabel("Time - 0:"+turnTime);
 		JPanel northPanel = new JPanel();
 		JPanel jp = new JPanel();
 		northPanel.setOpaque(false);
 		northPanel.setLayout(new GridLayout(1,3));
-		jp.add(playerName);
+		jp.add(playerNameLabelTop);
 		northPanel.add(jp);
 		jp = new JPanel();
 		jp.add(clockLabel);
@@ -172,22 +180,22 @@ public class BattleshipGrid extends JPanel {
 //==================================================================================== creating bottom panel
 		JPanel bottomA = new JPanel();	
 		JPanel logPanel = new JPanel();
-		
-		logPanel.setLayout(new BoxLayout(logPanel, BoxLayout.X_AXIS));
-		logPanel.setOpaque(false);
-		bottomA.setLayout(new FlowLayout(FlowLayout.LEFT));
-		bottomA.setOpaque(false);
+
+		bottomA.setLayout(new BorderLayout());
 		jpbottom.setLayout(new BoxLayout(jpbottom, BoxLayout.Y_AXIS));
-		jpbottom.setOpaque(false);
 		createConsole();
-		bottomA.add(consolePanel);
-		console1.setText("You are in edit mode.  Click button on your grid to place your ships\n");
-		console1.append("When you are finished placing your ships, load .battle file for the computer's grid\n");
-		console1.append("After you've finished placing your ships and loading a .battle file, press Start to begin the game");
+		bottomA.add(consolePanel, BorderLayout.CENTER);
+		console4.setText("You are in edit mode.  Click button on your grid to place your ships\n");
+		console4.append("When you are finished placing your ships, load .battle file for the computer's grid\n");
+		console4.append("After you've finished placing your ships and loading a .battle file, press Start to begin the game");
+		cardlayout.show(innerPanel, "fourth");
 		
-		JLabel logLabel = new JLabel("   Log");
-		logPanel.add(logLabel);
-		logPanel.add(Box.createGlue());
+		JLabel logLabel = new JLabel("Log                                                                                                          "
+				+ "                                                                                                                                ");
+		jp = new JPanel(); 
+		jp.setAlignmentX(LEFT_ALIGNMENT);
+		jp.add(logLabel);
+		jpbottom.add(jp, Box.LEFT_ALIGNMENT);
 
 		startButton = new JButton("START");
 		startButton.addActionListener(new ActionListener(){
@@ -199,8 +207,8 @@ public class BattleshipGrid extends JPanel {
 				}
 			}
 		});
-		bottomA.add(startButton);
-		jpbottom.add(logPanel);
+		//bottomA.add(startButton);
+		jpbottom.add(logLabel);
 		jpbottom.add(bottomA);
 
 		add(jpbottom, BorderLayout.SOUTH);
@@ -210,48 +218,118 @@ public class BattleshipGrid extends JPanel {
 	}//=================================================================================end of constructor
 	
 	public void createConsole(){
+		JButton sendButton = new JButton("Send");
+		innerPanel = new JPanel();
+		JPanel southPanel = new JPanel();
+		JPanel eastPanel = new JPanel();
+		eastPanel.setLayout(new BoxLayout(eastPanel, BoxLayout.Y_AXIS));
+		southPanel.setLayout(new BoxLayout(southPanel, BoxLayout.X_AXIS));
+		innerPanel.setLayout(cardlayout);
 		consolePanel = new JPanel();
-		consolePanel.setLayout(new CardLayout());
+		consolePanel.setLayout(new BorderLayout());
 		console1CP = new JPanel();
 		console2CP = new JPanel();
 		console3CP = new JPanel();
+		console4CP = new JPanel();
 		console1CP.setLayout(new BorderLayout());
 		console2CP.setLayout(new BorderLayout());
 		console3CP.setLayout(new BorderLayout());
-		JCheckBox filterChat = new JCheckBox("Chat");
-		JCheckBox filterEvents = new JCheckBox("Events");
+		console4CP.setLayout(new BorderLayout());
 		JLabel filterLabel = new JLabel("Filter:");
+		JTextField chatTextField = new JTextField(20);
 		editMode = true;
+		
 		console1 = new JTextArea(7,50);
 		JScrollPane scroll = new JScrollPane(console1, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		DefaultCaret caret = (DefaultCaret)console1.getCaret();
 		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 		console1.setLineWrap(true);
 		console1.setWrapStyleWord(true);
+		console1.setText("Chat Only\n");
 		console1CP.add(scroll);
 		
 		console2 = new JTextArea(7,50);
-		scroll = new JScrollPane(console1, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		caret = (DefaultCaret)console1.getCaret();
+		scroll = new JScrollPane(console2, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		caret = (DefaultCaret)console2.getCaret();
 		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 		console2.setLineWrap(true);
 		console2.setWrapStyleWord(true);
+		console2.setText("Events Only\n");
 		console2CP.add(scroll);
 		
 		console3 = new JTextArea(7,50);
-		scroll = new JScrollPane(console1, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		caret = (DefaultCaret)console1.getCaret();
+		scroll = new JScrollPane(console3, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		caret = (DefaultCaret)console3.getCaret();
 		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 		console3.setLineWrap(true);
 		console3.setWrapStyleWord(true);
+		console3.setText("Chat and Events\n");
 		console3CP.add(scroll);
 		
-		consolePanel.add(console1CP, "first");
-		consolePanel.add(console2CP, "second");
-		consolePanel.add(console3CP, "third");
+		console4 = new JTextArea(7,50);
+		scroll = new JScrollPane(console4, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		caret = (DefaultCaret)console4.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+		console4.setLineWrap(true);
+		console4.setWrapStyleWord(true);
+		console4.setText("");
+		console4CP.add(scroll);
+		
+//		console1CPCase.add(console1CP);
+		innerPanel.add(console1CP, "first");
+//		console2CPCase.add(console2CP);
+		innerPanel.add(console2CP, "second");
+//		console3CPCase.add(console3CP);
+		innerPanel.add(console3CP, "third");
+//		console4CPCase.add(console4CP);
+		innerPanel.add(console4CP, "fourth");
+		
+		filterChat.addActionListener(new CheckBoxClicked());
+		filterEvents.addActionListener(new CheckBoxClicked());
+		sendButton.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				String temp = chatTextField.getText();
+				if(temp.length() != 0){
+					console1.append(temp + "\n");
+					console3.append(temp + "\n");
+				}
+			}
+		});
+		playerNameLabel.setText("  "+playerNameLabel.getText()+"  ");
+		southPanel.add(playerNameLabel);
+		southPanel.add(chatTextField);
+		southPanel.add(sendButton);
+		eastPanel.add(filterLabel);
+		eastPanel.add(filterChat);
+		eastPanel.add(filterEvents);
+		
+		consolePanel.add(innerPanel, BorderLayout.CENTER);
+		consolePanel.add(southPanel, BorderLayout.SOUTH);
+		consolePanel.add(eastPanel, BorderLayout.EAST);
 		
 	}//end of creating log/console
-		
+	
+	class CheckBoxClicked implements ActionListener{
+		public CheckBoxClicked(){}
+		public void actionPerformed(ActionEvent ae){
+			if(filterChat.isSelected() && !filterEvents.isSelected()){
+				//CardLayout cl = (CardLayout)console1CPCase.getLayout();
+				cardlayout.show(innerPanel, "first");
+			}//end of if show first1
+			else if(!filterChat.isSelected() && filterEvents.isSelected()){
+				//CardLayout cl = (CardLayout)console2CPCase.getLayout();
+				cardlayout.show(innerPanel, "second");
+			}//end of if show first1
+			else if(filterChat.isSelected() && filterEvents.isSelected()){
+				//CardLayout cl = (CardLayout)console3CPCase.getLayout();
+				cardlayout.show(innerPanel, "third");
+			}//end of if show first1
+			else if(!filterChat.isSelected() && !filterEvents.isSelected()){
+				//CardLayout cl = (CardLayout)console4CPCase.getLayout();
+				cardlayout.show(innerPanel, "fourth");
+			}//end of if show first1
+		}
+	}//end of custom action listener	
 	//=========================================PLAY GAME
 	public boolean playGame(){
 //===================== DISABLE/ENDABLE BUTTONS
@@ -910,7 +988,7 @@ public class BattleshipGrid extends JPanel {
 			}
 		}//end of for
 		//openFileButton.setEnabled(true);
-		new BattleshipGrid(false, ip, port, mapContentsVector);
+		new BattleshipGrid(false, ip, port, mapContentsVector, playerNameLabel.getText());
 		
 		
 	}//end of cleargrid
