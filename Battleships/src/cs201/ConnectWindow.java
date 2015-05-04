@@ -6,7 +6,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
@@ -38,6 +40,7 @@ public class ConnectWindow extends JFrame{
 	private JRadioButton mapsRB;
 	private JButton refreshButton;
 	private JButton connectButton;
+	private JButton clearFieldsButton;
 	private String localIP;
 	private boolean connectingBoolean = false;
 	private boolean hasInternet = true;
@@ -54,6 +57,8 @@ public class ConnectWindow extends JFrame{
 		
 		initVars();
 		initActions();
+		checkConnection();
+		connectionUpdate();
 		addComponenets();
 		
 		setVisible(true);
@@ -86,6 +91,7 @@ public class ConnectWindow extends JFrame{
 		customPortRB = new JRadioButton();
 		customPortRB.setEnabled(false);
 		mapsRB = new JRadioButton();
+		clearFieldsButton = new JButton("Clear Fields");
 		connectButton = new JButton("Connect");
 		refreshButton = new JButton("Refresh");
 	}//end of initializing variables
@@ -103,18 +109,29 @@ public class ConnectWindow extends JFrame{
 			}
 		});
 		
+		clearFieldsButton.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				nameTextField.setText("");
+				ipTextField.setText("");
+				portTextField.setText("");
+				mapsTextField.setText("");
+			}
+		});
+		
 		hostGameRB.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
 				if(hostGameRB.isSelected()){
 					isHost = true;
 					mapsRB.setEnabled(false);
 					mapsRB.setSelected(false);
+					mapsTextField.setEnabled(false);
 					customPortRB.setEnabled(true);
 				}
 				else{
 					isHost = false;
 					mapsRB.setEnabled(true);
 					mapsRB.setSelected(false);
+					mapsTextField.setEnabled(true);
 					customPortRB.setEnabled(false);
 					customPortRB.setSelected(false);
 				}
@@ -137,12 +154,17 @@ public class ConnectWindow extends JFrame{
 				if(mapsRB.isSelected()){
 					usingMaps = true;
 					hostGameRB.setSelected(false);
+					ipTextField.setEnabled(false);
 					customPortRB.setSelected(false);
+					portTextField.setEnabled(false);
 				}
 				else{
 					usingMaps = false;
 					hostGameRB.setSelected(false);
+					ipTextField.setEnabled(false);
 					customPortRB.setSelected(false);
+					portTextField.setEnabled(false);
+
 				}
 			}
 		});
@@ -181,23 +203,19 @@ public class ConnectWindow extends JFrame{
 		mainPanel.add(jp);
 		jp = new JPanel();
 		jp.setLayout(new FlowLayout(FlowLayout.LEFT));
-		jp.add(connectButton);
 		jp.add(refreshButton);
+		jp.add(connectButton);
+		jp.add(clearFieldsButton);
 		mainPanel.add(jp);
 		add(mainPanel, BorderLayout.CENTER);
 	}//end of adding components
 	
 	public void checkConnection(){
-		URL url;
-		final URLConnection conn;
+		Socket s = new Socket();
+		InetSocketAddress address = new InetSocketAddress("www.google.com", 80);
 		try {
-			url = new URL("http://www.google.com");
-			conn  = url.openConnection();
-		} catch (MalformedURLException e) {
-			System.out.println("MalformedURL exception in connectwindow.checkconnection(): "+e.getMessage());
-			hasInternet = false;
-			connectionUpdate();
-			return;
+			s.connect(address, 5000);
+			System.out.println("could connect");
 		} catch (IOException e) {
 			System.out.println("IO exception in connectwindow.checkconnection(): "+e.getMessage());
 			hasInternet = false;
@@ -210,7 +228,29 @@ public class ConnectWindow extends JFrame{
 	}//end of checking for internet connections
 	
 	public void connectionUpdate(){
-		
+		if(!hasInternet){
+			topLabel.setText("Your IP:" + " Error");
+			hostGameRB.setEnabled(false);
+			hostGameLabel.setEnabled(false);
+			customPortRB.setEnabled(false);
+			portLabel.setEnabled(false);
+			connectButton.setEnabled(false);
+		}
+		else{
+			try {
+				localIP = InetAddress.getLocalHost().getHostAddress().toString();
+				System.out.println(localIP);
+				topLabel.setText("Your IP: "+localIP);
+			} catch (UnknownHostException e) {
+				System.out.println("UknownHost Exception, couldnt get host IP in connectionUpdate: " + e.getMessage());
+				hasInternet = false;
+			}//end of try
+			hostGameRB.setEnabled(true);
+			hostGameLabel.setEnabled(true);
+			customPortRB.setEnabled(true);
+			portLabel.setEnabled(true);
+			connectButton.setEnabled(true);
+		}
 		
 	}//end of updating textfields and buttons due to status of internet connection
 	
