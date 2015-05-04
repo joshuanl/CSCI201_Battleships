@@ -267,7 +267,7 @@ public class ConnectWindow extends JFrame{
 				BufferedReader in = new BufferedReader(new InputStreamReader(toCheckIp.openStream()));
 				temp = in.readLine();
 				while(temp != null){
-					System.out.println("got line: "+temp);
+					//System.out.println("got line: "+temp);
 					mapContentsVector.add(temp);
 					temp = in.readLine();
 				}//end of while	
@@ -280,7 +280,7 @@ public class ConnectWindow extends JFrame{
 				return;
 			}
 
-			//new BattleshipFrame(new BattleshipGrid(b, "", "" , file));
+			new BattleshipFrame(new BattleshipGrid(b, "", "" , mapContentsVector));
 		}//end of if
 		else if(isHost){
 			//check fields and pass to BSG

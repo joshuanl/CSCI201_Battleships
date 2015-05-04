@@ -58,13 +58,12 @@ public class BattleshipGrid extends JPanel {
 	private JLabel playerName = new JLabel();
 	private JLabel computerName = new JLabel();
 	private JLabel clockLabel;
-	private JButton openFileButton;
+	//private JButton openFileButton;
 	private JButton startButton;
 	static private JTextArea console;
 	private String spacer = "                      ";
 	private String coordGuess;
 	private boolean editMode;
-	private boolean fileLoaded;
 	private ArrayList<Battleship> compShips;
 	private ArrayList<Battleship> playerShips;
 	private int numOf_AC;
@@ -82,14 +81,13 @@ public class BattleshipGrid extends JPanel {
 	private boolean isHost;
 	private String ip;
 	private String port;
-	private File file;
+	private Vector<String> mapContentsVector;
 
-	public BattleshipGrid(boolean b, String ip, String port, File file) {
+	public BattleshipGrid(boolean b, String ip, String port, Vector<String> mapContentsVector) {
 		numOf_AC = 1;
 		numOf_BS = 1;
 		numOf_C = 1;
 		numOf_D = 2;
-		fileLoaded = false;
 		playerTurnTaken = false;
 		compTurnTaken = false;
 		playerGuessed = new boolean[10][10];
@@ -100,7 +98,7 @@ public class BattleshipGrid extends JPanel {
 		isHost = b;
 		this.ip = ip;
 		this.port = port;
-		this.file = file;
+		this.mapContentsVector = mapContentsVector;
 		
 		
 		setLayout(new BorderLayout());
@@ -212,16 +210,16 @@ public class BattleshipGrid extends JPanel {
 		JLabel logLabel = new JLabel("   Log");
 		logPanel.add(logLabel);
 		logPanel.add(Box.createGlue());
-		openFileButton = new JButton("Load File");
-		bottomA.add(openFileButton);
+		//openFileButton = new JButton("Load File");
+		//bottomA.add(openFileButton);
 		openedFileLabel = new JLabel("File:"+spacer);
 		bottomA.add(openedFileLabel);
 		startButton = new JButton("START");
 		startButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				if(fileLoaded && numOf_AC == 0 && numOf_BS == 0 && numOf_C == 0 && numOf_D == 0){
+				if(numOf_AC == 0 && numOf_BS == 0 && numOf_C == 0 && numOf_D == 0){
 					startButton.setEnabled(false);
-					openFileButton.setEnabled(false);
+					//openFileButton.setEnabled(false);
 					playGame();
 					
 				}
@@ -230,34 +228,34 @@ public class BattleshipGrid extends JPanel {
 		bottomA.add(startButton);
 //================================================================== FILE CHOOSER
 
-		openFileButton.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent ae){
-				JFrame tempFrame = new JFrame();
-				JFileChooser fileChooser = new JFileChooser();
-				FileFilter filter = new FileNameExtensionFilter(".battle","battle");
-				fileChooser.setFileFilter(filter);
-		        int returnValue = fileChooser.showOpenDialog(null);
-		        if (returnValue == JFileChooser.APPROVE_OPTION) {
-		        	File selectedFile = fileChooser.getSelectedFile();
-		        	if(selectedFile.getPath().contains(".battle")){
-		        		loadMap(selectedFile.getPath());
-		        		console.append("\nLoaded File: "+selectedFile.getName());
-		        		fileLoaded = true;
-		        		openedFileLabel.setText("File: "+selectedFile.getName());
-		        	}//end of if
-		        	else{
-			        	JOptionPane.showMessageDialog(tempFrame, "Not a \".battle\" file");
-			        }//end of else not acceptable file
-		        }//end of if acceptable file
-		        
-			}//end of action performed
-		});
+//		openFileButton.addActionListener(new ActionListener(){
+//			public void actionPerformed(ActionEvent ae){
+//				JFrame tempFrame = new JFrame();
+//				JFileChooser fileChooser = new JFileChooser();
+//				FileFilter filter = new FileNameExtensionFilter(".battle","battle");
+//				fileChooser.setFileFilter(filter);
+//		        int returnValue = fileChooser.showOpenDialog(null);
+//		        if (returnValue == JFileChooser.APPROVE_OPTION) {
+//		        	File selectedFile = fileChooser.getSelectedFile();
+//		        	if(selectedFile.getPath().contains(".battle")){
+//		        		loadMap(selectedFile.getPath());
+//		        		console.append("\nLoaded File: "+selectedFile.getName());
+//		        		fileLoaded = true;
+//		        		openedFileLabel.setText("File: "+selectedFile.getName());
+//		        	}//end of if
+//		        	else{
+//			        	JOptionPane.showMessageDialog(tempFrame, "Not a \".battle\" file");
+//			        }//end of else not acceptable file
+//		        }//end of if acceptable file
+//		        
+//			}//end of action performed
+//		});
 		jpbottom.add(logPanel);
 		jpbottom.add(bottomA);
 
 		add(jpbottom, BorderLayout.SOUTH);
 		
-	
+		loadMap(mapContentsVector);
 		
 	}//=================================================================================end of constructor
 	
@@ -295,7 +293,8 @@ public class BattleshipGrid extends JPanel {
 		public synchronized void actionPerformed(ActionEvent ae){
 			c = getLetter(coordY);
 			coordGuess = ""+c+coordX;
-			if(!playerGuessed[coordX][coordY]){
+			if(playerGuessed[coordX][coordY]){
+				System.out.println("Already guessed spot");
 				return;   //if true then player already has guessed that spot
 			}
 			playerGuessed[coordX][coordY] = true;
@@ -742,6 +741,7 @@ public class BattleshipGrid extends JPanel {
 	}
 	
 	public boolean hitCoord(String coord, int grid) {
+		System.out.println("Checking coord in hitcoord");
 		if(coord.length()<2 || coord.length()>3) return false;
 		char y = coord.charAt(0);
 		if(y <'A' || y > 'J'){
@@ -768,6 +768,7 @@ public class BattleshipGrid extends JPanel {
 	private synchronized boolean hitShips(Point point, int grid) {
 		//============================PLAYER GUESSING
 		if(grid == 2){
+			System.out.println("Checking coord in hitships");
 			boolean hit = false;
 			for(Battleship bs : compShips) {
 				if(bs.attackPoint(point)) {
@@ -915,24 +916,28 @@ public class BattleshipGrid extends JPanel {
 				square.setMSVisible(false);
 			}
 		}//end of for
-		openFileButton.setEnabled(true);
-		fileLoaded = true;
-		new BattleshipGrid(false, ip, port, file);
+		//openFileButton.setEnabled(true);
+		new BattleshipGrid(false, ip, port, mapContentsVector);
 		
 		
 	}//end of cleargrid
 
-	public boolean loadMap(String pathName) {
+	public boolean loadMap(Vector<String> mapContentsVector) {
 		Scanner inputScan = null;
-		try {
-			inputScan = new Scanner(new File(pathName));
-			
+		try {			
 			char[][] inputMatrix = new char[10][10];
 			
 			for(int i = 0; i < 10; i++) {
-				String temp = inputScan.nextLine();
+				String temp = mapContentsVector.elementAt(i);
 				if(temp.length() != 10) return false;
 				else inputMatrix[i] = temp.toCharArray();
+			}
+			
+			for(char[] ca : inputMatrix){
+				for(char c : ca){
+					System.out.print(c);
+				}
+				System.out.println();
 			}
 			
 			ArrayList<Battleship> dShips = new ArrayList<Battleship>();
@@ -1094,9 +1099,6 @@ public class BattleshipGrid extends JPanel {
 			compShips.addAll(dShips);
 			
 			return true;
-		} catch (FileNotFoundException e) {
-			console.append("\nFile path is invalid!");
-			return false;
 		} finally {
 			if(inputScan != null)
 			inputScan.close();
