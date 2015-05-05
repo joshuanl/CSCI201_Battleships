@@ -63,7 +63,7 @@ public class ConnectWindow extends JFrame{
 		checkConnection();
 		connectionUpdate();
 		addComponenets();
-		
+		getRootPane().setDefaultButton(connectButton);
 		setVisible(true);
 	}//end of constructor
 	
@@ -259,6 +259,12 @@ public class ConnectWindow extends JFrame{
 	
 	public void connectToGame(){
 		Vector<String> mapContentsVector = new Vector<String>();
+		try{
+			int n = Integer.parseInt(portTextField.getText());
+		}catch(NumberFormatException nfe){
+			JOptionPane.showMessageDialog(ConnectWindow.this, "Invalid port entry", "Invalid Input", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
 		if(usingMaps){
 			URL toCheckIp;
 			String temp = mapsTextField.getText() + ".battle";
@@ -280,21 +286,21 @@ public class ConnectWindow extends JFrame{
 				return;
 			}
 			setVisible(false);
-			BattleshipFrame bsf = null;
-			BattleshipGrid bsg = new BattleshipGrid(isHost, usingMaps, "", "" , mapContentsVector, nameTextField.getText());
-			bsf = new BattleshipFrame(bsg);	
+			BattleshipFrame bsf = new BattleshipFrame();
+			BattleshipGrid bsg = new BattleshipGrid(bsf, isHost, usingMaps, "", "" , mapContentsVector, nameTextField.getText());
+			bsf.add(bsg);
 			dispose();
 		}//end of if
 		else if(isHost){
-			BattleshipFrame bsf = null;
+			BattleshipFrame bsf = new BattleshipFrame();
 			BattleshipGrid bsg = new BattleshipGrid(isHost, usingMaps, ipTextField.getText(), portTextField.getText() , mapContentsVector, nameTextField.getText());
-			bsf = new BattleshipFrame(bsg);
+			bsf.add(bsg);
 			dispose();
 		}
 		else if(isClient){
-			BattleshipFrame bsf = null;
+			BattleshipFrame bsf = new BattleshipFrame();
 			BattleshipGrid bsg = new BattleshipGrid(isHost, usingMaps, ipTextField.getText(), portTextField.getText() , mapContentsVector, nameTextField.getText());
-			bsf = new BattleshipFrame(bsg);
+			bsf.add(bsg);
 			dispose();
 		}
 	}//end of connecting to the game server

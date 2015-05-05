@@ -21,7 +21,8 @@ import javax.swing.KeyStroke;
 @SuppressWarnings("serial")
 public class BattleshipFrame extends JFrame{
 	
-	public BattleshipFrame(BattleshipGrid bsg) {
+	
+	public BattleshipFrame() {
 		super("Battleship");
 		
 		setSize(1100,700);
@@ -94,7 +95,11 @@ public class BattleshipFrame extends JFrame{
 		jmb.add(jm);
 		setJMenuBar(jmb);
 		
-		add(bsg);
-		setVisible(false);
+		//add(bsg);
+		setVisible(true);
 	}//end of constructor
+	
+	public void addGame(BattleshipGrid bsg){
+		add(bsg);
+	}
 }//end of class
