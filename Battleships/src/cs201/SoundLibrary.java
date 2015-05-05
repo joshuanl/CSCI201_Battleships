@@ -62,6 +62,10 @@ public class SoundLibrary {
 				}
 			}//end of run
 		};//end of thread
-		t.start();
+		try{
+			t.start();
+		}catch(IllegalThreadStateException itse){
+			System.out.println("illegal thread state exception, trying to play sound: "+itse.getMessage());
+		}
 	}//end of playsound
 }

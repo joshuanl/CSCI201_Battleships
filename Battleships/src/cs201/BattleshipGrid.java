@@ -101,6 +101,7 @@ public class BattleshipGrid extends JPanel {
 	private boolean isClosing = false;
 	private boolean isHost;
 	private boolean isSinglePlayer;
+	private boolean mapLoaded = false;
 	private String ip;
 	private int port;
 	private int playersConnected = 0;
@@ -227,6 +228,9 @@ public class BattleshipGrid extends JPanel {
 					if(isHost){
 						sendMessageToClients(true);
 					}//end of if host
+					else if(isSinglePlayer){
+						playGame();
+					}
 					else{
 						try {
 							oos.writeObject(true);
@@ -346,9 +350,13 @@ public class BattleshipGrid extends JPanel {
 				chatTextField.setText("");
 				if(temp.length() != 0){
 					if(isHost){
+						console1.append("\n"+temp);
+						console3.append("\n"+temp);
 						sendMessageToClients(new ChatMessageObject("\n"+temp, 1));
 					}//end of if host
 					else{
+						console1.append("\n"+temp);
+						console3.append("\n"+temp);
 						try {
 							oos.writeObject(new ChatMessageObject("\n"+temp, 1));
 							oos.flush();
@@ -432,11 +440,11 @@ public class BattleshipGrid extends JPanel {
 		public synchronized void actionPerformed(ActionEvent ae){
 			c = getLetter(coordY);
 			coordGuess = ""+c+coordX;
-			if(playerGuessed[coordX][coordY]){
-				System.out.println("Already guessed spot");
+			if(playerGuessed[coordX-1][coordY]){
+				//System.out.println("Already guessed spot");
 				return;   //if true then player already has guessed that spot
 			}
-			playerGuessed[coordX][coordY] = true;
+			playerGuessed[coordX-1][coordY] = true;
 			if (hitCoord(coordGuess, 2)){
 				//=============================================END OF GAME
 				//=============================================END OF GAME
@@ -883,7 +891,6 @@ public class BattleshipGrid extends JPanel {
 	}
 	
 	public boolean hitCoord(String coord, int grid) {
-		System.out.println("Checking coord in hitcoord");
 		if(coord.length()<2 || coord.length()>3) return false;
 		char y = coord.charAt(0);
 		if(y <'A' || y > 'J'){
@@ -1069,11 +1076,25 @@ public class BattleshipGrid extends JPanel {
 		
 	}//end of cleargrid
 
+	public Vector<String> OrientateMap(Vector<String> mapsContentVector){
+		Vector<String> fixedVector = new Vector<String>();
+		String str;
+		String fixedStr = "";
+		for(int i=0; i<10; i++){
+			for(int j=0; j<10; j++){
+				str = mapsContentVector.elementAt(j);
+				fixedStr += str.charAt(i);
+			}
+			fixedVector.add(fixedStr);
+			fixedStr = "";
+		}
+		return fixedVector;
+	}
 	public boolean loadMap(Vector<String> mapContentsVector) {
 		Scanner inputScan = null;
 		try {			
 			char[][] inputMatrix = new char[10][10];
-			
+			mapContentsVector = OrientateMap(mapContentsVector);
 			for(int i = 0; i < 10; i++) {
 				String temp = mapContentsVector.elementAt(i);
 				if(temp.length() != 10) return false;
@@ -1082,9 +1103,9 @@ public class BattleshipGrid extends JPanel {
 			
 			for(char[] ca : inputMatrix){
 				for(char c : ca){
-					System.out.print(c);
+					//System.out.print(c);
 				}
-				System.out.println();
+				//System.out.println();
 			}
 			
 			ArrayList<Battleship> dShips = new ArrayList<Battleship>();
@@ -1251,7 +1272,41 @@ public class BattleshipGrid extends JPanel {
 			inputScan.close();
 		}
 	}//========================================end of loadmap
-
+	
+	public Vector<String> getMap(int[][] map){
+		Vector<String> mapContents = new Vector<String>();
+		String str = "";
+		for(int i=0; i<10; i++){
+			for(int j=0; j<10; j++){
+				switch(placementGrid[i][j]){
+					case 0:
+						str += "X";
+						break;
+					case 1:
+						str += "D";
+						break;
+					case 2:
+						str += "D";
+						break;
+					case 3:
+						str += "C";
+						break;
+					case 4:
+						str += "B";
+						break;	
+					case 5:
+						str += "A";
+						break;
+				}//end of switch	
+				
+				System.out.print(placementGrid[i][j]);
+			}//end of inner for
+			System.out.println();
+			mapContents.add(str);
+			str = "";
+		}//end of outer for
+		return mapContents;
+	}
 	
 	class TurnThread extends Thread{
 		private boolean gameRunning;
@@ -1412,6 +1467,9 @@ public class BattleshipGrid extends JPanel {
 						ctVector.add(ct);
 						ct.start();
 						break;
+						/*
+						 * to add spectators, remove break and if statement to allow more  connections but handle case if spectator
+						*/
 					}//end of while
 				} catch (IOException ioe) {
 					System.out.println("IOE: in createconnections run" + ioe.getMessage());
@@ -1478,6 +1536,7 @@ public class BattleshipGrid extends JPanel {
 				System.out.println("IOE from ChatThread.sendMessage() from server to client: "+e.getMessage());
 			}
 		}//end of send message
+		
 		//server reading from client
 		public synchronized void run(){
 			try {
@@ -1506,15 +1565,31 @@ public class BattleshipGrid extends JPanel {
 						System.out.println("server got boolean from client");
 						oppReadyStatus = (Boolean)obj;
 						if(oppReadyStatus && readyStatus){
-							sendMessage(1);
-							playGame();
+							Vector<String> mapContents;
+							mapContents = getMap(placementGrid);
+							sendMessage(mapContents);
+							if(mapLoaded){
+								sendMessage(1);
+								playGame();
+							}//send signal to start game	
 						}//end of if both players are ready
 					}//end of if read in a boolean
+					else if(obj instanceof Vector<?>){
+						System.out.println("got map contents, loading into map");
+						loadMap((Vector<String>)obj);
+						mapLoaded = true;
+						if(mapLoaded && readyStatus){
+							sendMessage(1);
+							playGame();
+						}//send signal to start game
+					}//end of else if read in a vector
 					else if(obj instanceof Integer){
 						switch((Integer)obj){
 							case 1:
 								playGame();
-							break;
+								break;
+							case 2:
+								break;
 						}//end of switch
 					}//end of else if read in an integer
 					obj = ois.readObject();
@@ -1543,9 +1618,10 @@ public class BattleshipGrid extends JPanel {
 					else if(obj instanceof Boolean){
 						oppReadyStatus = (Boolean)obj;
 						if(oppReadyStatus && readyStatus){
-							oos.writeObject(1);
+							Vector<String> mapContents;
+							mapContents = getMap(placementGrid);
+							oos.writeObject(mapContents);
 							oos.flush();
-							playGame();
 						}
 					}//end of if read in a boolean
 					else if (obj instanceof ChatMessageObject){
@@ -1562,11 +1638,23 @@ public class BattleshipGrid extends JPanel {
 								console3.append(((ChatMessageObject)obj).getMessage());
 								break;
 						}//end of switch
-					}
+					}//end of else read in chat message object
+					else if(obj instanceof Vector<?>){
+						System.out.println("got map contents, loading into map");
+						loadMap((Vector<String>)obj);
+						mapLoaded = true;
+						if(mapLoaded && readyStatus){
+							oos.writeObject(1);
+							oos.flush();
+							playGame();
+						}//send signal to start game
+					}//end of else if read in a vector
 					else if(obj instanceof Integer){
 						switch((Integer)obj){
 							case 1:
 								playGame();
+								break;
+							case 2:
 								break;
 						}//end of switch
 					}//end of else if read in an integer

@@ -256,12 +256,6 @@ public class ConnectWindow extends JFrame{
 	
 	public void connectToGame(){
 		Vector<String> mapContentsVector = new Vector<String>();
-		try{
-			int n = Integer.parseInt(portTextField.getText());
-		}catch(NumberFormatException nfe){
-			JOptionPane.showMessageDialog(ConnectWindow.this, "Invalid port entry", "Invalid Input", JOptionPane.INFORMATION_MESSAGE);
-			return;
-		}
 		if(usingMaps){
 			URL toCheckIp;
 			String temp = mapsTextField.getText() + ".battle";
@@ -284,11 +278,18 @@ public class ConnectWindow extends JFrame{
 			}
 			setVisible(false);
 			BattleshipFrame bsf = new BattleshipFrame();
-			BattleshipGrid bsg = new BattleshipGrid(isHost, usingMaps, "", "" , mapContentsVector, nameTextField.getText());
+			BattleshipGrid bsg = new BattleshipGrid(isHost, usingMaps, "0", "0" , mapContentsVector, nameTextField.getText());
 			bsf.add(bsg);
 			dispose();
+			return;
 		}//end of if
-		else if(isHost){
+		try{
+			int n = Integer.parseInt(portTextField.getText());
+		}catch(NumberFormatException nfe){
+			JOptionPane.showMessageDialog(ConnectWindow.this, "Invalid port entry", "Invalid Input", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+		if(isHost){
 			BattleshipFrame bsf = new BattleshipFrame();
 			BattleshipGrid bsg = new BattleshipGrid(isHost, usingMaps, ipTextField.getText(), portTextField.getText() , mapContentsVector, nameTextField.getText());
 			bsf.add(bsg);

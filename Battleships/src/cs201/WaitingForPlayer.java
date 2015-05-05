@@ -18,6 +18,7 @@ public class WaitingForPlayer extends Thread{
 	private JDialog myDialog;
 	private BattleshipGrid bsg;
 	private JFrame jf = new JFrame();
+	private boolean connected = false;
 	
 	public WaitingForPlayer(BattleshipGrid bsg){			
 		jf.setTitle("Battleship Menu");
@@ -60,10 +61,14 @@ public class WaitingForPlayer extends Thread{
 			}
 			timeLeft--;
 			label.setText(s1 + " " + timeLeft + s2);
-		}//end of while	
-		close(false);
+		}//end of while
+		WaitingForPlayer.this.interrupt();
+		if(!connected){
+			close(false);
+		}	
 	}//end of run
 	public void close(boolean connected){
+		this.connected = connected;
 		if(connected){
 			System.out.println("force closing wfp");
 			this.interrupt();
