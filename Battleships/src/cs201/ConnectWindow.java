@@ -287,7 +287,7 @@ public class ConnectWindow extends JFrame{
 			}
 			setVisible(false);
 			BattleshipFrame bsf = new BattleshipFrame();
-			BattleshipGrid bsg = new BattleshipGrid(bsf, isHost, usingMaps, "", "" , mapContentsVector, nameTextField.getText());
+			BattleshipGrid bsg = new BattleshipGrid(isHost, usingMaps, "", "" , mapContentsVector, nameTextField.getText());
 			bsf.add(bsg);
 			dispose();
 		}//end of if
