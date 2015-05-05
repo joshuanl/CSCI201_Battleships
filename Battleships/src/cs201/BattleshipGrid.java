@@ -13,6 +13,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -20,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -59,6 +63,7 @@ public class BattleshipGrid extends JPanel {
 	private JLabel computerName = new JLabel();
 	private JLabel clockLabel;
 	private JButton startButton;
+	private JButton sendButton;
 	static private JTextArea console1;
 	static private JTextArea console2;
 	static private JTextArea console3;
@@ -74,6 +79,8 @@ public class BattleshipGrid extends JPanel {
 	private CardLayout cardlayout = new CardLayout();
 	private String coordGuess;
 	private boolean editMode;
+	private boolean readyStatus = false;
+	private boolean oppReadyStatus = false;
 	private ArrayList<Battleship> compShips;
 	private ArrayList<Battleship> playerShips;
 	private int numOf_AC;
@@ -216,11 +223,24 @@ public class BattleshipGrid extends JPanel {
 			public void actionPerformed(ActionEvent ae){
 				if(numOf_AC == 0 && numOf_BS == 0 && numOf_C == 0 && numOf_D == 0){
 					startButton.setEnabled(false);
-					playGame();
-					
+					readyStatus = true;
+					if(isHost){
+						sendMessageToClients(true);
+					}//end of if host
+					else{
+						try {
+							oos.writeObject(true);
+							oos.flush();
+						} catch (IOException e) {
+							System.out.println("IOE while sending ready status");
+						}
+						
+					}//end of else client
+				
 				}
 			}
 		});
+		
 		createConsole();
 		bottomA.add(consolePanel, BorderLayout.CENTER);
 		console4.setText("You are in edit mode.  Click button on your grid to place your ships\n");
@@ -252,7 +272,7 @@ public class BattleshipGrid extends JPanel {
 	}//=================================================================================end of constructor
 	
 	public void createConsole(){
-		JButton sendButton = new JButton("Send");
+		sendButton = new JButton("Send");
 		innerPanel = new JPanel();
 		JPanel southPanel = new JPanel();
 		JPanel eastPanel = new JPanel();
@@ -280,6 +300,7 @@ public class BattleshipGrid extends JPanel {
 		console1.setLineWrap(true);
 		console1.setWrapStyleWord(true);
 		console1.setText("Chat Only\n");
+		console1.setEditable(false);
 		console1CP.add(scroll);
 		
 		console2 = new JTextArea(7,50);
@@ -289,6 +310,7 @@ public class BattleshipGrid extends JPanel {
 		console2.setLineWrap(true);
 		console2.setWrapStyleWord(true);
 		console2.setText("Events Only\n");
+		console2.setEditable(false);
 		console2CP.add(scroll);
 		
 		console3 = new JTextArea(7,50);
@@ -298,6 +320,7 @@ public class BattleshipGrid extends JPanel {
 		console3.setLineWrap(true);
 		console3.setWrapStyleWord(true);
 		console3.setText("Chat and Events\n");
+		console3.setEditable(false);
 		console3CP.add(scroll);
 		
 		console4 = new JTextArea(7,50);
@@ -307,6 +330,7 @@ public class BattleshipGrid extends JPanel {
 		console4.setLineWrap(true);
 		console4.setWrapStyleWord(true);
 		console4.setText("");
+		console4.setEditable(false);
 		console4CP.add(scroll);
 		
 		innerPanel.add(console1CP, "first");
@@ -319,12 +343,24 @@ public class BattleshipGrid extends JPanel {
 		sendButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
 				String temp = chatTextField.getText();
+				chatTextField.setText("");
 				if(temp.length() != 0){
-					console1.append("\n"+temp);
-					console3.append("\n"+temp);
+					if(isHost){
+						sendMessageToClients(new ChatMessageObject("\n"+temp, 1));
+					}//end of if host
+					else{
+						try {
+							oos.writeObject(new ChatMessageObject("\n"+temp, 1));
+							oos.flush();
+						} catch (IOException e) {
+							System.out.println("IOE from sendbutton action listener: " + e.getMessage());
+						}
+					}//end of else client	
+					
 				}
 			}
 		});
+		
 		playerNameLabel.setText("  "+playerNameLabel.getText()+"  ");
 		southPanel.add(playerNameLabel);
 		southPanel.add(chatTextField);
@@ -1374,7 +1410,7 @@ public class BattleshipGrid extends JPanel {
 						ChatThread ct = new ChatThread(s);
 						ctVector.add(ct);
 						ct.start();
-
+						break;
 					}//end of while
 				} catch (IOException ioe) {
 					System.out.println("IOE: in createconnections run" + ioe.getMessage());
@@ -1441,12 +1477,45 @@ public class BattleshipGrid extends JPanel {
 				System.out.println("IOE from ChatThread.sendMessage() from server to client: "+e.getMessage());
 			}
 		}//end of send message
-		//client reading from client
+		//server reading from client
 		public synchronized void run(){
 			try {
 				obj = ois.readObject();
 				while(obj != null){
-					
+					if(obj instanceof String){
+						console2.append((String)obj + "\n");
+						console3.append((String)obj + "\n");
+					}
+					else if (obj instanceof ChatMessageObject){
+						switch(((ChatMessageObject)obj).getLogNum()){
+							case 1:
+								console1.append(((ChatMessageObject)obj).getMessage());
+								console3.append(((ChatMessageObject)obj).getMessage());
+								break;
+							case 2:
+								console2.append(((ChatMessageObject)obj).getMessage());
+								console3.append(((ChatMessageObject)obj).getMessage());
+								break;
+							case 3:
+								console3.append(((ChatMessageObject)obj).getMessage());
+								break;
+						}//end of switch
+					}
+					else if(obj instanceof Boolean){
+						System.out.println("server got boolean from client");
+						oppReadyStatus = (Boolean)obj;
+						if(oppReadyStatus && readyStatus){
+							sendMessage(1);
+							playGame();
+						}//end of if both players are ready
+					}//end of if read in a boolean
+					else if(obj instanceof Integer){
+						switch((Integer)obj){
+							case 1:
+								playGame();
+							break;
+						}//end of switch
+					}//end of else if read in an integer
 					obj = ois.readObject();
 				}//end of while	
 			}catch(IOException ioe){
@@ -1457,7 +1526,7 @@ public class BattleshipGrid extends JPanel {
 		}//end of run
 	}//end of chathread
 
-	//server reading from server
+	//client reading from server
 	public class ReadObject extends Thread{
 		ReadObject(){
 		}
@@ -1470,6 +1539,36 @@ public class BattleshipGrid extends JPanel {
 						console2.append((String)obj + "\n");
 						console3.append((String)obj + "\n");
 					}
+					else if(obj instanceof Boolean){
+						oppReadyStatus = (Boolean)obj;
+						if(oppReadyStatus && readyStatus){
+							oos.writeObject(1);
+							oos.flush();
+							playGame();
+						}
+					}//end of if read in a boolean
+					else if (obj instanceof ChatMessageObject){
+						switch(((ChatMessageObject)obj).getLogNum()){
+							case 1:
+								console1.append(((ChatMessageObject)obj).getMessage());
+								console3.append(((ChatMessageObject)obj).getMessage());
+								break;
+							case 2:
+								console2.append(((ChatMessageObject)obj).getMessage());
+								console3.append(((ChatMessageObject)obj).getMessage());
+								break;
+							case 3:
+								console3.append(((ChatMessageObject)obj).getMessage());
+								break;
+						}//end of switch
+					}
+					else if(obj instanceof Integer){
+						switch((Integer)obj){
+							case 1:
+								playGame();
+								break;
+						}//end of switch
+					}//end of else if read in an integer
 					obj = ois.readObject();
 				}//end of while	
 			}catch(IOException ioe){

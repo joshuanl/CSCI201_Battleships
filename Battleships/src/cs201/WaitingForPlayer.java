@@ -45,7 +45,10 @@ public class WaitingForPlayer extends Thread{
 	}//end of constructor
 
 	public void run() {
-		while(timeLeft > 0){
+		while(!this.isInterrupted()){
+			if(timeLeft == 1){
+				this.interrupt();
+			}
 			try {
 				sleep(1000);
 			} catch (InterruptedException e) {
@@ -59,11 +62,13 @@ public class WaitingForPlayer extends Thread{
 	public void close(boolean connected){
 		if(connected){
 			System.out.println("force closing wfp");
+			this.interrupt();
 			bsg.setVisible(true);
 			jf.dispose();
 			myDialog.dispose();	
 			myDialog.setEnabled(false);
 			myDialog.setVisible(false);
+			
 		}
 		else{
 			JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(bsg);

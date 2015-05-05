@@ -127,6 +127,7 @@ public class ConnectWindow extends JFrame{
 		hostGameRB.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
 				if(hostGameRB.isSelected()){
+					usingMaps = false;
 					isHost = true;
 					mapsRB.setEnabled(false);
 					mapsRB.setSelected(false);
@@ -162,16 +163,12 @@ public class ConnectWindow extends JFrame{
 				if(mapsRB.isSelected()){
 					usingMaps = true;
 					hostGameRB.setSelected(false);
-					ipTextField.setEnabled(false);
 					customPortRB.setSelected(false);
-					portTextField.setEnabled(false);
 				}
 				else{
 					usingMaps = false;
 					hostGameRB.setSelected(false);
-					ipTextField.setEnabled(false);
 					customPortRB.setSelected(false);
-					portTextField.setEnabled(false);
 
 				}
 			}
