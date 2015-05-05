@@ -102,6 +102,7 @@ public class BattleshipGrid extends JPanel {
 	private boolean isHost;
 	private boolean isSinglePlayer;
 	private boolean mapLoaded = false;
+	private boolean oppLoadedMap = false;
 	private String ip;
 	private int port;
 	private int playersConnected = 0;
@@ -226,15 +227,33 @@ public class BattleshipGrid extends JPanel {
 					startButton.setEnabled(false);
 					readyStatus = true;
 					if(isHost){
-						sendMessageToClients(true);
+						if(oppReadyStatus && readyStatus){
+							Vector<String> mapContents;
+							mapContents = getMap(placementGrid);
+							sendMessageToClients(true);
+							sendMessageToClients(mapContents);
+						}//end of if both players are ready
+						else{
+							sendMessageToClients(true);
+						}	
 					}//end of if host
 					else if(isSinglePlayer){
 						playGame();
 					}
-					else{
+					else if (!isHost && !isSinglePlayer){
 						try {
-							oos.writeObject(true);
-							oos.flush();
+							if(oppReadyStatus && readyStatus){
+								Vector<String> mapContents;
+								mapContents = getMap(placementGrid);
+								oos.writeObject(true);
+								oos.flush();
+								oos.writeObject(mapContents);
+								oos.flush();
+							}//end of if both players are ready
+							else{
+								oos.writeObject(true);
+								oos.flush();
+							}	
 						} catch (IOException e) {
 							System.out.println("IOE while sending ready status");
 						}
@@ -1270,7 +1289,22 @@ public class BattleshipGrid extends JPanel {
 		} finally {
 			if(inputScan != null)
 			inputScan.close();
+			mapLoaded = true;
+			if(isHost){
+				sendMessageToClients(2);
+			}
+			else if(!isSinglePlayer && !isHost){			
+				try {
+					oos.writeObject(2);
+					oos.flush();
+				} catch (IOException e) {
+					System.out.println("IOE in sending message that map is loaded");
+				}
+			}
 		}
+		
+		
+		
 	}//========================================end of loadmap
 	
 	public Vector<String> getMap(int[][] map){
@@ -1568,20 +1602,13 @@ public class BattleshipGrid extends JPanel {
 							Vector<String> mapContents;
 							mapContents = getMap(placementGrid);
 							sendMessage(mapContents);
-							if(mapLoaded){
-								sendMessage(1);
-								playGame();
-							}//send signal to start game	
 						}//end of if both players are ready
 					}//end of if read in a boolean
 					else if(obj instanceof Vector<?>){
 						System.out.println("got map contents, loading into map");
 						loadMap((Vector<String>)obj);
 						mapLoaded = true;
-						if(mapLoaded && readyStatus){
-							sendMessage(1);
-							playGame();
-						}//send signal to start game
+						sendMessage(3);
 					}//end of else if read in a vector
 					else if(obj instanceof Integer){
 						switch((Integer)obj){
@@ -1589,6 +1616,17 @@ public class BattleshipGrid extends JPanel {
 								playGame();
 								break;
 							case 2:
+								if(mapLoaded && readyStatus){
+									playGame();
+									sendMessage(1);
+								}
+								break;
+							case 3:
+								oppLoadedMap = true;
+								if(oppLoadedMap && mapLoaded){
+									sendMessage(1);
+									playGame();
+								}
 								break;
 						}//end of switch
 					}//end of else if read in an integer
@@ -1616,13 +1654,14 @@ public class BattleshipGrid extends JPanel {
 						console3.append((String)obj + "\n");
 					}
 					else if(obj instanceof Boolean){
+						System.out.println("server got boolean from client");
 						oppReadyStatus = (Boolean)obj;
 						if(oppReadyStatus && readyStatus){
 							Vector<String> mapContents;
 							mapContents = getMap(placementGrid);
 							oos.writeObject(mapContents);
 							oos.flush();
-						}
+						}//end of if both players are ready
 					}//end of if read in a boolean
 					else if (obj instanceof ChatMessageObject){
 						switch(((ChatMessageObject)obj).getLogNum()){
@@ -1643,11 +1682,8 @@ public class BattleshipGrid extends JPanel {
 						System.out.println("got map contents, loading into map");
 						loadMap((Vector<String>)obj);
 						mapLoaded = true;
-						if(mapLoaded && readyStatus){
-							oos.writeObject(1);
-							oos.flush();
-							playGame();
-						}//send signal to start game
+						oos.writeObject(3);
+						oos.flush();
 					}//end of else if read in a vector
 					else if(obj instanceof Integer){
 						switch((Integer)obj){
@@ -1655,6 +1691,19 @@ public class BattleshipGrid extends JPanel {
 								playGame();
 								break;
 							case 2:
+								if(mapLoaded && readyStatus){
+									playGame();
+									oos.writeObject(1);
+									oos.flush();
+								}
+								break;
+							case 3:
+								oppLoadedMap = true;
+								if(oppLoadedMap && mapLoaded){
+									oos.writeObject(1);
+									oos.flush();
+									playGame();
+								}
 								break;
 						}//end of switch
 					}//end of else if read in an integer
