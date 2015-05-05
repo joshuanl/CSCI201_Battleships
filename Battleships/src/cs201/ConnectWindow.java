@@ -99,7 +99,7 @@ public class ConnectWindow extends JFrame{
 	public void initActions(){
 		connectButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				connectToGame(isHost);
+				connectToGame(isHost, usingMaps);
 			}
 		});
 		
@@ -126,6 +126,7 @@ public class ConnectWindow extends JFrame{
 					mapsRB.setSelected(false);
 					mapsTextField.setEnabled(false);
 					customPortRB.setEnabled(true);
+					ipTextField.setEnabled(true);
 				}
 				else{
 					isHost = false;
@@ -142,6 +143,7 @@ public class ConnectWindow extends JFrame{
 			public void actionPerformed(ActionEvent ae){
 				if(customPortRB.isSelected()){
 					isCustomPort = true;
+					portTextField.setEnabled(true);
 				}
 				else{
 					isCustomPort = false;
@@ -249,7 +251,7 @@ public class ConnectWindow extends JFrame{
 		
 	}//end of updating textfields and buttons due to status of internet connection
 	
-	public void connectToGame(boolean b){
+	public void connectToGame(boolean b, boolean singleplayer){
 		Vector<String> mapContentsVector = new Vector<String>();
 		if(usingMaps){
 			URL toCheckIp;
@@ -272,10 +274,16 @@ public class ConnectWindow extends JFrame{
 				return;
 			}
 			setVisible(false);
-			new BattleshipFrame(new BattleshipGrid(b, "", "" , mapContentsVector, nameTextField.getText()));
+			BattleshipFrame bsf = null;
+			BattleshipGrid bsg = new BattleshipGrid(b, singleplayer, "", "" , mapContentsVector, nameTextField.getText());
+			bsf = new BattleshipFrame(bsg);	
+			dispose();
 		}//end of if
 		else if(isHost){
-			//check fields and pass to BSG
+			BattleshipFrame bsf = null;
+			BattleshipGrid bsg = new BattleshipGrid(b, singleplayer, ipTextField.getText(), portTextField.getText() , mapContentsVector, nameTextField.getText());
+			bsf = new BattleshipFrame(bsg);
+			dispose();
 		}
 	}//end of connecting to the game server
 }//end of class

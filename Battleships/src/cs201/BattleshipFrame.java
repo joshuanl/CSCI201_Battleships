@@ -95,6 +95,6 @@ public class BattleshipFrame extends JFrame{
 		setJMenuBar(jmb);
 		
 		add(bsg);
-		setVisible(true);
+		setVisible(false);
 	}//end of constructor
 }//end of class

@@ -5,6 +5,7 @@ import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,6 +13,13 @@ import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +43,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultCaret;
+
 
 
 @SuppressWarnings("serial")
@@ -76,12 +86,24 @@ public class BattleshipGrid extends JPanel {
 	private boolean compGuessed[][];
 	private boolean playerGuessed[][];
 	private TurnThread tt;
+	
+	private boolean isClosing = false;
 	private boolean isHost;
+	private boolean isSinglePlayer;
 	private String ip;
-	private String port;
+	private int port;
 	private Vector<String> mapContentsVector;
+	private Vector<ChatThread> ctVector = new Vector<ChatThread>();
+	private ChatThread ct;
+	private ServerSocket ss;
+	private Socket s;
+	private BufferedReader br;
+	private ObjectInputStream ois;
+	private ObjectOutputStream oos;
+	private Object obj;	
+	private boolean clientConnected = false;
 
-	public BattleshipGrid(boolean b, String ip, String port, Vector<String> mapContentsVector, String pName) {
+	public BattleshipGrid(boolean b, boolean isSinglePlayer, String ip, String port, Vector<String> mapContentsVector, String pName) {
 		numOf_AC = 1;
 		numOf_BS = 1;
 		numOf_C = 1;
@@ -94,12 +116,13 @@ public class BattleshipGrid extends JPanel {
 		roundCount = 1;
 		coordGuess = "";
 		isHost = b;
+		this.isSinglePlayer = isSinglePlayer;
 		this.ip = ip;
-		this.port = port;
+		this.port = Integer.parseInt(port);
 		this.mapContentsVector = mapContentsVector;
-		
-		
+				
 		setLayout(new BorderLayout());
+		
 		placementGrid = new int[10][10];
 		JPanel jp1 = new JPanel();
 		JPanel jp2 = new JPanel();
@@ -213,7 +236,13 @@ public class BattleshipGrid extends JPanel {
 
 		add(jpbottom, BorderLayout.SOUTH);
 		
-		loadMap(mapContentsVector);
+		if(isSinglePlayer){
+			loadMap(mapContentsVector);
+		}
+		else{
+			
+			new CreateConnections().start();
+		}
 		
 	}//=================================================================================end of constructor
 	
@@ -994,8 +1023,7 @@ public class BattleshipGrid extends JPanel {
 			}
 		}//end of for
 		//openFileButton.setEnabled(true);
-		new BattleshipGrid(false, ip, port, mapContentsVector, playerNameLabel.getText());
-		
+		new BattleshipGrid(isHost, isSinglePlayer, ip, new String(""+port), mapContentsVector, playerNameLabel.getText());
 		
 	}//end of cleargrid
 
@@ -1270,9 +1298,6 @@ public class BattleshipGrid extends JPanel {
 				int y = bag.nextInt(10);
 				c = getLetter(y);
 				String temp = ""+c+x;
-//				int yPos = (int)(y-'A');
-//				int xPos = Integer.valueOf(x)-1;
-//				dfdfd 
 				if(hitCoord(temp, 1)){
 					if(getNumSunk(playerShips)==5){
 						for(int i=0; i < 10; i++){
@@ -1303,7 +1328,201 @@ public class BattleshipGrid extends JPanel {
 			}//end of if
 		}//end of run
 	}//end of comp turn class
+	class CreateConnections extends Thread{
+		public CreateConnections(){
+			if(!isHost){
+				try {
+					s = new Socket(ip, port);
+					oos = new ObjectOutputStream(s.getOutputStream());
+					ois = new ObjectInputStream(s.getInputStream());
+					new ReadObject().start();
+				} catch (IOException ioe) {
+					System.out.println("IOE client: " + ioe.getMessage());
+				} finally{
+					try {
+						ois.close();
+						oos.close();
+						s.close();
+					} catch (IOException e) {
+						System.out.println(" ioe in close streams and sockets in create connections constructor: " + e.getMessage());
+					}
+					
+				}
+			}//end of if not host
+		}//end of constructor
+		public void run(){
+			if(isHost){
+				try {
+					System.out.println("Starting Chat Server");
+					ss = new ServerSocket(port);
+					while (true) {
+						System.out.println("Waiting for client to connect...");
+						WaitingForPlayer wfp = new WaitingForPlayer();
+						wfp.start();
+						System.out.println("waiting for player is started");
+						Socket s = ss.accept();
+						clientConnected = true;
+						wfp.close();
+						System.out.println("Client " + s.getInetAddress() + ":" + s.getPort() + " connected");
+						ChatThread ct = new ChatThread(s);
+						ctVector.add(ct);
+						ct.start();
+					}
+				} catch (IOException ioe) {
+					System.out.println("IOE: in createconnections run" + ioe.getMessage());
+				} finally {
+					if (ss != null) {
+						try {
+							if(s != null){
+								s.close();
+							}	
+							ss.close();
+						} catch (IOException ioe) {
+							System.out.println("IOE closing ServerSocket in create connections run: " + ioe.getMessage());
+						}
+					}
+				}//end of finally
+			}//end of if host
+		}
+	}//end of create connections
+	
+	public void ShutDownServer(){
+		
+		try {
+			if(ois != null){
+				ois.close();
+			}
+			if(oos != null){
+				oos.close();
+			}
+			if(s != null){
+				s.close();
+			}
+			if(ss != null){
+				ss.close();
+			}
+		} catch (IOException e) {
+			System.out.println("IOE in shutdown method");
+		}
+		
+	}//end of shutdown server
+
+	class ChatThread extends Thread {
+		private ObjectOutputStream oos;
+		private ObjectInputStream ois;
+		private Socket s;
+		public ChatThread(Socket s) {
+			this.s = s;
+			try {
+				ois = new ObjectInputStream(s.getInputStream());
+				oos = new ObjectOutputStream(s.getOutputStream());
+				oos.writeObject("Connected to server!\n");
+				oos.flush();
+			} catch (IOException ioe) {
+				System.out.println("IOE in ChatThread constructor: " + ioe.getMessage());
+			}
+		}//end of chat thread
+
+		public void sendMessage(Object obj) {
+			try {
+				oos.writeObject(obj);
+				oos.flush();
+			} catch (IOException e) {
+				System.out.println("IOE from ChatThread.sendMessage(): "+e.getMessage());
+			}
+		}//end of send message
+
+		public synchronized void run(){
+			try {
+				obj = ois.readObject();
+				while(obj != null){
+					
+					obj = ois.readObject();
+				}//end of while	
+			}catch(IOException ioe){
+				System.out.println("IOE in chatthread.run: " + ioe.getMessage());
+			} catch(ClassNotFoundException cnfe){
+				System.out.println("CNFE in chatthread.run: " + cnfe.getMessage());	
+			}//end of finally block
+		}//end of run
+	}//end of chathread
+
+	public class ReadObject extends Thread{
+		ReadObject(){
+		}
+		
+		public synchronized void run(){
+			try {
+				obj = ois.readObject();
+				
+				while(obj != null){
+					
+					obj = ois.readObject();
+				}//end of while	
+			}catch(IOException ioe){
+				System.out.println("IOE in readobject.run: " + ioe.getMessage());
+			} catch(ClassNotFoundException cnfe){
+				System.out.println("CNFE in IOE in  readobject.run: " + cnfe.getMessage());
+			}
+		}//end of run
+	}//end of inner class read object
+	
+	class WaitingForPlayer extends Thread{
+		private int timeLeft;
+		private JLabel label = new JLabel();
+		private JFrame jf = new JFrame();
+		final private String s1 = "Waiting for another player...";
+		final private String s2 = "s until timeout.";
+		private BattleshipGrid bsg;
+		
+		public WaitingForPlayer(){			
+			jf.setTitle("Battleship Menu");
+			jf.setSize(300,300);
+			jf.setLocation(100,50);
+			jf.addWindowListener(new WindowAdapter(){
+				public void windowClosing(WindowEvent we){
+					System.out.println("closing wfp event called");
+					isClosing = true;
+					JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(BattleshipGrid.this);
+					BattleshipGrid.this.ShutDownServer();
+					topFrame.dispose();
+					new ConnectWindow();
+					jf.dispose();
+				}
+			});
+			setLayout(new BorderLayout());
+			
+			timeLeft = 30;
+			label.setText(s1 + " " + timeLeft + s2);
+			jf.add(label, BorderLayout.CENTER);
+			jf.setVisible(true);
+		}//end of constructor
+
+		public void run() {
+			int count = 30000;
+			while(timeLeft > 0){
+				if(clientConnected){
+					jf.dispose();
+				}
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					System.out.println("in waiting for player.run, trying to sleep");
+				}
+				timeLeft--;
+				label.setText(s1 + " " + timeLeft + s2);
+			}//end of while	
+			JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(BattleshipGrid.this);
+			topFrame.dispose();
+		}//end of run
+		public void close(){
+			jf.dispose();
+		}
+	}//end of class
+
+	
 }//end of BattleshipGrid class
+
 
 class Battleship {
 	private Point startPoint;
@@ -1371,4 +1590,6 @@ class Battleship {
 		else return false;
 	}
 	
-}
+	
+}//end of Battleship inner class
+
