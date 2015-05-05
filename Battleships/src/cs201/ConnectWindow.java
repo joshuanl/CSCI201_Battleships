@@ -256,6 +256,9 @@ public class ConnectWindow extends JFrame{
 	
 	public void connectToGame(){
 		Vector<String> mapContentsVector = new Vector<String>();
+		if(nameTextField.getText().length() == 0 || nameTextField.getText().charAt(0) == ' '){
+			nameTextField.setText("No Name");
+		}
 		if(usingMaps){
 			URL toCheckIp;
 			String temp = mapsTextField.getText() + ".battle";

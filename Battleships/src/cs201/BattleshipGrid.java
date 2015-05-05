@@ -464,6 +464,17 @@ public class BattleshipGrid extends JPanel {
 				return;   //if true then player already has guessed that spot
 			}
 			playerGuessed[coordX-1][coordY] = true;
+			if(isHost){
+				sendMessageToClients(new AttackCoord(coordGuess));
+			}
+			else if(!isHost && !isSinglePlayer){
+				try {
+					oos.writeObject(new AttackCoord(coordGuess));
+					oos.flush();
+				} catch (IOException e) {
+					System.out.println("IOE in attackshiplistener, sending over coord: "+e.getMessage());
+				}
+			}
 			if (hitCoord(coordGuess, 2)){
 				//=============================================END OF GAME
 				//=============================================END OF GAME
@@ -641,7 +652,7 @@ public class BattleshipGrid extends JPanel {
 				
 				
 				JPanel bottomPanel = new JPanel();
-				placeShipButton = new JButton("Place Ship");
+				placeShipButton = new JButton("Place MobileSuit");
 				placeShipButton.setEnabled(false);
 				placeShipButton.addActionListener(new ActionListener(){
 					public void actionPerformed(ActionEvent ae){
@@ -941,6 +952,18 @@ public class BattleshipGrid extends JPanel {
 			for(Battleship bs : compShips) {
 				if(bs.attackPoint(point)) {
 					compBG[point.x][point.y].isHit();
+					if(isHost){
+						sendMessageToClients(new InvokeButtonAction(point.x, point.y, true));
+					}
+					else if(!isHost && !isSinglePlayer){
+						try {
+							oos.writeObject(new InvokeButtonAction(point.x, point.y, true));
+							oos.flush();
+						} catch (IOException e) {
+							System.out.println("IOE when trying to write invoke button actions when hit: "+e.getMessage());
+						}
+						
+					}
 					//===========================set icon
 					if(bs.getTag() == 'A'){
 						compBG[point.x][point.y].setMSIcon(new ImageIcon("A_resized.png"));
@@ -983,6 +1006,17 @@ public class BattleshipGrid extends JPanel {
 			}//end of for
 			if(!hit){
 				compBG[point.x][point.y].isMiss();
+				if(isHost){
+					sendMessageToClients(new InvokeButtonAction(point.x, point.y, true));
+				}
+				else if(!isHost && !isSinglePlayer){
+					try {
+						oos.writeObject(new InvokeButtonAction(point.x, point.y, true));
+						oos.flush();
+					} catch (IOException e) {
+						System.out.println("IOE when trying to write invoke button actions when miss: "+e.getMessage());
+					}
+				}
 				console2.append("\nPlayer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
 				console3.append("\nPlayer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
 			}
@@ -990,7 +1024,7 @@ public class BattleshipGrid extends JPanel {
 		}//end of if grid2
 		//===================================COMPUTER GUESSING 
 		else if(grid == 1){
-			//if(playerBG[point.x][point.y].getText().equals("M")) return false;
+			System.out.println("in hitships function, should get here if action sent from over the server");
 			boolean hit = false;
 			for(Battleship bs : playerShips) {
 				if(bs.attackPoint(point)) {
@@ -1355,7 +1389,9 @@ public class BattleshipGrid extends JPanel {
 			while((compTurnTaken != true || playerTurnTaken != true) && gameRunning){	
 				if(compTurnTaken != true && issueCompTurn == false){
 					issueCompTurn = true;
-					new CompTurn(roundCount).start();
+					if(isSinglePlayer){
+						new CompTurn(roundCount).start();
+					}//start computer if single player	
 				}//end of if 	
 				try {
 					Thread.sleep(1000);
@@ -1610,16 +1646,46 @@ public class BattleshipGrid extends JPanel {
 						mapLoaded = true;
 						sendMessage(3);
 					}//end of else if read in a vector
+					else if(obj instanceof AttackCoord){
+						System.out.println("got instance of attack coord from other player, about to check in hitcoord");
+						if(hitCoord(((AttackCoord)obj).getCoord(), 1)){
+							if(getNumSunk(playerShips)==5){
+								for(int i=0; i < 10; i++){
+									for(int j=0; j < 10; j++){
+										playerBG[i][j].endGame();
+										compBG[i][j].endGame();
+									}//end of inner for
+								}//end of outer for
+								tt.EndGame();
+								Thread t = new Thread();
+								t.start();
+								for(int i=0; i < 50; i++){
+									try {
+										t.sleep(i);
+									} catch (InterruptedException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+								}
+								console2.append("\nYou Lost!");
+								console3.append("\nYou Lost!");
+								JOptionPane.showMessageDialog(null, "You Lost!", "Game Over", JOptionPane.PLAIN_MESSAGE);
+								enableGrid(false, compBG);
+								enableGrid(false, playerBG);
+							}//end of if end of game
+						}//end of if hit
+						sendMessage(2);
+					}//end of if read in an attack coord from other player
+					else if(obj instanceof InvokeButtonAction){
+						InvokeButtonAction temp = (InvokeButtonAction)obj;
+					}//ed of if read in an invoke action button from other player
 					else if(obj instanceof Integer){
 						switch((Integer)obj){
 							case 1:
 								playGame();
 								break;
 							case 2:
-								if(mapLoaded && readyStatus){
-									playGame();
-									sendMessage(1);
-								}
+								compTurnTaken = true;
 								break;
 							case 3:
 								oppLoadedMap = true;
@@ -1685,17 +1751,44 @@ public class BattleshipGrid extends JPanel {
 						oos.writeObject(3);
 						oos.flush();
 					}//end of else if read in a vector
+					else if(obj instanceof AttackCoord){
+						System.out.println("got instance of attack coord from server, about to check in hitcoord");
+						if(hitCoord(((AttackCoord)obj).getCoord(), 1)){
+							if(getNumSunk(playerShips)==5){
+								for(int i=0; i < 10; i++){
+									for(int j=0; j < 10; j++){
+										playerBG[i][j].endGame();
+										compBG[i][j].endGame();
+									}//end of inner for
+								}//end of outer for
+								tt.EndGame();
+								Thread t = new Thread();
+								t.start();
+								for(int i=0; i < 50; i++){
+									try {
+										t.sleep(i);
+									} catch (InterruptedException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+								}
+								console2.append("\nYou Lost!");
+								console3.append("\nYou Lost!");
+								JOptionPane.showMessageDialog(null, "You Lost!", "Game Over", JOptionPane.PLAIN_MESSAGE);
+								enableGrid(false, compBG);
+								enableGrid(false, playerBG);
+							}//end of if end of game
+						}//end of if hit
+						oos.writeObject(2);
+						oos.flush();
+					}//end of if read in attack coord from server
 					else if(obj instanceof Integer){
 						switch((Integer)obj){
 							case 1:
 								playGame();
 								break;
 							case 2:
-								if(mapLoaded && readyStatus){
-									playGame();
-									oos.writeObject(1);
-									oos.flush();
-								}
+								compTurnTaken = true;
 								break;
 							case 3:
 								oppLoadedMap = true;
@@ -1789,4 +1882,6 @@ class Battleship {
 	
 	
 }//end of Battleship inner class
+
+
 
