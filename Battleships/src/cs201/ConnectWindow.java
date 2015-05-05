@@ -47,6 +47,7 @@ public class ConnectWindow extends JFrame{
 	private boolean connectingBoolean = false;
 	private boolean hasInternet = true;
 	private boolean isHost = false;
+	private boolean isClient = false;
 	private boolean isCustomPort = false;
 	private boolean usingMaps = false;
 	
@@ -99,7 +100,12 @@ public class ConnectWindow extends JFrame{
 	public void initActions(){
 		connectButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				connectToGame(isHost, usingMaps);
+				if(!hostGameRB.isSelected() && !mapsRB.isSelected() && ipTextField.getText().length() != 0 && portTextField.getText().length() != 0){
+					isClient = true;
+					usingMaps = false;
+					isHost = false;
+				}
+				connectToGame();
 			}
 		});
 		
@@ -251,7 +257,7 @@ public class ConnectWindow extends JFrame{
 		
 	}//end of updating textfields and buttons due to status of internet connection
 	
-	public void connectToGame(boolean b, boolean singleplayer){
+	public void connectToGame(){
 		Vector<String> mapContentsVector = new Vector<String>();
 		if(usingMaps){
 			URL toCheckIp;
@@ -275,13 +281,19 @@ public class ConnectWindow extends JFrame{
 			}
 			setVisible(false);
 			BattleshipFrame bsf = null;
-			BattleshipGrid bsg = new BattleshipGrid(b, singleplayer, "", "" , mapContentsVector, nameTextField.getText());
+			BattleshipGrid bsg = new BattleshipGrid(isHost, usingMaps, "", "" , mapContentsVector, nameTextField.getText());
 			bsf = new BattleshipFrame(bsg);	
 			dispose();
 		}//end of if
 		else if(isHost){
 			BattleshipFrame bsf = null;
-			BattleshipGrid bsg = new BattleshipGrid(b, singleplayer, ipTextField.getText(), portTextField.getText() , mapContentsVector, nameTextField.getText());
+			BattleshipGrid bsg = new BattleshipGrid(isHost, usingMaps, ipTextField.getText(), portTextField.getText() , mapContentsVector, nameTextField.getText());
+			bsf = new BattleshipFrame(bsg);
+			dispose();
+		}
+		else if(isClient){
+			BattleshipFrame bsf = null;
+			BattleshipGrid bsg = new BattleshipGrid(isHost, usingMaps, ipTextField.getText(), portTextField.getText() , mapContentsVector, nameTextField.getText());
 			bsf = new BattleshipFrame(bsg);
 			dispose();
 		}

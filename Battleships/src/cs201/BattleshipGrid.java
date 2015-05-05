@@ -47,7 +47,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultCaret;
 
 
-
 @SuppressWarnings("serial")
 public class BattleshipGrid extends JPanel {
 	private MyButton playerBG[][];
@@ -1333,19 +1332,20 @@ public class BattleshipGrid extends JPanel {
 			if(!isHost){
 				try {
 					s = new Socket(ip, port);
+					System.out.println("was able to connect to server");
 					oos = new ObjectOutputStream(s.getOutputStream());
 					ois = new ObjectInputStream(s.getInputStream());
 					new ReadObject().start();
 				} catch (IOException ioe) {
 					System.out.println("IOE client: " + ioe.getMessage());
 				} finally{
-					try {
-						ois.close();
-						oos.close();
-						s.close();
-					} catch (IOException e) {
-						System.out.println(" ioe in close streams and sockets in create connections constructor: " + e.getMessage());
-					}
+//					try {
+//						ois.close();
+//						oos.close();
+//						s.close();
+//					} catch (IOException e) {
+//						System.out.println(" ioe in close streams and sockets in create connections constructor: " + e.getMessage());
+//					}
 					
 				}
 			}//end of if not host
@@ -1359,7 +1359,7 @@ public class BattleshipGrid extends JPanel {
 						System.out.println("Waiting for client to connect...");
 						WaitingForPlayer wfp = new WaitingForPlayer();
 						wfp.start();
-						System.out.println("waiting for player is started");
+						//System.out.println("waiting for player is started");
 						Socket s = ss.accept();
 						clientConnected = true;
 						wfp.close();
@@ -1367,20 +1367,21 @@ public class BattleshipGrid extends JPanel {
 						ChatThread ct = new ChatThread(s);
 						ctVector.add(ct);
 						ct.start();
-					}
+						
+					}//end of while
 				} catch (IOException ioe) {
 					System.out.println("IOE: in createconnections run" + ioe.getMessage());
 				} finally {
-					if (ss != null) {
-						try {
-							if(s != null){
-								s.close();
-							}	
-							ss.close();
-						} catch (IOException ioe) {
-							System.out.println("IOE closing ServerSocket in create connections run: " + ioe.getMessage());
-						}
-					}
+//					if (ss != null) {
+//						try {
+//							if(s != null){
+//								s.close();
+//							}	
+//							ss.close();
+//						} catch (IOException ioe) {
+//							System.out.println("IOE closing ServerSocket in create connections run: " + ioe.getMessage());
+//						}
+//					}
 				}//end of finally
 			}//end of if host
 		}
@@ -1406,7 +1407,18 @@ public class BattleshipGrid extends JPanel {
 		}
 		
 	}//end of shutdown server
-
+	
+	public void removeChatThread(ChatThread ct) {
+		ctVector.remove(ct);
+	}
+	public synchronized void sendMessageToClients(Object obj) {
+		if(isHost){
+			for (ChatThread ct1 : ctVector) {
+				System.out.println("sending msg: " + obj.getClass());
+				ct1.sendMessage(obj);
+			}
+		}	
+	}
 	class ChatThread extends Thread {
 		private ObjectOutputStream oos;
 		private ObjectInputStream ois;
@@ -1428,10 +1440,10 @@ public class BattleshipGrid extends JPanel {
 				oos.writeObject(obj);
 				oos.flush();
 			} catch (IOException e) {
-				System.out.println("IOE from ChatThread.sendMessage(): "+e.getMessage());
+				System.out.println("IOE from ChatThread.sendMessage() from server to client: "+e.getMessage());
 			}
 		}//end of send message
-
+		//client reading from client
 		public synchronized void run(){
 			try {
 				obj = ois.readObject();
@@ -1447,6 +1459,7 @@ public class BattleshipGrid extends JPanel {
 		}//end of run
 	}//end of chathread
 
+	//server reading from server
 	public class ReadObject extends Thread{
 		ReadObject(){
 		}
@@ -1456,7 +1469,10 @@ public class BattleshipGrid extends JPanel {
 				obj = ois.readObject();
 				
 				while(obj != null){
-					
+					if(obj instanceof String){
+						console2.append((String)obj + "\n");
+						console3.append((String)obj + "\n");
+					}
 					obj = ois.readObject();
 				}//end of while	
 			}catch(IOException ioe){
