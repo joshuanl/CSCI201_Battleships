@@ -7,6 +7,7 @@ import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 public class WaitingForPlayer extends Thread{
@@ -47,7 +48,10 @@ public class WaitingForPlayer extends Thread{
 	public void run() {
 		while(!this.isInterrupted()){
 			if(timeLeft == 1){
-				this.interrupt();
+				break;
+			}
+			if(timeLeft < 0){
+				break;
 			}
 			try {
 				sleep(1000);
@@ -68,13 +72,20 @@ public class WaitingForPlayer extends Thread{
 			myDialog.dispose();	
 			myDialog.setEnabled(false);
 			myDialog.setVisible(false);
-			
+			return;
 		}
 		else{
 			JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(bsg);
 			bsg.ShutDownServer();
 			topFrame.dispose();
-			myDialog.dispose();	
+			this.interrupt();
+			jf.dispose();			
+			myDialog.dispose();
+			myDialog.setEnabled(false);
+			myDialog.setVisible(false);
+			JOptionPane.showMessageDialog(null, "Opponent did not connect to server!", "Battleship", JOptionPane.PLAIN_MESSAGE);
+			new ConnectWindow();
+			return;
 		}
 	}
 }//end of class

@@ -361,6 +361,7 @@ public class BattleshipGrid extends JPanel {
 			}
 		});
 		
+		
 		playerNameLabel.setText("  "+playerNameLabel.getText()+"  ");
 		southPanel.add(playerNameLabel);
 		southPanel.add(chatTextField);
