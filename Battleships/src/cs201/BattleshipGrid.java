@@ -91,15 +91,17 @@ public class BattleshipGrid extends JPanel {
 	private int numOf_D;
 	private int roundCount;
 	static private int turnTime;
+	private int pvpTurnTime;
 	private static int placementGrid[][];
 	private static boolean playerTurnTaken;
 	private static boolean compTurnTaken;
+	private static boolean oppTurnTaken;
+	private boolean gameRunning;
 	private boolean compGuessed[][];
 	private boolean playerGuessed[][];
-	private TurnThread tt;
 	
 	
-	
+	private boolean updatedTime = false;
 	private boolean isClosing = false;
 	private boolean isHost;
 	private boolean isSinglePlayer;
@@ -126,9 +128,11 @@ public class BattleshipGrid extends JPanel {
 		numOf_D = 2;
 		playerTurnTaken = false;
 		compTurnTaken = false;
+		oppTurnTaken = false;
 		playerGuessed = new boolean[10][10];
 		compGuessed = new boolean[10][10];
 		turnTime = 15;
+		pvpTurnTime = 15;
 		roundCount = 1;
 		coordGuess = "";
 		isHost = b;
@@ -437,8 +441,13 @@ public class BattleshipGrid extends JPanel {
 				compBG[i][j].setMSVisible(false);
 			}
 		}
-		tt = new TurnThread();
-		tt.start();
+		if(isSinglePlayer){
+			new TurnThread().start();
+			System.out.println("single player turn thread started");
+		}
+		else if (isHost){
+			new PVPTurnThread().start();
+		}
 		boolean isOver = false;
 		editMode = false;
 		enableGrid(false, playerBG);
@@ -505,7 +514,7 @@ public class BattleshipGrid extends JPanel {
 					}//end of outer for
 					enableGrid(false, compBG);
 					enableGrid(false, playerBG);
-					tt.EndGame();
+					gameRunning = false;
 					Thread t = new Thread();
 					t.start();
 					for(int i=0; i < 50; i++){
@@ -519,6 +528,7 @@ public class BattleshipGrid extends JPanel {
 					JOptionPane.showMessageDialog(null, "You Won!", "Game Over", JOptionPane.PLAIN_MESSAGE);
 				}//end of if end of game
 				playerTurnTaken = true;
+
 			}//end of if hit
 			enableGrid(false, compBG);
 		}//end of actionevent	
@@ -1464,6 +1474,73 @@ public class BattleshipGrid extends JPanel {
 		return mapContents;
 	}
 	
+	class PVPTurnThread extends Thread{
+		public PVPTurnThread(){
+			gameRunning = true;
+			pvpTurnTime = 15;
+		}
+		
+		public synchronized void run(){ 
+			console2.append("\nRound "+roundCount);
+			console3.append("\nRound "+roundCount);
+			sendMessageToClients(new ChatMessageObject("\nRound "+roundCount, 23));
+			
+			while((oppTurnTaken != true || playerTurnTaken != true) && gameRunning){	
+				
+				try {
+					sleep(1000);
+				} catch (InterruptedException ie) {
+					System.out.println("Interrupted exception in TurnThread::run() "+ie.getMessage());
+				}
+				
+				if(pvpTurnTime == 3){
+					clockLabel.setText("Time - "+returnTime(pvpTurnTime));
+					sendMessageToClients(new NewClockTimeObject(clockLabel.getText()));
+					console2.append("\nWarning - "+returnTime(pvpTurnTime) + " remaining in the round!");
+					console3.append("\nWarning - "+returnTime(pvpTurnTime) + " remaining in the round!");
+					sendMessageToClients(new ChatMessageObject("\nWarning - "+returnTime(pvpTurnTime) + " remaining in the round!", 23));
+				}
+				else if (pvpTurnTime != 3){
+					clockLabel.setText("Time - "+returnTime(pvpTurnTime));
+					sendMessageToClients(new NewClockTimeObject(clockLabel.getText()));
+				}
+				if((oppTurnTaken == true && playerTurnTaken == true) || pvpTurnTime <= 0){
+					pvpTurnTime = 15;
+					clockLabel.setText("Time - "+returnTime(pvpTurnTime));
+					sendMessageToClients(new NewClockTimeObject(clockLabel.getText()));
+					sendMessageToClients(-1);
+					roundCount++; 
+					playerTurnTaken = false;
+					enableGrid(true, playerBG);
+					oppTurnTaken = false;
+					//issueCompTurn = false;
+					enableGrid(true, compBG);
+					console2.append("\nRound "+roundCount);
+					console3.append("\nRound "+roundCount);
+					sendMessageToClients(new ChatMessageObject("\nRound "+roundCount, 23));
+					try {
+						sleep(2000);
+					} catch (InterruptedException ie) {
+						System.out.println("Interrupted exception in TurnThread::run() "+ie.getMessage());
+					}
+				}//end of if
+				while(!updatedTime){
+					//System.out.println("waiting to updated time on client side");
+				};
+				clockLabel.setText("Time - "+returnTime(pvpTurnTime));
+				sendMessageToClients(new NewClockTimeObject(clockLabel.getText()));		
+				updatedTime = false;
+			}//end of while
+		}//end of run
+		public String returnTime(int t){
+			String str = "0:"+t;
+			if(t < 10){
+				str = "0:0"+t;
+			}
+			return str;
+		}//end of returning time
+	}//end of pvp turn thread
+	
 	class TurnThread extends Thread{
 		private boolean gameRunning;
 		private boolean issueCompTurn;
@@ -1495,7 +1572,7 @@ public class BattleshipGrid extends JPanel {
 				else{
 					clockLabel.setText("Time - "+returnTime(turnTime));
 				}
-				if((compTurnTaken == true && playerTurnTaken == true) || turnTime == 0){
+				if((compTurnTaken == true && playerTurnTaken == true) || turnTime <= 0){
 					turnTime = 15;
 					clockLabel.setText("Time - "+returnTime(turnTime));
 					roundCount++; 
@@ -1561,7 +1638,7 @@ public class BattleshipGrid extends JPanel {
 								compBG[i][j].endGame();
 							}//end of inner for
 						}//end of outer for
-						tt.EndGame();
+						gameRunning = false;
 						Thread t = new Thread();
 						t.start();
 						for(int i=0; i < 50; i++){
@@ -1743,7 +1820,7 @@ public class BattleshipGrid extends JPanel {
 										compBG[i][j].endGame();
 									}//end of inner for
 								}//end of outer for
-								tt.EndGame();
+								gameRunning = false;
 								Thread t = new Thread();
 								t.start();
 								for(int i=0; i < 50; i++){
@@ -1761,24 +1838,31 @@ public class BattleshipGrid extends JPanel {
 								enableGrid(false, playerBG);
 							}//end of if end of game
 						}//end of if hit
-						sendMessage(2);
+						oppTurnTaken = true;
+						enableGrid(true, compBG);
 					}//end of if read in an attack coord from other player
 					else if(obj instanceof InvokeButtonAction){
 						InvokeButtonAction temp = (InvokeButtonAction)obj;
 					}//ed of if read in an invoke action button from other player
 					else if(obj instanceof Integer){
 						switch((Integer)obj){
+							case -1:
+								updatedTime = true;
+								break;
 							case 1:
-								playGame();
+								if(!gameRunning){
+									playGame();
+								}	
 								break;
 							case 2:
-								compTurnTaken = true;
+								
 								break;
 							case 3:
 								oppLoadedMap = true;
 								if(oppLoadedMap && mapLoaded){
-									sendMessage(1);
 									playGame();
+									gameRunning = true;
+									sendMessage(1);								
 								}
 								break;
 						}//end of switch
@@ -1816,6 +1900,12 @@ public class BattleshipGrid extends JPanel {
 							oos.flush();
 						}//end of if both players are ready
 					}//end of if read in a boolean
+					else if (obj instanceof NewClockTimeObject){
+						clockLabel.setText(((NewClockTimeObject)obj).getNewTime());
+						System.out.println("got time: " +clockLabel.getText());
+						oos.writeObject(-1);
+						oos.flush();
+					}
 					else if (obj instanceof ChatMessageObject){
 						switch(((ChatMessageObject)obj).getLogNum()){
 							case 1:
@@ -1848,7 +1938,7 @@ public class BattleshipGrid extends JPanel {
 										compBG[i][j].endGame();
 									}//end of inner for
 								}//end of outer for
-								tt.EndGame();
+								gameRunning = false;
 								Thread t = new Thread();
 								t.start();
 								for(int i=0; i < 50; i++){
@@ -1866,23 +1956,27 @@ public class BattleshipGrid extends JPanel {
 								enableGrid(false, playerBG);
 							}//end of if end of game
 						}//end of if hit
-						oos.writeObject(2);
-						oos.flush();
+						oppTurnTaken = true;
 					}//end of if read in attack coord from server
 					else if(obj instanceof Integer){
 						switch((Integer)obj){
+							case -1:
+								roundCount++;
+								break;
 							case 1:
-								playGame();
+								if(!gameRunning){
+									playGame();
+								}	
 								break;
 							case 2:
-								compTurnTaken = true;
 								break;
 							case 3:
 								oppLoadedMap = true;
 								if(oppLoadedMap && mapLoaded){
-									oos.writeObject(1);
-									oos.flush();
 									playGame();
+									gameRunning = true;
+									oos.writeObject(1);
+									oos.flush();							
 								}
 								break;
 						}//end of switch
