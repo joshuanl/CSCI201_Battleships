@@ -64,6 +64,9 @@ public class ConnectWindow extends JFrame{
 		connectionUpdate();
 		addComponenets();
 		getRootPane().setDefaultButton(connectButton);
+		hostGameRB.setEnabled(true);
+		customPortRB.setEnabled(true);
+		mapsRB.setEnabled(true);
 		setVisible(true);
 	}//end of constructor
 	
@@ -281,7 +284,7 @@ public class ConnectWindow extends JFrame{
 			}
 			setVisible(false);
 			BattleshipFrame bsf = new BattleshipFrame();
-			BattleshipGrid bsg = new BattleshipGrid(isHost, usingMaps, "0", "0" , mapContentsVector, nameTextField.getText());
+			BattleshipGrid bsg = new BattleshipGrid(bsf, isHost, usingMaps, "0", "0" , mapContentsVector, nameTextField.getText());
 			bsf.add(bsg);
 			dispose();
 			return;
@@ -294,13 +297,13 @@ public class ConnectWindow extends JFrame{
 		}
 		if(isHost){
 			BattleshipFrame bsf = new BattleshipFrame();
-			BattleshipGrid bsg = new BattleshipGrid(isHost, usingMaps, ipTextField.getText(), portTextField.getText() , mapContentsVector, nameTextField.getText());
+			BattleshipGrid bsg = new BattleshipGrid(bsf, isHost, usingMaps, ipTextField.getText(), portTextField.getText() , mapContentsVector, nameTextField.getText());
 			bsf.add(bsg);
 			dispose();
 		}
 		else if(isClient){
 			BattleshipFrame bsf = new BattleshipFrame();
-			BattleshipGrid bsg = new BattleshipGrid(isHost, usingMaps, ipTextField.getText(), portTextField.getText() , mapContentsVector, nameTextField.getText());
+			BattleshipGrid bsg = new BattleshipGrid(bsf, isHost, usingMaps, ipTextField.getText(), portTextField.getText() , mapContentsVector, nameTextField.getText());
 			bsf.add(bsg);
 			dispose();
 		}

@@ -19,8 +19,9 @@ public class WaitingForPlayer extends Thread{
 	private BattleshipGrid bsg;
 	private JFrame jf = new JFrame();
 	private boolean connected = false;
+	private BattleshipFrame bsf;
 	
-	public WaitingForPlayer(BattleshipGrid bsg){			
+	public WaitingForPlayer(BattleshipFrame bsf, BattleshipGrid bsg){			
 		jf.setTitle("Battleship Menu");
 		jf.setSize(300,300);
 		jf.setLocation(100,50);
@@ -34,9 +35,10 @@ public class WaitingForPlayer extends Thread{
 			}
 		});
 		this.bsg = bsg;
+		this.bsf = bsf;
 		jf.setLayout(new BorderLayout());
 		bsg.setVisible(false);
-		timeLeft = 30;
+		timeLeft = 3;
 		label.setText(s1 + " " + timeLeft + s2);
 		jf.add(label, BorderLayout.CENTER);
 		jf.setVisible(true);
@@ -47,7 +49,7 @@ public class WaitingForPlayer extends Thread{
 	}//end of constructor
 
 	public void run() {
-		while(!this.isInterrupted()){
+		while(!connected || timeLeft < 0){
 			if(timeLeft == 1){
 				break;
 			}
@@ -62,12 +64,16 @@ public class WaitingForPlayer extends Thread{
 			timeLeft--;
 			label.setText(s1 + " " + timeLeft + s2);
 		}//end of while
-		WaitingForPlayer.this.interrupt();
 		if(!connected){
-			close(false);
+			try {
+				close(false);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}	
 	}//end of run
-	public void close(boolean connected){
+	public void close(boolean connected) throws InterruptedException{
 		this.connected = connected;
 		if(connected){
 			System.out.println("force closing wfp");
@@ -80,11 +86,9 @@ public class WaitingForPlayer extends Thread{
 			return;
 		}
 		else{
-			JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(bsg);
 			bsg.ShutDownServer();
-			topFrame.dispose();
-			this.interrupt();
-			jf.dispose();			
+			bsf.dispose();
+			jf.dispose();
 			myDialog.dispose();
 			myDialog.setEnabled(false);
 			myDialog.setVisible(false);

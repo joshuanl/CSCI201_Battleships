@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -120,8 +121,11 @@ public class BattleshipGrid extends JPanel {
 	private ObjectOutputStream oos;
 	private Object obj;	
 	private boolean clientConnected = false;
-
-	public BattleshipGrid(boolean b, boolean isSinglePlayer, String ip, String port, Vector<String> mapContentsVector, String pName) {
+	private BattleshipFrame bsf;
+	
+	public BattleshipGrid(BattleshipFrame bsf, boolean b, boolean isSinglePlayer, String ip, String port, Vector<String> mapContentsVector, String pName) {
+		this.bsf = bsf;
+		
 		numOf_AC = 1;
 		numOf_BS = 1;
 		numOf_C = 1;
@@ -1223,7 +1227,7 @@ public class BattleshipGrid extends JPanel {
 			}
 		}//end of for
 		//openFileButton.setEnabled(true);
-		new BattleshipGrid(isHost, isSinglePlayer, ip, new String(""+port), mapContentsVector, playerNameLabel.getText());
+		new BattleshipGrid(bsf, isHost, isSinglePlayer, ip, new String(""+port), mapContentsVector, playerNameLabel.getText());
 		
 	}//end of cleargrid
 
@@ -1677,10 +1681,25 @@ public class BattleshipGrid extends JPanel {
 					new ReadObject().start();
 				} catch (IOException ioe) {
 					System.out.println("IOE client: " + ioe.getMessage());
+					//JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(BattleshipGrid.this);
+					ShutDownServer();
+					bsf.dispose();
+					this.interrupt();					
+					JOptionPane.showMessageDialog(null, "Could not connect to server!", "Battleship", JOptionPane.PLAIN_MESSAGE);
+					new ConnectWindow();					
+				} catch (IllegalArgumentException iae){
+					System.out.println("illegal argument exception: "+iae.getMessage());
+					//JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(BattleshipGrid.this);
+					ShutDownServer();
+					bsf.dispose();
+					this.interrupt();					
+					JOptionPane.showMessageDialog(null, "Could not connect to server!", "Battleship", JOptionPane.PLAIN_MESSAGE);
+					new ConnectWindow();	
 				} finally{
 
 					
 				}
+				//new CheckConnectionThread().start();
 			}//end of if not host
 		}//end of constructor
 		public void run(){
@@ -1691,7 +1710,7 @@ public class BattleshipGrid extends JPanel {
 					while (true) {
 						System.out.println("Waiting for client to connect...");
 						if(playersConnected == 0){
-							wfp = new WaitingForPlayer(BattleshipGrid.this);
+							wfp = new WaitingForPlayer(bsf, BattleshipGrid.this);
 						}	
 						Socket s = ss.accept();
 						playersConnected++;
@@ -1701,16 +1720,21 @@ public class BattleshipGrid extends JPanel {
 						ChatThread ct = new ChatThread(s);
 						ctVector.add(ct);
 						ct.start();
-						break;
+						ss.close();
+						//new CheckConnectionThread().start();
+						return;
 						/*
 						 * to add spectators, remove break and if statement to allow more  connections but handle case if spectator
 						*/
 					}//end of while
 				} catch (IOException ioe) {
 					System.out.println("IOE: in createconnections run" + ioe.getMessage());
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				} finally {
 
-				}//end of finally
+				}//end of finally			
 			}//end of if host
 		}
 	}//end of create connections
@@ -1960,6 +1984,9 @@ public class BattleshipGrid extends JPanel {
 					}//end of if read in attack coord from server
 					else if(obj instanceof Integer){
 						switch((Integer)obj){
+							case -10:
+								JOptionPane.showMessageDialog(null, "The other player has quit the game!", "Connection Error", JOptionPane.ERROR_MESSAGE);
+								break;
 							case -1:
 								roundCount++;
 								break;
@@ -1992,8 +2019,46 @@ public class BattleshipGrid extends JPanel {
 	}//end of inner class read object
 	
 	
+	class CheckConnectionThread extends Thread{
+		final private Socket s = new Socket();
+		private InetSocketAddress address = new InetSocketAddress("www.google.com", 80);
+		public CheckConnectionThread(){
+//			if(isHost){
+//				address = new InetSocketAddress("www.google.com", 80);
+//			}
+//			else{
+//				 address = new InetSocketAddress("www.google.com", 81);
+//			}
+		}//end of constructor
+		
+		public void run(){
+			while(true){
+				try {
+					s.connect(address, 5000);
+				} catch (IOException e) {
+					System.out.println("IO exception in connectwindow.checkconnection(): "+e.getMessage());
+					ShutDownServer();
+					bsf.dispose();
+					JOptionPane.showMessageDialog(null, "Lost Connection!", "Connection Error", JOptionPane.WARNING_MESSAGE);
+					if(isHost){
+						sendMessageToClients(-10);
+					}//end of 
+					else{
+						try {
+							oos.writeObject(-10);
+							oos.flush();
+						} catch (IOException e1) {
+							System.out.println("IOE in writing to server that player lost connection");
+						}
+					}//end of else player
+					new ConnectWindow();
+					return;
+				}//end of try-catch
+			}//end of while	
+		}//end of run
+	}//end of checking internet connections
+	
 }//end of BattleshipGrid class
-
 
 class Battleship {
 	private Point startPoint;
@@ -2060,8 +2125,7 @@ class Battleship {
 		if(hp==0) return true;
 		else return false;
 	}
-	
-	
+		
 }//end of Battleship inner class
 
 
