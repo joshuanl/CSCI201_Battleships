@@ -105,7 +105,7 @@ public class BattleshipFrame extends JFrame{
 		setJMenuBar(jmb);
 		
 		gameStarted = false;
-		setVisible(true);
+		setVisible(false);
 	}//end of constructor
 	
 	public void addGame(BattleshipGrid bsg){

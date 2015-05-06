@@ -303,6 +303,7 @@ public class BattleshipGrid extends JPanel {
 		
 		if(isSinglePlayer){
 			loadMap(mapContentsVector);
+			bsf.setVisible(true);
 		}
 		else{
 			

@@ -37,7 +37,7 @@ public class WaitingForPlayer extends Thread{
 		this.bsg = bsg;
 		this.bsf = bsf;
 		jf.setLayout(new BorderLayout());
-		bsg.setVisible(false);
+		bsf.setVisible(false);
 		timeLeft = 30;
 		label.setText(s1 + " " + timeLeft + s2);
 		jf.add(label, BorderLayout.CENTER);
@@ -78,7 +78,7 @@ public class WaitingForPlayer extends Thread{
 		if(connected){
 			System.out.println("force closing wfp");
 			this.interrupt();
-			bsg.setVisible(true);
+			bsf.setVisible(true);
 			jf.dispose();
 			myDialog.dispose();	
 			myDialog.setEnabled(false);
