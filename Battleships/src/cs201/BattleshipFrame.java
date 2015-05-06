@@ -23,7 +23,8 @@ import javax.swing.SwingUtilities;
 
 @SuppressWarnings("serial")
 public class BattleshipFrame extends JFrame{
-	
+	private boolean gameStarted;
+	private static BattleshipGrid bsg;
 	
 	public BattleshipFrame() {
 		super("Battleship");
@@ -103,11 +104,16 @@ public class BattleshipFrame extends JFrame{
 		jmb.add(jm);
 		setJMenuBar(jmb);
 		
-		//add(bsg);
+		gameStarted = false;
 		setVisible(true);
 	}//end of constructor
 	
 	public void addGame(BattleshipGrid bsg){
+		BattleshipFrame.bsg = bsg;
 		add(bsg);
+	}
+	
+	public void GameStarted(){
+		gameStarted = true;
 	}
 }//end of class

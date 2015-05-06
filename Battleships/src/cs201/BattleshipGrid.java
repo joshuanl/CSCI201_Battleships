@@ -145,6 +145,12 @@ public class BattleshipGrid extends JPanel {
 		this.port = Integer.parseInt(port);
 		this.mapContentsVector = mapContentsVector;
 		this.playerName = pName;
+		
+		bsf.addWindowListener(new WindowAdapter(){
+			public void windowClosing(WindowEvent we){
+				rageQuit();
+			}
+		});
 				
 		setLayout(new BorderLayout());
 		
@@ -380,13 +386,13 @@ public class BattleshipGrid extends JPanel {
 				chatTextField.setText("");
 				if(temp.length() != 0){
 					if(isHost){
-						console1.append("\n"+temp);
-						console3.append("\n"+temp);
-						sendMessageToClients(new ChatMessageObject("\n"+temp, 1));
+						console1.append("\n"+playerName + ": "+temp);
+						console3.append("\n"+playerName + ": "+temp);
+						sendMessageToClients(new ChatMessageObject("\n"+playerName + ": "+temp, 1));
 					}//end of if host
 					else{
-						console1.append("\n"+temp);
-						console3.append("\n"+temp);
+						console1.append("\n"+playerName + ": "+temp);
+						console3.append("\n"+playerName + ": "+temp);
 						try {
 							oos.writeObject(new ChatMessageObject("\n"+temp, 1));
 							oos.flush();
@@ -498,7 +504,7 @@ public class BattleshipGrid extends JPanel {
 					if(isHost){
 						console2.append("\nYou won!");
 						console3.append("\nYou won!");
-						sendMessageToClients(new ChatMessageObject("\nYou lost!", 23));
+						sendMessageToClients(new ChatMessageObject("\nYou lost!", 2));
 					}
 					else if(!isHost && !isSinglePlayer){
 						console2.append("\nYou won!");
@@ -1016,11 +1022,11 @@ public class BattleshipGrid extends JPanel {
 					console2.append("\n"+playerName+" hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")");
 					console3.append("\n"+playerName+" hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")");
 					if(isHost){
-						sendMessageToClients(new ChatMessageObject("\n"+playerName+" hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")", 23));
+						sendMessageToClients(new ChatMessageObject("\n"+playerName+" hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")", 2));
 					}
 					else if(!isHost && !isSinglePlayer){
 						try {
-							oos.writeObject(new ChatMessageObject("\n"+playerName+" hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")", 23));
+							oos.writeObject(new ChatMessageObject("\n"+playerName+" hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")", 2));
 							oos.flush();
 						} catch (IOException e) {
 							System.out.println("IOE in writing to server that player hit ship: "+e.getMessage());
@@ -1030,11 +1036,11 @@ public class BattleshipGrid extends JPanel {
 						console2.append("\n"+playerName+" destroyed Computer's group of "+bs.getName()+"s!");
 						console3.append("\n"+playerName+" destroyed Computer's group of "+bs.getName()+"s!");
 						if(isHost){
-							sendMessageToClients(new ChatMessageObject("\n"+playerName+" destroyed Computer's group of "+bs.getName()+"s!", 23));
+							sendMessageToClients(new ChatMessageObject("\n"+playerName+" destroyed Computer's group of "+bs.getName()+"s!", 2));
 						}
 						else if(!isHost && !isSinglePlayer){
 							try {
-								oos.writeObject(new ChatMessageObject("\n"+playerName+" destroyed Computer's group of "+bs.getName()+"s!", 23));
+								oos.writeObject(new ChatMessageObject("\n"+playerName+" destroyed Computer's group of "+bs.getName()+"s!", 2));
 								oos.flush();
 							} catch (IOException e) {
 								System.out.println("IOE in writing to server that player sunk ship: "+e.getMessage());
@@ -1072,11 +1078,11 @@ public class BattleshipGrid extends JPanel {
 				console2.append("\nPlayer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
 				console3.append("\nPlayer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
 				if(isHost){
-					sendMessageToClients(new ChatMessageObject("\n"+playerName+" hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")", 23));
+					sendMessageToClients(new ChatMessageObject("\n"+playerName+" hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")", 2));
 				}
 				else if(!isHost && !isSinglePlayer){
 					try {
-						oos.writeObject(new ChatMessageObject("\n"+playerName+" hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")", 23));
+						oos.writeObject(new ChatMessageObject("\n"+playerName+" hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")", 2));
 						oos.flush();
 					} catch (IOException e) {
 						System.out.println("IOE in writing to server that player missed ship: "+e.getMessage());
@@ -1116,11 +1122,11 @@ public class BattleshipGrid extends JPanel {
 						console3.append("\nComputer hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")");
 					}//end of if single player
 					if(isHost){
-						sendMessageToClients(new ChatMessageObject("\n"+computerName+" hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")", 23));
+						sendMessageToClients(new ChatMessageObject("\n"+computerName+" hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")", 2));
 					}
 					else if(!isHost && !isSinglePlayer){
 						try {
-							oos.writeObject(new ChatMessageObject("\n"+computerName+" hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")", 23));
+							oos.writeObject(new ChatMessageObject("\n"+computerName+" hit "+coordGuess+ " and hit a "+bs.getName()+"! " + "("+clockLabel.getText()+")", 2));
 							oos.flush();
 						} catch (IOException e) {
 							System.out.println("IOE in writing to other side that player hit ship: "+e.getMessage());
@@ -1132,11 +1138,11 @@ public class BattleshipGrid extends JPanel {
 							console3.append("\nComputer destroyed Player's group of "+bs.getName()+"s!");
 						}	
 						if(isHost){
-							sendMessageToClients(new ChatMessageObject("\n"+computerName+" destroyed Computer's group of "+bs.getName()+"s!", 23));
+							sendMessageToClients(new ChatMessageObject("\n"+computerName+" destroyed Computer's group of "+bs.getName()+"s!", 2));
 						}
 						else if(!isHost && !isSinglePlayer){
 							try {
-								oos.writeObject(new ChatMessageObject("\n"+computerName+" destroyed Computer's group of "+bs.getName()+"s!", 23));
+								oos.writeObject(new ChatMessageObject("\n"+computerName+" destroyed Computer's group of "+bs.getName()+"s!", 2));
 								oos.flush();
 							} catch (IOException e) {
 								System.out.println("IOE in writing to server that player sunk ship: "+e.getMessage());
@@ -1165,11 +1171,11 @@ public class BattleshipGrid extends JPanel {
 					console3.append("\nComputer hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")");
 				}	
 				if(isHost){
-					sendMessageToClients(new ChatMessageObject("\n"+computerName+" hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")", 23));
+					sendMessageToClients(new ChatMessageObject("\n"+computerName+" hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")", 2));
 				}
 				else if(!isHost && !isSinglePlayer){
 					try {
-						oos.writeObject(new ChatMessageObject("\n"+computerName+" hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")", 23));
+						oos.writeObject(new ChatMessageObject("\n"+computerName+" hit "+coordGuess+ " and missed! " + "("+clockLabel.getText()+")", 2));
 						oos.flush();
 					} catch (IOException e) {
 						System.out.println("IOE in writing to server that player missed ship: "+e.getMessage());
@@ -1487,7 +1493,7 @@ public class BattleshipGrid extends JPanel {
 		public synchronized void run(){ 
 			console2.append("\nRound "+roundCount);
 			console3.append("\nRound "+roundCount);
-			sendMessageToClients(new ChatMessageObject("\nRound "+roundCount, 23));
+			sendMessageToClients(new ChatMessageObject("\nRound "+roundCount, 2));
 			
 			while((oppTurnTaken != true || playerTurnTaken != true) && gameRunning){	
 				
@@ -1502,7 +1508,7 @@ public class BattleshipGrid extends JPanel {
 					sendMessageToClients(new NewClockTimeObject(clockLabel.getText()));
 					console2.append("\nWarning - "+returnTime(pvpTurnTime) + " remaining in the round!");
 					console3.append("\nWarning - "+returnTime(pvpTurnTime) + " remaining in the round!");
-					sendMessageToClients(new ChatMessageObject("\nWarning - "+returnTime(pvpTurnTime) + " remaining in the round!", 23));
+					sendMessageToClients(new ChatMessageObject("\nWarning - "+returnTime(pvpTurnTime) + " remaining in the round!", 2));
 				}
 				else if (pvpTurnTime != 3){
 					clockLabel.setText("Time - "+returnTime(pvpTurnTime));
@@ -1516,25 +1522,26 @@ public class BattleshipGrid extends JPanel {
 					roundCount++; 
 					playerTurnTaken = false;
 					enableGrid(true, playerBG);
-					oppTurnTaken = false;
-					//issueCompTurn = false;
 					enableGrid(true, compBG);
+					oppTurnTaken = false;
 					console2.append("\nRound "+roundCount);
 					console3.append("\nRound "+roundCount);
-					sendMessageToClients(new ChatMessageObject("\nRound "+roundCount, 23));
-					try {
-						sleep(2000);
-					} catch (InterruptedException ie) {
-						System.out.println("Interrupted exception in TurnThread::run() "+ie.getMessage());
-					}
 				}//end of if
+				clockLabel.setText("Time - "+returnTime(pvpTurnTime));
+				sendMessageToClients(new NewClockTimeObject(clockLabel.getText()));		
+				sendMessageToClients(new ChatMessageObject("\nRound "+roundCount, 2));
+				try {
+					sleep(1000);
+				} catch (InterruptedException ie) {
+					System.out.println("Interrupted exception in TurnThread::run() "+ie.getMessage());
+				}
 				while(!updatedTime){
 					//System.out.println("waiting to updated time on client side");
 				};
-				clockLabel.setText("Time - "+returnTime(pvpTurnTime));
-				sendMessageToClients(new NewClockTimeObject(clockLabel.getText()));		
 				updatedTime = false;
+				pvpTurnTime--;
 			}//end of while
+			System.out.println("exited while loop, canceled timer");
 		}//end of run
 		public String returnTime(int t){
 			String str = "0:"+t;
@@ -1675,6 +1682,7 @@ public class BattleshipGrid extends JPanel {
 				try {
 					s = new Socket(ip, port);
 					System.out.println("was able to connect to server");
+					bsf.GameStarted();
 					oos = new ObjectOutputStream(s.getOutputStream());
 					ois = new ObjectInputStream(s.getInputStream());
 
@@ -1713,6 +1721,7 @@ public class BattleshipGrid extends JPanel {
 							wfp = new WaitingForPlayer(bsf, BattleshipGrid.this);
 						}	
 						Socket s = ss.accept();
+						bsf.GameStarted();
 						playersConnected++;
 						clientConnected = true;
 						wfp.close(true);
@@ -1780,7 +1789,7 @@ public class BattleshipGrid extends JPanel {
 			try {
 				ois = new ObjectInputStream(s.getInputStream());
 				oos = new ObjectOutputStream(s.getOutputStream());
-				oos.writeObject("Connected to server!\n");
+				oos.writeObject(playerName);
 				oos.flush();
 			} catch (IOException ioe) {
 				System.out.println("IOE in ChatThread constructor: " + ioe.getMessage());
@@ -1870,6 +1879,11 @@ public class BattleshipGrid extends JPanel {
 					}//ed of if read in an invoke action button from other player
 					else if(obj instanceof Integer){
 						switch((Integer)obj){
+							case -10:
+								JOptionPane.showMessageDialog(null, "The other player has quit the game!", "Connection Error", JOptionPane.ERROR_MESSAGE);
+								bsf.dispose();
+								new ConnectWindow();
+								break;
 							case -1:
 								updatedTime = true;
 								break;
@@ -1913,6 +1927,8 @@ public class BattleshipGrid extends JPanel {
 					if(obj instanceof String){
 						computerNameLabel.setText((String)obj);
 						computerName = (String) obj;
+						oos.writeObject(playerName);
+						oos.flush();
 					}
 					else if(obj instanceof Boolean){
 						System.out.println("server got boolean from client");
@@ -1986,9 +2002,13 @@ public class BattleshipGrid extends JPanel {
 						switch((Integer)obj){
 							case -10:
 								JOptionPane.showMessageDialog(null, "The other player has quit the game!", "Connection Error", JOptionPane.ERROR_MESSAGE);
+								bsf.dispose();
+								new ConnectWindow();
 								break;
 							case -1:
 								roundCount++;
+								enableGrid(true, playerBG);
+								enableGrid(true, compBG);
 								break;
 							case 1:
 								if(!gameRunning){
@@ -2058,6 +2078,20 @@ public class BattleshipGrid extends JPanel {
 		}//end of run
 	}//end of checking internet connections
 	
+	public void rageQuit(){
+		if(isHost){
+			sendMessageToClients(-10);
+		}
+		else if(!isHost && !isSinglePlayer){
+			try {
+				oos.writeObject(-10);
+				oos.flush();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}//end of rage quit
 }//end of BattleshipGrid class
 
 class Battleship {
