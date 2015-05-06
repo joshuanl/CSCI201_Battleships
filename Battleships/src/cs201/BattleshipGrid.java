@@ -398,7 +398,7 @@ public class BattleshipGrid extends JPanel {
 						console1.append("\n"+playerName + ": "+temp);
 						console3.append("\n"+playerName + ": "+temp);
 						try {
-							oos.writeObject(new ChatMessageObject("\n"+temp, 1));
+							oos.writeObject(new ChatMessageObject("\n"+playerName + ": "+temp, 1));
 							oos.flush();
 						} catch (IOException e) {
 							System.out.println("IOE from sendbutton action listener: " + e.getMessage());
@@ -575,7 +575,7 @@ public class BattleshipGrid extends JPanel {
 						break;
 					case JOptionPane.NO_OPTION:
 						break;
-					}
+					}//end of switch
 				}//end of if end of game
 				playerTurnTaken = true;
 
@@ -1702,6 +1702,36 @@ public class BattleshipGrid extends JPanel {
 						console2.append("\nYou Lost!");
 						console3.append("\nYou Lost!");
 						JOptionPane.showMessageDialog(null, "You Lost!", "Game Over", JOptionPane.PLAIN_MESSAGE);
+						int n = JOptionPane.showConfirmDialog(BattleshipGrid.this, "Rematch?", "Game Over", JOptionPane.YES_NO_OPTION);
+						switch(n){
+						case JOptionPane.YES_OPTION:
+							if(isHost){
+								while(!wantsRematch){}
+								bsf.dispose();
+								bsf = new BattleshipFrame();
+								BattleshipGrid bsg = new BattleshipGrid(bsf, isHost, isSinglePlayer, ip, new String(""+ port) , mapContentsVector, playerName);
+								bsf.add(bsg);
+								sendMessageToClients(-5);
+							}
+							else if(!isHost && !isSinglePlayer){
+								try {
+									oos.writeObject(-5);
+									oos.flush();
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+								while(!wantsRematch){}
+								bsf.dispose();
+								bsf = new BattleshipFrame();
+								BattleshipGrid bsg = new BattleshipGrid(bsf, isHost, isSinglePlayer, ip, new String(""+ port) , mapContentsVector, playerName);
+								bsf.add(bsg);
+							}
+							break;
+						case JOptionPane.NO_OPTION:
+							break;
+						}//end of switch
+						gameFinished = true;
 						enableGrid(false, compBG);
 						enableGrid(false, playerBG);
 					}//end of if end of game
@@ -1841,6 +1871,14 @@ public class BattleshipGrid extends JPanel {
 				oos.writeObject(obj);
 				oos.flush();
 			} catch (IOException e) {
+				Socket s = new Socket();
+				InetSocketAddress address = new InetSocketAddress("www.google.com", 80);
+				try {
+					s.connect(address, 5000);
+					rageQuit();
+				} catch (IOException ioe) {
+					JOptionPane.showMessageDialog(null, "Lost Connection!", "Connection Error", JOptionPane.WARNING_MESSAGE);
+				}
 				System.out.println("IOE from ChatThread.sendMessage() from server to client: "+e.getMessage());
 			}
 		}//end of send message
@@ -1947,6 +1985,9 @@ public class BattleshipGrid extends JPanel {
 									sendMessage(1);								
 								}
 								break;
+							case 80:
+								sendMessage(80);
+								break;	
 						}//end of switch
 					}//end of else if read in an integer
 					obj = ois.readObject();
@@ -2073,6 +2114,14 @@ public class BattleshipGrid extends JPanel {
 									oos.flush();							
 								}
 								break;
+							case 80:
+								try {
+									oos.writeObject(80);
+									oos.flush();
+								} catch (IOException e) {
+									System.out.println("IOE in readobject.run: " + e.getMessage());
+								}
+								break;
 						}//end of switch
 					}//end of else if read in an integer
 					obj = ois.readObject();
@@ -2087,40 +2136,33 @@ public class BattleshipGrid extends JPanel {
 	
 	
 	class CheckConnectionThread extends Thread{
-		final private Socket s = new Socket();
+		private Socket s = new Socket();
 		private InetSocketAddress address = new InetSocketAddress("www.google.com", 80);
 		public CheckConnectionThread(){
-//			if(isHost){
-//				address = new InetSocketAddress("www.google.com", 80);
-//			}
-//			else{
-//				 address = new InetSocketAddress("www.google.com", 81);
-//			}
+
 		}//end of constructor
 		
 		public void run(){
+			JOptionPane.showMessageDialog(null, "Lost Connection!", "Connection Error", JOptionPane.WARNING_MESSAGE);
 			while(true){
-				try {
-					s.connect(address, 5000);
-				} catch (IOException e) {
-					System.out.println("IO exception in connectwindow.checkconnection(): "+e.getMessage());
-					ShutDownServer();
-					bsf.dispose();
-					JOptionPane.showMessageDialog(null, "Lost Connection!", "Connection Error", JOptionPane.WARNING_MESSAGE);
-					if(isHost){
-						sendMessageToClients(-10);
-					}//end of 
-					else{
+				if(isHost){
+					sendMessageToClients(80);
+				}
+				else{
+					try {
+						oos.writeObject(80);
+						oos.flush();
+					} catch (IOException e) {
+						Socket s = new Socket();
+						InetSocketAddress address = new InetSocketAddress("www.google.com", 80);
 						try {
-							oos.writeObject(-10);
-							oos.flush();
-						} catch (IOException e1) {
-							System.out.println("IOE in writing to server that player lost connection");
+							s.connect(address, 5000);
+							rageQuit();
+						} catch (IOException ioe) {
+							JOptionPane.showMessageDialog(null, "Lost Connection!", "Connection Error", JOptionPane.WARNING_MESSAGE);
 						}
-					}//end of else player
-					new ConnectWindow();
-					return;
-				}//end of try-catch
+					}
+				}
 			}//end of while	
 		}//end of run
 	}//end of checking internet connections
