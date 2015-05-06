@@ -38,7 +38,7 @@ public class WaitingForPlayer extends Thread{
 		this.bsf = bsf;
 		jf.setLayout(new BorderLayout());
 		bsg.setVisible(false);
-		timeLeft = 3;
+		timeLeft = 30;
 		label.setText(s1 + " " + timeLeft + s2);
 		jf.add(label, BorderLayout.CENTER);
 		jf.setVisible(true);
