@@ -103,7 +103,8 @@ public class BattleshipGrid extends JPanel {
 	
 	
 	private boolean updatedTime = false;
-	private boolean isClosing = false;
+	private boolean wantsRematch = false;
+	private boolean gameFinished = false;
 	private boolean isHost;
 	private boolean isSinglePlayer;
 	private boolean mapLoaded = false;
@@ -148,7 +149,9 @@ public class BattleshipGrid extends JPanel {
 		
 		bsf.addWindowListener(new WindowAdapter(){
 			public void windowClosing(WindowEvent we){
-				rageQuit();
+				if(!gameFinished){
+					rageQuit();
+				}	
 			}
 		});
 				
@@ -483,7 +486,7 @@ public class BattleshipGrid extends JPanel {
 			c = getLetter(coordY);
 			coordGuess = ""+c+coordX;
 			if(playerGuessed[coordX-1][coordY]){
-				//System.out.println("Already guessed spot");
+				JOptionPane.showConfirmDialog(BattleshipGrid.this, "Already guessed this spot!", "Battleships", JOptionPane.PLAIN_MESSAGE);
 				return;   //if true then player already has guessed that spot
 			}
 			playerGuessed[coordX-1][coordY] = true;
@@ -502,6 +505,7 @@ public class BattleshipGrid extends JPanel {
 				//=============================================END OF GAME
 				//=============================================END OF GAME
 				if(getNumSunk(compShips)==5){
+					gameFinished = true;
 					if(isHost){
 						console2.append("\nYou won!");
 						console3.append("\nYou won!");
@@ -536,7 +540,42 @@ public class BattleshipGrid extends JPanel {
 							e.printStackTrace();
 						}
 					}
+					try {
+						Thread.sleep(2000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					JOptionPane.showMessageDialog(null, "You Won!", "Game Over", JOptionPane.PLAIN_MESSAGE);
+					int n = JOptionPane.showConfirmDialog(BattleshipGrid.this, "Rematch?", "Game Over", JOptionPane.YES_NO_OPTION);
+					switch(n){
+					case JOptionPane.YES_OPTION:
+						if(isHost){
+							while(!wantsRematch){}
+							bsf.dispose();
+							bsf = new BattleshipFrame();
+							BattleshipGrid bsg = new BattleshipGrid(bsf, isHost, isSinglePlayer, ip, new String(""+ port) , mapContentsVector, playerName);
+							bsf.add(bsg);
+							sendMessageToClients(-5);
+						}
+						else if(!isHost && !isSinglePlayer){
+							try {
+								oos.writeObject(-5);
+								oos.flush();
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							while(!wantsRematch){}
+							bsf.dispose();
+							bsf = new BattleshipFrame();
+							BattleshipGrid bsg = new BattleshipGrid(bsf, isHost, isSinglePlayer, ip, new String(""+ port) , mapContentsVector, playerName);
+							bsf.add(bsg);
+						}
+						break;
+					case JOptionPane.NO_OPTION:
+						break;
+					}
 				}//end of if end of game
 				playerTurnTaken = true;
 
@@ -817,7 +856,7 @@ public class BattleshipGrid extends JPanel {
 		}//end of action performed	
 	}//end of PlaceShipsAdapter
 //========================================= ENABLE GRID	
-	public void enableGrid(boolean set, MyButton grid[][]){
+	public synchronized void enableGrid(boolean set, MyButton grid[][]){
 		for(int i = 0; i < 10; i++) {
 			for(int j = 0; j < 10; j++) {
 				grid[i][j].setEnabled(set);
@@ -1530,7 +1569,6 @@ public class BattleshipGrid extends JPanel {
 				}//end of if
 				clockLabel.setText("Time - "+returnTime(pvpTurnTime));
 				sendMessageToClients(new NewClockTimeObject(clockLabel.getText()));		
-				sendMessageToClients(new ChatMessageObject("\nRound "+roundCount, 2));
 				try {
 					sleep(1000);
 				} catch (InterruptedException ie) {
@@ -1683,6 +1721,7 @@ public class BattleshipGrid extends JPanel {
 				try {
 					s = new Socket(ip, port);
 					System.out.println("was able to connect to server");
+					bsf.setVisible(true);
 					bsf.GameStarted();
 					oos = new ObjectOutputStream(s.getOutputStream());
 					ois = new ObjectInputStream(s.getInputStream());
@@ -1813,6 +1852,7 @@ public class BattleshipGrid extends JPanel {
 				while(obj != null){
 					if(obj instanceof String){
 						computerNameLabel.setText((String)obj);
+						computerName = (String) obj;
 					}
 					else if (obj instanceof ChatMessageObject){
 						switch(((ChatMessageObject)obj).getLogNum()){
@@ -1884,6 +1924,9 @@ public class BattleshipGrid extends JPanel {
 								JOptionPane.showMessageDialog(null, "The other player has quit the game!", "Connection Error", JOptionPane.ERROR_MESSAGE);
 								bsf.dispose();
 								new ConnectWindow();
+								break;
+							case 5:
+								wantsRematch = true;
 								break;
 							case -1:
 								updatedTime = true;
@@ -2005,6 +2048,9 @@ public class BattleshipGrid extends JPanel {
 								JOptionPane.showMessageDialog(null, "The other player has quit the game!", "Connection Error", JOptionPane.ERROR_MESSAGE);
 								bsf.dispose();
 								new ConnectWindow();
+								break;
+							case -5:
+								wantsRematch = true;
 								break;
 							case -1:
 								roundCount++;
